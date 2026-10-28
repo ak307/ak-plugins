@@ -36,9 +36,18 @@ claude plugin install dev-standards@ak-plugins
 
 ## Updating the rules or templates
 
-Edit the files here, commit and push to `main`. claude.ai picks up the
-change and each laptop gets it at its next Claude Code start. Try larger
-changes on a branch first and merge when the tests pass.
+1. Edit the files here, bump `version` in
+   `plugins/dev-standards/.claude-plugin/plugin.json`, commit and push to
+   `main`. Try larger changes on a branch first and merge when the tests pass.
+2. On claude.ai: **Customize → Plugins → Add → Manage marketplaces → ⋮ on
+   `ak-plugins` → Check for updates.** The "Synced commit" should change to the
+   commit you just pushed.
+3. Each laptop gets the new version at its next Claude Code start.
+
+Step 2 is needed because claude.ai's "Sync automatically" currently doesn't
+react to new pushes (known bug:
+https://github.com/anthropics/claude-code/issues/93825). Once that's fixed,
+step 2 becomes unnecessary.
 
 ## Adding a template for another stack
 

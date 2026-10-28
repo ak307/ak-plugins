@@ -1,6 +1,6 @@
 ---
 name: project-structure
-description: AK's standard project templates — folder layout, entry point, file and class naming — so every project on the same stack looks the same. Use this whenever creating a new project or app (FastAPI, or any backend/API service), scaffolding or bootstrapping code, adding a new module, resource, endpoint, router, service, model or layer, or deciding where a new file should go or what to name it — even if the user doesn't mention structure or conventions. Also use when asked to review, standardise or restructure a project's layout.
+description: AK's standard project templates — folder layout, entry point, file and class naming — so every project on the same stack looks the same. Covers FastAPI, Django, Django + LangChain/LangGraph agents, Laravel and Flutter. Use this whenever creating a new project or app, scaffolding or bootstrapping code, adding a new module, resource, endpoint, router, service, model or layer, or deciding where a new file should go or what to name it — even if the user doesn't mention structure or conventions. Also use when asked to review, standardise or restructure a project's layout.
 ---
 
 # Project structure
@@ -26,13 +26,22 @@ template for the stack exactly, then build the feature inside it.
 
 | Stack | Template |
 |---|---|
-| FastAPI | `references/fastapi.md` |
+| FastAPI (APIs, small AI/LLM services) | `references/fastapi.md` |
+| Django (web apps, internal tools, admin-heavy systems) | `references/django.md` |
+| Django agentic project (LangChain / LangGraph / LangSmith agents) | `references/django-agentic.md` — read `django.md` too, it builds on it |
+| Laravel (Inertia + React) | `references/laravel.md` |
+| Flutter | `references/flutter.md` |
+
+Picking between them for a new project: if the user names the framework, use
+it. A project whose main job is running LLM agents with LangGraph is the
+Django agentic template; a single small HTTP service around a model call is
+FastAPI.
 
 Read the matching file before writing any code. It gives the folder tree, what
 belongs in each file, naming rules and the checklist for adding a new resource.
 
 If the stack has no template yet, use that framework's official/default project
-layout (e.g. `laravel new`, `django-admin startproject`, `flutter create`) rather
+layout (e.g. `npm create vite`, `dotnet new`) rather
 than inventing one, apply the always-on coding rules, and tell the user in one
 line that there's no standard template for this stack yet so they can decide
 whether to add one.
@@ -47,9 +56,10 @@ reply so the decision is visible.
 
 ## Step 4 — Check before finishing
 
-- Entry point is where the template says (for FastAPI: `app/main.py`, run with
-  `uvicorn app.main:app`).
+- Entry point and project package are where the template says (FastAPI:
+  `app/main.py`; Django: `config/`; Flutter: `lib/main.dart` + `lib/app.dart`).
 - Every new file is in the folder its kind belongs to, named per the template.
-- Nothing from the template was renamed (no `server.py` instead of `main.py`,
-  no `api/` instead of `routers/`, no `crud/` instead of `services/`).
+- Nothing from the template was renamed (e.g. no `server.py` instead of
+  `main.py`, no `crud/` instead of `services/`, no project-named Django package
+  instead of `config/`).
 - `README.md` says how to install, configure (`.env`) and run.

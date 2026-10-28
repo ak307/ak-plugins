@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: add-feature-laravel-starter
+expected_outcome: |
+  Follows the laravel.md template on top of the existing starter-kit project: resource controller with PascalCase name, FormRequests, Policy, Actions for approve/reject, enum, kebab-case pages folder, Gate::authorize and toast flash, Pest tests.
+context:
+  scaffold_script: place-files.sh

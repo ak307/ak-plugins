@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: new-flutter-leave-app
+expected_outcome: |
+  A Flutter app following flutter.md: core/ (network, router, theme, config), freezed models, repositories with repository_providers.dart, screens/leave_requests with notifier next to the screen, ref.watch in build, no hand-written fromJson.

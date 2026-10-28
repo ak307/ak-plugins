@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: new-django-agentic-helpdesk
+expected_outcome: |
+  Follows django-agentic.md: config/ + apps/ (accounts, conversations, tickets), agents/ package with llm.py, checkpointing.py and an agent package (graph.py, state.py, nodes.py, tools.py, prompts.py), no Django imports in agents/ outside tools.py, langgraph.json, PostgreSQL checkpointer, LangSmith tracing off by default, tests with a fake model.

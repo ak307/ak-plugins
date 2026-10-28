@@ -1,0 +1,2 @@
+{ "private": true, "type": "module",
+  "dependencies": { "@inertiajs/react": "^3.0.0", "react": "^19.2.0", "tailwindcss": "^4.1.0", "typescript": "^5.9.0", "@laravel/vite-plugin-wayfinder": "^0.1.0" } }

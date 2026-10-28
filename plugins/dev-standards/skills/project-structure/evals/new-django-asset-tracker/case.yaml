@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: new-django-asset-tracker
+expected_outcome: |
+  A Django project following the django.md template: config/ package, apps/ folder with an accounts app holding a custom User model set as AUTH_USER_MODEL, business app(s) with models/ services/ views/ folders, pyproject.toml, .env.example.

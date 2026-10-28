@@ -1,0 +1,14 @@
+{
+  "name": "ak-plugins",
+  "owner": {
+    "name": "AK"
+  },
+  "description": "AK's private Claude Code plugins",
+  "plugins": [
+    {
+      "name": "dev-standards",
+      "source": "./plugins/dev-standards",
+      "description": "AK's always-on coding rules and standard project templates"
+    }
+  ]
+}

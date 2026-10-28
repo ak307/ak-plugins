@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: follows-existing-layout
+expected_outcome: |
+  Suppliers are added using the project's existing layout (server.py entry, api/ and crud/
+  folders, db.py), not the standard template. Nothing existing is moved or renamed.
+context:
+  scaffold_script: place-files.sh

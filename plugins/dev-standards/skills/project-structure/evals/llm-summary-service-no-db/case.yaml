@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: llm-summary-service-no-db
+expected_outcome: |
+  A FastAPI project using the standard template minus database pieces: app/main.py entry,
+  config with the vLLM base URL and model name as settings, routers/schemas/services,
+  no models/ or alembic/, README and .env.example.

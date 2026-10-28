@@ -1,5 +1,8 @@
 {
   "name": "dev-standards",
+  "version": "1.1.0",
   "description": "AK's always-on coding rules and standard project templates",
-  "author": { "name": "AK" }
+  "author": {
+    "name": "AK"
+  }
 }

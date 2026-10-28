@@ -13,47 +13,32 @@ updated automatically when this repo changes.
   naming, comments, and a self-check before finishing.
 - **`project-structure` skill** — standard project templates, used whenever
   Claude creates a project, adds a module, or decides where a file goes.
-  Templates: FastAPI (`skills/project-structure/references/fastapi.md`).
+  Templates in `plugins/dev-standards/skills/project-structure/references/`:
+  FastAPI, Django, Django agentic (LangChain / LangGraph / LangSmith),
+  Laravel (Inertia + React starter kit) and Flutter.
 
-## One-time setup on each laptop
+## How it reaches every laptop
 
-Prerequisite: git can read this private repo without prompting
-(run `gh auth login` once, or have an SSH key on GitHub).
+The repo is added as a plugin marketplace on claude.ai (Customize → Plugins,
+"Sync automatically" on) and the `dev-standards` plugin is enabled there.
+Claude Code on any laptop signed in with that claude.ai account downloads it
+at session start — nothing to install per laptop.
+
+Requirements per laptop: Claude Code 2.1.273 or newer, signed in with
+`/login` using the claude.ai account (not an API key).
+
+Fallback if a laptop can't use claude.ai sync:
 
 ```bash
 claude plugin marketplace add ak307/ak-plugins
 claude plugin install dev-standards@ak-plugins
 ```
 
-Then turn on auto-update: in Claude Code run `/plugin` → **Marketplaces** →
-`ak-plugins` → **Enable auto-update**.
-
-Alternatively, add this to `~/.claude/settings.json` (Claude Code installs
-anything listed here that's missing when a session starts):
-
-```json
-{
-  "extraKnownMarketplaces": {
-    "ak-plugins": {
-      "source": { "source": "github", "repo": "ak307/ak-plugins" },
-      "autoUpdate": true
-    }
-  },
-  "enabledPlugins": {
-    "dev-standards@ak-plugins": true
-  }
-}
-```
-
 ## Updating the rules or templates
 
-Edit the files here, commit and push. Each laptop picks up the change
-automatically (within ~10 minutes of starting a session; it applies on the
-next launch or after `/reload-plugins`). To update immediately:
-
-```bash
-claude plugin update dev-standards@ak-plugins
-```
+Edit the files here, commit and push to `main`. claude.ai picks up the
+change and each laptop gets it at its next Claude Code start. Try larger
+changes on a branch first and merge when the tests pass.
 
 ## Adding a template for another stack
 
@@ -65,6 +50,10 @@ and a row for it in the table in that skill's `SKILL.md`.
 ```bash
 claude plugin validate .
 ```
+
+Tests for the `project-structure` skill are in
+`plugins/dev-standards/skills/project-structure/evals/` (one folder per
+case). Run them with `claude plugin eval plugins/dev-standards/skills/project-structure --allow-tools Write,Edit,Bash --scaffold`.
 
 In a new session, ask Claude: "What coding standards were you given at the
 start of this session?" — it should quote the first heading of

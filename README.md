@@ -62,7 +62,11 @@ claude plugin install arkar-dev-standards@ak-plugins
 2. On claude.ai: **Customize → Plugins → Add → Manage marketplaces → ⋮ on
    `ak-plugins` → Check for updates.** The "Synced commit" should change to the
    commit you just pushed.
-3. Each laptop gets the new version at its next Claude Code start.
+3. Each laptop picks it up within **two** Claude Code restarts (VS Code:
+   `Ctrl+Shift+P` → Developer: Reload Window). The first start downloads the
+   new version in the background; the next start uses it. Check by asking
+   Claude to list the skills starting with `arkar` and quote the newest
+   section of the coding standards.
 
 Step 2 is needed because claude.ai's "Sync automatically" currently doesn't
 react to new pushes (known bug:

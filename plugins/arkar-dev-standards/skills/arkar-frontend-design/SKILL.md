@@ -32,6 +32,13 @@ Look for `DESIGN.md` at the project root.
   visual layer of the screens you touch while keeping content, behaviour, URLs
   and data the same — say so in the final message.
 
+  Don't let "fix it" wording shrink the design. When a page has no identity
+  and the user says it looks bad, that complaint **is** a design brief: the
+  redesign meets the same bar as a new project — explored directions, chosen
+  typefaces, a signature element drawn from the project's world, and an
+  impressive result. Tidying the old layout, or a coloured border as the
+  "signature", is not enough.
+
 ## 2. Creating an identity
 
 Read `references/creative-process.md`, then:
@@ -52,8 +59,11 @@ Read `references/creative-process.md`, then:
 ## 3. Build it with craft
 
 - Tokens as CSS variables / theme config; no raw values in components.
-- Fonts bundled with the app (`@fontsource/<family>` or `.woff2` files in the
-  project), not linked from Google — internal networks often block them.
+- Fonts bundled with the app, not linked from Google — internal networks often
+  block them. With a build tool: `@fontsource/<family>`. Plain HTML/CSS: install
+  the `@fontsource` package in a temporary folder, copy the needed `.woff2`
+  files into the project's `fonts/` folder and write the `@font-face` rules.
+  System fonts are not a design choice.
 - One signature element per main screen, drawn from the project's world —
   often an SVG visual made in code with the palette.
 - Every state (loading, empty, error, success, disabled) designed in the

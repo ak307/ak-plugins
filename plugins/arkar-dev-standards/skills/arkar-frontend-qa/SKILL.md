@@ -61,14 +61,12 @@ For new and redesigned screens, before writing UI code, read
 5. **Check the plan against the generic defaults** listed in that file and
    revise anything that would look the same in any other app.
 
-**Brand colour:** AK's work apps are CBM apps — anything for "our" company,
-team, staff, buildings, sites, tenants or visitors, or that mentions CBM.
-They use `#AE1A28` as the primary colour for primary actions, focus and key
-highlights, with the rest of the palette built around it on purpose. Use a
-different primary only when the app already has another brand, or AK says
-it's a personal/non-CBM project. Keep status colours (danger, warning,
-success) visibly different from the brand red — e.g. a deeper red-orange or
-an icon plus label for "overdue" — so brand and danger don't look identical.
+**Colour:** the best design for the subject wins. Choose the palette freely
+as part of the design plan. Use the CBM brand red `#AE1A28` as the primary
+colour only when AK asks for CBM branding or the app already uses it. When
+it is used, keep status colours (danger, warning, success) visibly different
+from it — e.g. a red-orange plus an icon for "overdue" — so brand and danger
+don't look identical.
 
 **Fonts:** bundle them with the app — `@fontsource/<family>` from npm, or
 `.woff2` files in the project's static/public folder — instead of linking

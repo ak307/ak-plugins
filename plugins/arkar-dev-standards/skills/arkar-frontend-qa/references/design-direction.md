@@ -45,10 +45,10 @@ Keep it short — this is a working note, not a document:
   colour codes, nothing decorative"). Every later choice should follow from
   this sentence; it keeps the screens coherent.
 - **Palette:** 4–6 named hex values with roles (background, surface, ink,
-  muted ink, primary, one support colour). CBM work apps: primary is
-  `#AE1A28`.
-  Build the rest around it on purpose (e.g. warm stone neutrals and deep
-  charcoal ink, or cool slate with a dark navy panel) — not plain white and grey.
+  muted ink, primary, one support colour), chosen for the subject — e.g. warm
+  stone neutrals with deep charcoal ink, or cool slate with a dark navy panel —
+  not plain white and grey. Use the CBM red `#AE1A28` as primary only when AK
+  asks for CBM branding or the app already uses it.
 - **Type:** one or two typefaces chosen for this subject, bundled with the
   app (`@fontsource/<family>` or `.woff2` files — not linked from Google), with
   a type scale. Not the browser/system
@@ -170,8 +170,8 @@ own from the subject in front of you.
 
 **Season car-park permits (CBM, tenants and car-park admins):**
 - Palette: asphalt ink `#22252A`, concrete background `#EEEDEA`, surface
-  `#FFFFFF`, primary `#AE1A28`, bay-line yellow `#E8B321` for "action needed",
-  muted `#6E727A`.
+  `#FFFFFF`, primary signage blue `#1D4ED8`, bay-line yellow `#E8B321` for
+  "action needed", muted `#6E727A`.
 - Type: "Barlow" (signage feel) — Semibold for numbers and plate numbers,
   Regular for text; scale 14 / 16 / 20 / 28 / 44.
 - Layout: desktop — top band shows each car-park level as a capacity bar
@@ -181,9 +181,9 @@ own from the subject in front of you.
 - Signature: the permit card that looks like the physical permit.
 
 **Safety incident reports (site supervisors, mostly on phones outdoors):**
-- Palette: deep navy `#16233A`, high-vis orange `#F26B1D` for severity,
-  white surface, light steel background `#E8ECF1`, primary `#AE1A28` for main
-  actions, green `#2E7D4F` for closed.
+- Palette: deep navy `#16233A` as primary, high-vis orange `#F26B1D` for
+  severity, white surface, light steel background `#E8ECF1`, green `#2E7D4F`
+  for closed.
 - Type: "IBM Plex Sans" for clarity in sunlight; large 18px base on mobile.
 - Layout: mobile-first — big "Report incident" button fixed at the bottom,
   reports as a severity-coloured timeline; desktop — map/site list on the

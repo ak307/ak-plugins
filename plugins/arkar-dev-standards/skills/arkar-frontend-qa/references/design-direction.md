@@ -99,6 +99,16 @@ fit the subject — never all of them:
   one darker panel for focus) instead of identical white cards.
 - **Iconography:** one consistent icon set (e.g. Lucide/Heroicons via a package
   or inline SVG), sized with the type.
+- **Crafted visuals in code:** draw small SVG illustrations, patterns or
+  diagrams from the subject's world (a building's floors, a car-park level
+  outline, a route line) for headers, empty states and the signature element —
+  made with the palette, simple geometric shapes and consistent stroke, not
+  clip-art. A quiet repeating pattern or texture on a background panel can give
+  depth without clutter.
+- **Type as a visual element:** in one place per screen (a header, a key
+  number, a welcome), let large, well-set type carry the design itself —
+  scale contrast between a big figure and small labels, careful letter-spacing,
+  aligned to the grid.
 - **Micro-interactions that answer actions:** an approved application moves
   to its new column; a completed checkpoint fills in; a toast confirms with the
   same word as the button ("Approve" → "Approved").
@@ -121,6 +131,10 @@ After the defect check, look at the 375 / 768 / 1440 screenshots and ask:
 4. Does the mobile layout feel designed for a phone, or squeezed?
 5. Would AK call it "basic"? If so, name three concrete upgrades, apply them,
    and re-shoot.
+
+Also check the canvas basics at every size: nothing overlaps, nothing is
+cut off, every element has breathing room inside its container, and the
+palette stays limited and cohesive.
 
 Then do one **refinement pass**. The bar is a screen that looks as if a top
 product designer laboured over it: every alignment deliberate, spacing

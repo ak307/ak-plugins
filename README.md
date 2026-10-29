@@ -16,12 +16,20 @@ updated automatically when this repo changes.
   Templates in `plugins/arkar-dev-standards/skills/arkar-project-structure/references/`:
   FastAPI, Django, Django agentic (LangChain / LangGraph / LangSmith),
   Laravel (Inertia + React starter kit) and Flutter.
-- **`arkar-frontend-qa` skill** — used whenever Claude builds or changes a
-  browser-based UI: polished responsive design, then run the app and inspect
-  it at 375 / 768 / 1440 px, fix and re-check. Includes a Playwright
-  screenshot script (`scripts/screenshot.cjs`) for when no browser tool is
-  connected. For the richest checks, start Claude Code with `claude --chrome`
-  (or enable Chrome by default in `/chrome`).
+- **`arkar-frontend-design` skill** — gives every web project its own
+  creative, impressive visual identity: explores 2–3 directions, picks one,
+  records it in the project's `DESIGN.md` so later screens stay consistent,
+  and critiques screenshots for uniqueness. Not a house style — each project
+  is different on purpose.
+- **`arkar-frontend-qa` skill** — the fixed quality floor for browser UI:
+  run the app and inspect it at 375 / 768 / 1440 px, test interactions,
+  accessibility and states, fix and re-check, report honestly. Includes a
+  Playwright screenshot script (`scripts/screenshot.cjs`) for when no browser
+  tool is connected. For the richest checks, start Claude Code with
+  `claude --chrome` (or enable Chrome by default in `/chrome`).
+
+Design ideas adapted from Anthropic's frontend-design and canvas-design
+skills and from UI/UX Pro Max (MIT, Next Level Builder).
 
 ## How it reaches every laptop
 

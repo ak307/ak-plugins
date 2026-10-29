@@ -27,12 +27,17 @@ Django, Django agentic, Laravel, Flutter). Do not invent a new layout. If the
 template genuinely does not fit, explain why in one or two sentences before
 deviating.
 
-## 2b. Browser-based UI work: design and check it in a real browser
+## 2b. Browser-based UI work: unique design, checked in a real browser
 
-Whenever you build or change anything users see in a browser, load the
-`arkar-frontend-qa` skill and follow it: polished responsive design, run the
-app, inspect it at 375, 768 and 1440 px wide, fix and re-check. Never claim
-to have visually checked something you didn't.
+Whenever you build or change anything users see in a browser, load both:
+
+- `arkar-frontend-design` — every project gets its own creative, impressive
+  identity (recorded in the project's `DESIGN.md`); never a basic or
+  template-looking UI.
+- `arkar-frontend-qa` — the fixed quality floor: run the app, inspect it at
+  375, 768 and 1440 px wide, test interactions, fix and re-check.
+
+Never claim to have visually checked something you didn't.
 
 ## 3. Readability baseline: intermediate level
 

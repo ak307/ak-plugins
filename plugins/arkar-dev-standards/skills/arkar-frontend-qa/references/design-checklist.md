@@ -1,8 +1,9 @@
-# Visual design and UX checklist
+# UI quality checklist
 
-Use this while building and again while inspecting screenshots. It is a
-checklist, not a style: the visual direction comes from the project and its
-users (see SKILL.md, "Design direction").
+The quality floor every project meets, whatever its look. Use it while
+building and again while inspecting screenshots. It is a checklist, not a
+style: each project's visual identity comes from the `arkar-frontend-design`
+skill and the project's `DESIGN.md`.
 
 ## Contents
 1. Layout and hierarchy

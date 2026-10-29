@@ -39,6 +39,15 @@ Whenever you build or change anything users see in a browser, load both:
 
 Never claim to have visually checked something you didn't.
 
+## 2c. Every feature or update: secure change, behaviour preserved
+
+Whenever you implement or change code, load `arkar-secure-change` and follow
+it: write new code securely, review the change and the code it touches, run
+tests and security checks. **Never change existing code for security without
+AK's approval** — propose it labelled 🟢 SAFE or 🟠 CHANGES BEHAVIOUR, and
+leave it untouched if he skips it. Existing business rules, APIs, database
+behaviour and workflows must not change unless he approves.
+
 ## 3. Readability baseline: intermediate level
 
 Write code an intermediate developer reads comfortably and a junior developer

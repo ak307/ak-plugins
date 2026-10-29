@@ -3,7 +3,9 @@
 // browser tool (Claude in Chrome, Playwright MCP) is available.
 //
 // Usage (run from the project folder so its own Playwright is found first):
-//   node <path-to>/screenshot.cjs <url> [output-folder] [--full-page]
+//   node <path-to>/screenshot.cjs <url> [output-folder] [--full-page] [--sizes=1280x800,1920x1080]
+//
+// Without --sizes it uses mobile 375x812, tablet 768x1024 and desktop 1440x900.
 //
 // Needs Playwright with Chromium. If missing:
 //   npm install --no-save playwright && npx playwright install chromium
@@ -11,7 +13,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-const VIEWPORTS = [
+const DEFAULT_VIEWPORTS = [
   { name: "mobile", width: 375, height: 812 },
   { name: "tablet", width: 768, height: 1024 },
   { name: "desktop", width: 1440, height: 900 },
@@ -36,6 +38,19 @@ function loadPlaywright() {
   }
 }
 
+function viewportsFrom(flags) {
+  const sizesFlag = flags.find((flag) => flag.startsWith("--sizes="));
+  if (!sizesFlag) return DEFAULT_VIEWPORTS;
+  return sizesFlag
+    .slice("--sizes=".length)
+    .split(",")
+    .map((size) => {
+      const [width, height] = size.toLowerCase().split("x").map(Number);
+      return { name: `w${width}`, width, height };
+    })
+    .filter((viewport) => viewport.width > 0 && viewport.height > 0);
+}
+
 function pageSlug(url) {
   const urlPath = new URL(url).pathname.replace(/\/+$/, "");
   return urlPath === "" ? "home" : urlPath.slice(1).replace(/[^a-zA-Z0-9]+/g, "-");
@@ -57,17 +72,18 @@ function collectProblems(page) {
 async function main() {
   const [url, outputFolder = "screenshots", ...flags] = process.argv.slice(2);
   if (!url) {
-    console.error("Usage: node screenshot.cjs <url> [output-folder] [--full-page]");
+    console.error("Usage: node screenshot.cjs <url> [output-folder] [--full-page] [--sizes=WxH,WxH]");
     process.exit(1);
   }
   const fullPage = flags.includes("--full-page");
+  const viewports = viewportsFrom(flags);
   fs.mkdirSync(outputFolder, { recursive: true });
 
   const { chromium } = loadPlaywright();
   const browser = await chromium.launch();
   let problemCount = 0;
 
-  for (const viewport of VIEWPORTS) {
+  for (const viewport of viewports) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
     const problems = collectProblems(page);
 

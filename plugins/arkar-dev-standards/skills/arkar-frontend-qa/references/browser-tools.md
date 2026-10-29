@@ -46,6 +46,8 @@ horizontal overflow.
 node "<skill folder>/scripts/screenshot.cjs" http://localhost:8000/leave-requests qa-screenshots
 ```
 
+- Custom target screens: add `--sizes=1280x800,1920x1080` (name each by its
+  width). Default is 375×812, 768×1024 and 1440×900.
 - Run it from the project folder. It uses the project's Playwright if present,
   otherwise a global one.
 - If Playwright is missing, install it outside the project's dependencies:

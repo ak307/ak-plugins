@@ -34,8 +34,8 @@ Whenever you build or change anything users see in a browser, load both:
 - `arkar-frontend-design` — every project gets its own creative, impressive
   identity (recorded in the project's `DESIGN.md`); never a basic or
   template-looking UI.
-- `arkar-frontend-qa` — the fixed quality floor: run the app, inspect it at
-  375, 768 and 1440 px wide, test interactions, fix and re-check.
+- `arkar-frontend-qa` — the quality floor: run the app, inspect it at the
+  project's target screen sizes, test interactions, fix and re-check.
 
 Never claim to have visually checked something you didn't.
 

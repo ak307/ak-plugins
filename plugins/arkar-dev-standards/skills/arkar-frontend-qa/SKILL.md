@@ -1,6 +1,6 @@
 ---
 name: arkar-frontend-qa
-description: AK's fixed quality standard for browser-based UI work — run the app in a real browser, inspect it at mobile, tablet and desktop sizes, test interactions, accessibility and states, fix and re-check, and report honestly what was verified. Use this whenever building, changing, styling or fixing anything users see in a browser — web pages, React/Vue/Inertia/Blade/Django-template screens, Livewire components, dashboards, forms, layouts, CSS or Tailwind — even a small UI tweak, and even if the user doesn't ask for testing.
+description: AK's quality floor for browser-based UI work — run the app in a real browser, inspect it at the project's target screen sizes, meet a small hard accessibility/usability floor (other checks advisory), fix and re-check, and report honestly what was verified. Use this whenever building, changing, styling or fixing anything users see in a browser — web pages, React/Vue/Inertia/Blade/Django-template screens, Livewire components, dashboards, forms, layouts, CSS or Tailwind — even a small UI tweak, and even if the user doesn't ask for testing.
 ---
 
 # Frontend quality and visual QA
@@ -22,14 +22,35 @@ Correctness, security and the code standards still apply.
 - Find how the app runs locally (README, `package.json`, `composer.json`,
   `manage.py`) and which tests/checks exist.
 
-## 2. Build to the quality floor
+## 2. Hard floor vs advisory checks
 
-`references/design-checklist.md` is the floor every project meets, whatever
-its look: layout and hierarchy, readable type sizes, contrast, component
-states, forms and validation, feedback and motion (including
-`prefers-reduced-motion`), responsive behaviour, accessibility, elevation /
-interaction / icon rules, chart choice. Scale the effort to the change: a
-colour tweak doesn't need new empty states; a new page does.
+Quality here works like Canva's design checker: a small **hard floor** that
+every project meets, and **advisory checks** that guide the work but that a
+project's design may deliberately override.
+
+**Hard floor — never traded for style:**
+
+- Body text, form labels and data are readable: at least 4.5:1 contrast
+  (3:1 for text 24px+ or 19px bold), and no text below 14px for things users
+  must read.
+- Everything works with a keyboard, and keyboard focus is always visible
+  (its style can match the design).
+- Form fields have labels; errors say what's wrong and how to fix it.
+- Motion respects `prefers-reduced-motion` (a calmer version is fine).
+- No horizontal page scroll, clipped content or overlapping text on the
+  project's target screens.
+- No console errors or failed requests.
+
+**Advisory — `references/design-checklist.md`:** layout, type, colour,
+component states, forms, feedback and motion, responsive behaviour,
+elevation / interaction / icon rules, chart choice. Follow them by default.
+The project's identity may deliberately break one (e.g. low-contrast
+decorative display type, no hover states on a touch-only kiosk, unusual
+navigation) — record it under "Deliberate deviations" in `DESIGN.md` and
+mention it in the final message.
+
+Scale the effort to the change: a colour tweak doesn't need new empty
+states; a new page does.
 
 ## 3. Run it and look at it
 
@@ -48,8 +69,11 @@ inspection.
 
 For each changed screen:
 
-- **Three viewports:** mobile **375 × 812**, tablet **768 × 1024**, desktop
-  **1440 × 900**. Take a screenshot at each and actually look at it.
+- **The project's target screens:** the sizes listed under "Target screens"
+  in `DESIGN.md` (e.g. a kiosk: 1280 × 800 landscape only; a control-room
+  board: 1920 × 1080). If none are recorded, use mobile **375 × 812**,
+  tablet **768 × 1024** and desktop **1440 × 900**. Take a screenshot at each
+  and actually look at it.
 - **Interact:** click what you changed, submit forms (valid and invalid), open
   menus and dialogs, use Tab and Escape.
 - **Console and network:** no errors or failed requests.
@@ -58,7 +82,7 @@ For each changed screen:
 
 ## 4. Fix and re-check
 
-Check each screenshot against the "Common defects" list in
+Check each screenshot against the hard floor and the "Common defects" list in
 `design-checklist.md` (and the design critique in `arkar-frontend-design`).
 Fix, re-shoot, check again — don't stop at the first screenshot. Then run the
 project's existing tests and checks (unit tests, linters, type checks, build).
@@ -68,7 +92,9 @@ project's existing tests and checks (unit tests, linters, type checks, build).
 Done only when, as far as the environment allows:
 
 - the app runs;
-- the changed screens were inspected in a browser at 375, 768 and 1440 wide;
+- the changed screens were inspected in a browser at the project's target
+  screen sizes (default 375, 768 and 1440 wide);
+- the hard floor is met;
 - the relevant interactions were tried;
 - problems found were fixed and re-checked;
 - the existing automated checks pass.

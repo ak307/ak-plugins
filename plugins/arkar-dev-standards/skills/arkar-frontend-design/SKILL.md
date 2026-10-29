@@ -58,7 +58,12 @@ Read `references/creative-process.md`, then:
   often an SVG visual made in code with the palette.
 - Every state (loading, empty, error, success, disabled) designed in the
   project's visual language and voice.
-- Each screen size composed on purpose, not squeezed.
+- Each target screen size composed on purpose, not squeezed — and the
+  target screens recorded in `DESIGN.md`, so QA checks the sizes that matter.
+- Creativity works inside the small hard floor in `arkar-frontend-qa`
+  (readable text, keyboard and visible focus, labels, reduced motion). Its
+  other checks are advisory: break one on purpose when the identity needs it,
+  and record it under "Deliberate deviations" in `DESIGN.md`.
 - Motion with the project's character: one orchestrated moment, and feedback
   that answers the user's actions.
 

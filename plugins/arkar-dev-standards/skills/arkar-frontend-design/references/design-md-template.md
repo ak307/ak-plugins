@@ -15,7 +15,10 @@ Copy this structure:
 <Direction name>: <one sentence on what the product should feel like and why,
 tied to its users and purpose>
 
-Users and setting: <who, where, which devices>
+Users and setting: <who, where>
+Target screens: <the sizes this product is really used on, e.g. "10-inch
+tablet, landscape, 1280×800, touch" or "phones 360–430 wide + desktop 1440";
+these are the sizes QA checks>
 Primary job: <the one thing the main screen makes effortless>
 Tone: <three adjectives>
 
@@ -50,6 +53,11 @@ Tone: <three adjectives>
 
 ## Voice
 <how labels, empty states and errors sound, with one example each>
+
+## Deliberate deviations from the QA checklist
+<advisory checks this identity intentionally overrides, and why — e.g.
+"display headline at 3.2:1 contrast on the photo panel (large text,
+decorative)"; "no hover states — touch-only kiosk". Never the hard floor.>
 
 ## Directions considered
 - <alternative 1>: <one line, why not chosen>

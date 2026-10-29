@@ -77,8 +77,15 @@ Separate findings into:
 
 ### 4. Run the checks
 
-Run what's available and relevant — see `references/scanners.md` for the
-commands per stack (tests, static analysis, dependency audit, secret scan).
+For any change beyond a trivial copy/CSS edit, run **all four** — commands
+per stack in `references/scanners.md`:
+
+1. **Tests** — the baseline from step 1, again after the change.
+2. **Code scan** — e.g. `bandit` / ruff `S` rules (Python), Larastan (PHP).
+3. **Dependency audit** — `pip-audit`, `composer audit`, `npm audit`.
+4. **Secret scan** — `detect-secrets` on the changed files, plus reading the
+   config/settings files for hard-coded keys.
+
 Run scanners on the changed files/project, not the whole machine. If a tool
 isn't installed or can't run (no network, no `uv`/Node), say so — don't
 pretend it ran. Treat scanner output as leads: confirm each finding in the
@@ -115,9 +122,10 @@ When AK approves proposals, apply only those, run the baseline tests and the
 relevant scanners again, and report.
 
 Keep `SECURITY.md` at the project root (template:
-`references/security-md-template.md`) for decisions that should outlast the
-session: proposals skipped, deferred or awaiting a decision, and accepted
-risks. Don't log routine passes there.
+`references/security-md-template.md`). **Whenever you make proposals, add them
+to its "Open — awaiting decision" section in the same turn** (create the file
+if needed), so they survive if the session ends; move them to "Skipped",
+"Fixed" or "Accepted risks" when AK decides. Don't log routine passes there.
 
 ## Specific situations
 

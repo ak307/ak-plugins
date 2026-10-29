@@ -42,7 +42,9 @@ Which situation are you in?
   or the user says it looks bad/boring/ugly/outdated: that's a licence to
   **redesign the visual layer** of the screens you touch — new tokens, type,
   layout and components — while keeping the content, behaviour, URLs and data
-  the same. Mention in the final message that you redesigned the look.
+  the same. A redesign gets the full design process below, including a
+  signature element; tidying the old layout is not enough. Mention in the
+  final message that you redesigned the look.
 - **New app or screen:** design from scratch with the process below.
 
 For new and redesigned screens, before writing UI code, read
@@ -59,9 +61,19 @@ For new and redesigned screens, before writing UI code, read
 5. **Check the plan against the generic defaults** listed in that file and
    revise anything that would look the same in any other app.
 
-**CBM apps:** primary brand colour `#AE1A28` for primary actions, focus and
-key highlights. Build the rest of the palette around it on purpose; check
-contrast of text on it.
+**Brand colour:** AK's work apps are CBM apps — anything for "our" company,
+team, staff, buildings, sites, tenants or visitors, or that mentions CBM.
+They use `#AE1A28` as the primary colour for primary actions, focus and key
+highlights, with the rest of the palette built around it on purpose. Use a
+different primary only when the app already has another brand, or AK says
+it's a personal/non-CBM project. Keep status colours (danger, warning,
+success) visibly different from the brand red — e.g. a deeper red-orange or
+an icon plus label for "overdue" — so brand and danger don't look identical.
+
+**Fonts:** bundle them with the app — `@fontsource/<family>` from npm, or
+`.woff2` files in the project's static/public folder — instead of linking
+Google Fonts. Internal apps often run on networks without internet access,
+where linked fonts silently fall back. Always give a sensible fallback stack.
 
 `references/design-checklist.md` is the quality floor (layout, typography,
 colour, component states, forms, motion, responsive rules, accessibility,

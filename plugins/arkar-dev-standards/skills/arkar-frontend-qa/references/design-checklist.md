@@ -13,7 +13,9 @@ users (see SKILL.md, "Design direction").
 6. Feedback and motion
 7. Responsive behaviour
 8. Accessibility
-9. Common defects to look for in screenshots
+9. Elevation, interaction and icon rules
+10. Charts — pick by question
+11. Common defects to look for in screenshots
 
 ## 1. Layout and hierarchy
 
@@ -99,7 +101,41 @@ Design each size on purpose — a phone layout is not the desktop layout squeeze
 - Icon-only buttons have an accessible name (`aria-label`).
 - Error messages are linked to their fields (`aria-describedby`).
 
-## 9. Common defects to look for in screenshots
+## 9. Elevation, interaction and icon rules
+
+- **Elevation scale:** define 2–3 levels (flat, raised, overlay) as tokens and
+  use only those — no random shadow values. Higher level = more important or
+  temporary (menus, dialogs).
+- **One primary action per screen;** other actions use secondary/ghost styles.
+- **Weights:** headings 600–700, body 400, labels 500. Numbers in tables and
+  stats use tabular figures (`font-variant-numeric: tabular-nums`).
+- **Clickable things look clickable:** `cursor: pointer`, a hover state
+  (150–250 ms), a visible focus ring, and a pressed state that doesn't move
+  the layout. Hover lift, if used, ≤ 2px.
+- **Disabled:** reduced opacity (≈0.4–0.5) plus `cursor: not-allowed`, and the
+  reason shown where possible.
+- **Icons:** one icon family; one consistent stroke width (1.5 or 2px); don't
+  mix filled and outline at the same level; never emoji as UI icons;
+  meaningful icons have 3:1 contrast and an accessible name.
+- **Colour tokens:** components use semantic tokens (`--color-primary`,
+  `--color-surface`, `--color-danger`), never raw hex; avoid grey text on grey
+  backgrounds.
+
+## 10. Charts — pick by question
+
+| Question | Chart | Not when |
+|---|---|---|
+| How did it change over time? | line (area if one series) | fewer than ~4 points → show a stat with change instead |
+| How do categories compare? | horizontal bar, sorted | more than ~12 categories → top 10 + "others" |
+| What share of the whole? | stacked bar or a single progress bar | more than 4 parts → bar chart; avoid pies with many slices |
+| How far toward a target? | progress bar / ring with the number | no target exists |
+| Where are the hotspots? | heatmap (e.g. day × hour) | sparse data |
+| What's the status of many things? | grid of status tiles | fewer than ~6 items → a list |
+
+Always label the axis or value directly, use the palette's semantic colours,
+and give a text alternative (the key number in words).
+
+## 11. Common defects to look for in screenshots
 
 - Horizontal scrollbar or content cut off at the right edge on mobile.
 - Text overlapping, truncated without an ellipsis or tooltip, or wrapping one
@@ -112,3 +148,5 @@ Design each size on purpose — a phone layout is not the desktop layout squeeze
 - Sticky headers covering content or anchor targets.
 - Focus ring missing, or removed with `outline: none`.
 - Console errors, 404s for assets, failed API calls.
+- Emoji used as icons; mixed icon styles; random shadows; clickable cards
+  without a pointer cursor or hover state.

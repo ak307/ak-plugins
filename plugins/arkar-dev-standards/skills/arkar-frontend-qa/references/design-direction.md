@@ -12,8 +12,9 @@ needs a visual overhaul.
 3. Check the plan against the generic defaults
 4. Patterns that lift internal business apps
 5. Spend boldness in one place
-6. Critique the screenshots for blandness
-7. Example plans
+6. Critique the screenshots, then refine
+7. Style menu — match the style to the product
+8. Example plans
 
 ## 1. Ground the design in the subject
 
@@ -128,7 +129,25 @@ elements — make what's there more cohesive: tighten spacing to the scale,
 align edges, unify radii and icon sizes, balance weights, remove one
 decoration that doesn't serve the job.
 
-## 7. Example plans
+## 7. Style menu — match the style to the product
+
+Pick one base style that suits the product, then make it specific with the
+subject's vocabulary and the brand colour. Every effect (shadows, blur,
+radius, borders) must belong to the chosen style — don't mix them.
+
+| Style | Best for | Avoid for | Key traits |
+|---|---|---|---|
+| **Swiss / precise** | finance, reports, admin data screens | consumer marketing | strong grid, tabular numbers, few colours, hairline dividers, small radius (4px), almost no shadow |
+| **Signage / industrial** | car parks, facilities, logistics, security | soft consumer brands | bold condensed numerals, high-contrast colour codes, thick rules, plates/badges that echo physical signs |
+| **Calm workspace** | HR, forms, internal tools used all day | marketing pages | warm neutrals, generous spacing, soft 1-level elevation, medium radius (8–12px), quiet colour, one accent |
+| **Dark operations** | monitoring, control rooms, live dashboards | forms-heavy screens, reading | dark slate surfaces, status colours that glow against dark, dense layout, tabular figures |
+| **Bold editorial** | landing pages, announcements, onboarding | dense data tables | large type as a visual element, asymmetric layout, big imagery, one strong colour field |
+| **Friendly touch** | kiosks, field apps, staff on phones | dense desktop data | large touch targets (≥48px), rounded shapes (16px+), big icons, step-by-step flows, high contrast |
+
+Glassmorphism, neumorphism and heavy gradients: only when the brief asks —
+they hurt contrast and readability in business apps.
+
+## 8. Example plans
 
 These show the level of specificity expected. Don't copy them — derive your
 own from the subject in front of you.

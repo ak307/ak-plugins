@@ -65,7 +65,8 @@ contrast of text on it.
 
 `references/design-checklist.md` is the quality floor (layout, typography,
 colour, component states, forms, motion, responsive rules, accessibility,
-and the defects to look for in screenshots). Skim its "Common defects" list
+elevation/interaction/icon rules, chart choice, and the defects to look for
+in screenshots). Skim its "Common defects" list
 before every inspection.
 
 ## 3. Build it

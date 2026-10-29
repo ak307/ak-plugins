@@ -22,9 +22,17 @@ more than any general best practice.
 ## 2. New projects and new modules: use the standard template
 
 When creating a new project, or adding a new module/layer to one, load the
-`project-structure` skill and use its template for that stack (FastAPI, etc.).
-Do not invent a new layout. If the template genuinely does not fit, explain why
-in one or two sentences before deviating.
+`arkar-project-structure` skill and use its template for that stack (FastAPI,
+Django, Django agentic, Laravel, Flutter). Do not invent a new layout. If the
+template genuinely does not fit, explain why in one or two sentences before
+deviating.
+
+## 2b. Browser-based UI work: design and check it in a real browser
+
+Whenever you build or change anything users see in a browser, load the
+`arkar-frontend-qa` skill and follow it: polished responsive design, run the
+app, inspect it at 375, 768 and 1440 px wide, fix and re-check. Never claim
+to have visually checked something you didn't.
 
 ## 3. Readability baseline: intermediate level
 

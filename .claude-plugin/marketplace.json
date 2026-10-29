@@ -6,9 +6,9 @@
   "description": "AK's private Claude Code plugins",
   "plugins": [
     {
-      "name": "dev-standards",
-      "source": "./plugins/dev-standards",
-      "description": "AK's always-on coding rules and standard project templates"
+      "name": "arkar-dev-standards",
+      "source": "./plugins/arkar-dev-standards",
+      "description": "AK's always-on coding rules, standard project templates and frontend visual QA"
     }
   ]
 }

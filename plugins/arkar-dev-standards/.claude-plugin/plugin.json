@@ -1,0 +1,8 @@
+{
+  "name": "arkar-dev-standards",
+  "version": "1.2.0",
+  "description": "AK's always-on coding rules, standard project templates and frontend visual QA",
+  "author": {
+    "name": "AK"
+  }
+}

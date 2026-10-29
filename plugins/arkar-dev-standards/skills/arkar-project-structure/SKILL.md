@@ -1,5 +1,5 @@
 ---
-name: project-structure
+name: arkar-project-structure
 description: AK's standard project templates — folder layout, entry point, file and class naming — so every project on the same stack looks the same. Covers FastAPI, Django, Django + LangChain/LangGraph agents, Laravel and Flutter. Use this whenever creating a new project or app, scaffolding or bootstrapping code, adding a new module, resource, endpoint, router, service, model or layer, or deciding where a new file should go or what to name it — even if the user doesn't mention structure or conventions. Also use when asked to review, standardise or restructure a project's layout.
 ---
 

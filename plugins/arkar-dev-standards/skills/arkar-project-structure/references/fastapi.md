@@ -323,22 +323,54 @@ def health_check():
 
 ### tests/conftest.py
 
+Tests never touch the database in `.env` — it may be production. They use a
+local test database from `TEST_DATABASE_URL`, refuse to start otherwise, and
+roll back every test's changes.
+
 ```python
+import os
+from urllib.parse import urlparse
+
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
+from app.core.database import Base, get_db
 from app.main import app
+
+LOCAL_HOSTS = {"127.0.0.1", "localhost", "mysql", "db"}
+TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL", "mysql+pymysql://root@127.0.0.1:3306/project_test")
+
+if urlparse(TEST_DATABASE_URL).hostname not in LOCAL_HOSTS or "test" not in TEST_DATABASE_URL:
+    raise RuntimeError("Tests must use a local test database (TEST_DATABASE_URL).")
+
+test_engine = create_engine(TEST_DATABASE_URL)
+Base.metadata.create_all(test_engine)
 
 
 @pytest.fixture
-def client():
+def db():
+    # Each test runs inside a transaction that is rolled back afterwards.
+    with test_engine.connect() as connection:
+        transaction = connection.begin()
+        session = Session(bind=connection, join_transaction_mode="create_savepoint")
+        yield session
+        session.close()
+        transaction.rollback()
+
+
+@pytest.fixture
+def client(db):
+    app.dependency_overrides[get_db] = lambda: db
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
 ```
 
-Tests that need a database override `get_db` with a session on a throwaway
-MySQL test database (not SQLite — it behaves differently).
+Use a local MySQL test database, not SQLite — it behaves differently. Code
+that uses `SessionLocal` directly instead of the `DbSession` dependency would
+bypass this override, so services always take the session as an argument.
 
 ## 3. Sync vs async — the one rule juniors get wrong
 
@@ -377,7 +409,7 @@ aren't create/update/delete: `POST /leave-requests/{id}/approve`.
 ## 5. Adding a new resource — checklist
 
 1. `app/models/thing.py` — table class; import it in `app/models/__init__.py`.
-2. `uv run alembic revision --autogenerate -m "add things table"`, then review the file.
+2. `uv run alembic revision --autogenerate -m "add things table"`, then review the file (drops, renames and type changes are 🟠). Apply it only to a local database; production is AK's job, after a backup.
 3. `app/schemas/thing.py` — `ThingCreate`, `ThingUpdate`, `ThingResponse`.
 4. `app/services/thing_service.py` — the logic and queries.
 5. `app/routers/things.py` — endpoints calling the service.

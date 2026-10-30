@@ -62,9 +62,10 @@ about. Follow the steps below with these additions, and read
   every place its status is shown, and the same root cause anywhere else. Be
   deliberate: wide enough to catch what AK can't see, but not so wide it
   wastes time. Always say what you covered and what you didn't.
-- **Test safely.** Use the test database, fixtures and a local app only. Check
-  where the configuration points before running anything, and never touch
-  production data, send real messages or make payments.
+- **Test safely.** Follow Rule 0 (always-on section 0): use the test
+  database, fixtures and a local app only, check where the configuration
+  points before running anything, and never touch production data, send real
+  messages or make payments.
 - **Report in the format in guide section 7.** Always include the lines
   "Workflow reviewed: …" and "Not reviewed: …", and write each label in full
   (e.g. "🐞 RELATED BUG (confirmed)"), never just the emoji.
@@ -78,16 +79,25 @@ one CSS glitch), the review is a quick check of the same pattern nearby.
 
 ## Steps
 
-Scale the effort to the change. A copy, config value or CSS-only edit: a
-quick look, no proposal round. Anything that adds or changes logic: every
-step.
+Scale the effort to the change. A copy or CSS-only edit: a quick look, no
+proposal round. Anything that adds or changes logic: every step.
+Configuration is never "just a value" when it affects the environment,
+database, auth, CORS, cookies, mail or external endpoints: show the diff and
+say what it affects. Never edit `.env` itself — propose the change.
+
+**Production safety (Rule 0 in the always-on rules) comes before every step.**
+Before step 2 runs anything, check where tests and the app will point. If
+it's production, shared or unclear, don't run them: write the code, say what
+you couldn't run, and propose a local test database.
 
 ### 1. Understand the bigger picture
 
 - Read the project's `ARCHITECTURE.md` (create it in step 7 if missing),
   `SECURITY.md` and `CLAUDE.md` if present.
-- Read the code the feature will touch, its callers, the data it reads and
-  writes, and the routes/jobs that expose it.
+- Read the code the feature will touch, its callers, the models and data
+  flow it reads and writes, and the routes/jobs that expose it. Don't query
+  live data rows to understand it; if you need sample data, use factories on
+  a local database or ask AK.
 - Ask: which existing concept does this feature belong to? Is there already a
   place where this kind of logic lives? Would this be a second or third copy
   of something? Does the layout follow `arkar-project-structure` for this
@@ -95,11 +105,23 @@ step.
 
 ### 2. Protect existing behaviour (baseline)
 
-Run the existing tests that cover the affected area **before changing
+First confirm the tests run against a local or test database (Rule 0):
+Laravel `phpunit.xml` / `.env.testing` overrides, Django `DATABASES`/`TEST`,
+FastAPI `conftest.py` overrides. Tests that reset or truncate tables
+(`RefreshDatabase`, `DatabaseTruncation`, fixtures that `DELETE`) wipe
+whatever database they reach. If they would reach production, don't run them:
+propose isolating them (🟢 — test setup only) and continue without a
+baseline, saying so.
+
+Then run the existing tests that cover the affected area **before changing
 anything**; note any that already fail. If the code you'll touch — or propose
 to clean — has no tests, write **characterisation tests** that pin down
-today's behaviour (valid inputs → same results, same response shape, same side
-effects, same errors). These tests are the safety net for everything after.
+today's behaviour (valid inputs → same results, same response shape, same
+errors). Every outside effect is faked and asserted on the fake —
+`Mail::fake()`, `Queue::fake()`, `Notification::fake()`, `Http::fake()`,
+`Storage::fake()`, Django `locmem` email, mocked HTTP clients — so no test
+really sends, charges, uploads or calls out. These tests are the safety net
+for everything after.
 
 ### 3. Propose — one approval list, then wait
 
@@ -147,7 +169,10 @@ Reply e.g. "approve 1 and 2" or "skip all". Skipped items stay untouched; I'll s
 ```
 
 If no one can answer (an unattended run), don't apply any proposals: build
-the feature in new code (step 5) and leave the proposals open.
+the feature in new code (step 5) and leave the proposals open. Anything that
+would need AK's answer about the environment is a **no**: don't run tests,
+migrations, servers or scripts unless Rule 0 confirms a local target; list
+what you didn't run.
 
 ### 4. Apply only the approved items
 
@@ -175,7 +200,9 @@ Run, per stack (`references/scanners.md`):
 1. **Tests** — the baseline again plus the new tests; all must pass.
 2. **Code scan** — e.g. bandit / ruff `S` (Python), Larastan (PHP).
 3. **Dependency audit** — pip-audit, composer audit, npm audit.
-4. **Secret scan** — detect-secrets on the changed files, plus reading config.
+4. **Secret scan** — detect-secrets on the changed files, plus checking that
+   config is read from the environment. Never print secret values; report
+   only where a secret is and mask it (`sk-…a1b2`).
 
 If a tool can't run, say so. Confirm scanner findings in the code before
 reporting them.
@@ -216,6 +243,16 @@ materially — then say why you're raising it again.
 - **No way to test the code** (no test setup, heavy external dependencies):
   limit cleanup proposals to mechanical, low-risk refactors (rename, extract
   method) and say that coverage is missing.
+- **Migrations:** write the migration file; apply it only to a database
+  Rule 0 confirms is local. Show its SQL (`sqlmigrate`, `alembic upgrade
+  --sql`, `artisan migrate --pretend`) and label drops, renames, type changes,
+  NOT NULL without a default, and changes to big tables 🟠. Review autogenerated
+  migrations for operations you didn't intend (e.g. dropping tables the models
+  don't cover). Applying to shared or production databases is AK's job, after
+  a backup.
+- **Bad data:** fix the code, not the data. If live data needs repairing, give
+  AK a reviewed script — a `SELECT` that shows the affected rows, then the
+  change inside a transaction — for him to run after a backup.
 - **Dependencies:** never upgrade silently. Patch/minor with a CVE fix is
   usually 🟢; major is 🟠.
 - **Secrets in code:** propose moving them to `.env` (🟢) and say they should

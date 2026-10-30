@@ -355,6 +355,44 @@ Django-Q2 tasks: plain functions that call services, queued with
 Pass IDs, not model instances. The worker runs as its own process
 (`uv run python manage.py qcluster`).
 
+### Tests never touch the app's database
+
+Django's test runner creates `test_<NAME>` on the server in `DATABASES`,
+which comes from `.env` — possibly production. Tests use their own settings
+pointing at a local database, and `conftest.py` refuses anything else:
+
+```python
+# config/settings_test.py
+from config.settings import *  # noqa: F403
+
+DATABASES["default"].update(  # noqa: F405
+    HOST=env("TEST_DB_HOST", default="127.0.0.1"),  # noqa: F405
+    NAME=env("TEST_DB_NAME", default="project_test"),  # noqa: F405
+    USER=env("TEST_DB_USER", default="root"),  # noqa: F405
+    PASSWORD=env("TEST_DB_PASSWORD", default=""),  # noqa: F405
+)
+EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+```
+
+```toml
+# pyproject.toml
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings_test"
+```
+
+```python
+# conftest.py
+from django.conf import settings
+
+LOCAL_HOSTS = {"127.0.0.1", "localhost", "mysql", "db"}
+
+
+def pytest_configure(config):
+    database = settings.DATABASES["default"]
+    if database["HOST"] not in LOCAL_HOSTS or "test" not in database["NAME"]:
+        raise RuntimeError("Tests must use a local test database (config/settings_test.py).")
+```
+
 ## 4. Naming rules
 
 | Thing | Rule | Example |
@@ -402,5 +440,5 @@ Pass IDs, not model instances. The worker runs as its own process
 | Background jobs | Django-Q2 in `tasks.py` | Project already uses Celery; Django's built-in `django.tasks` once it has a mature production worker |
 | Static files | WhiteNoise | Behind nginx that serves `/static/` itself |
 | Admin theme | `django-unfold` for internal tools | Plain admin is enough |
-| Tests | `pytest` + `pytest-django` + `factory_boy`; MySQL user needs CREATE rights for the test DB | Never |
+| Tests | `pytest` + `pytest-django` + `factory_boy`, against a **local** test database (see "Tests never touch the app's database"); the production DB user has data access to its own schema only — never CREATE/DROP | Never |
 | Folders beyond the template | none | `adapters/` for file formats or external systems an app talks to (`xlsx_reader.py`, `outlook_client.py`). Add inside the app and mention it. |

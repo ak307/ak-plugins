@@ -15,7 +15,7 @@ report and continue with the others.
 7. Multi-language (when available)
 8. Reading the results
 
-## 1. Tests (always)
+## 1. Tests (always — after Rule 0 confirms they point at a local or test database)
 
 | Stack | Command |
 |---|---|
@@ -38,8 +38,9 @@ uvx pip-audit                             # in the project env; or: uvx pip-audi
 
 - With `pyproject.toml` + `uv.lock`: `uv export --format requirements-txt > /tmp/req.txt` then
   `uvx pip-audit -r /tmp/req.txt`.
-- Django: `uv run python manage.py check --deploy` (run with production-like
-  settings/env) lists missing security settings.
+- Django: `DJANGO_DEBUG=false uv run python manage.py check --deploy` lists
+  missing security settings. Use placeholder secrets — never load the real
+  production `.env` for it.
 
 ## 3. Laravel / PHP
 

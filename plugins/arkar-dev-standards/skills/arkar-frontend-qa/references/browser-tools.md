@@ -17,7 +17,8 @@ set to "Enabled by default" in `/chrome`, and the Chrome extension is
 connected.
 
 - Open a new tab for the app; don't reuse the user's tabs.
-- Screenshots and clicks work on the real page with the user's sign-ins.
+- Screenshots and clicks work on the real page with the user's sign-ins — so
+  only open `localhost` / `127.0.0.1` URLs, never a production or staging site.
 - Read the console with the console tool (filter with a pattern to keep it short).
 - **Viewport sizes:** use the window-resize tool if it is offered. If exact
   sizes can't be set, use it for interaction testing and use the screenshot
@@ -67,7 +68,7 @@ done.
 
 | Stack | Start | Usual URL |
 |---|---|---|
-| Laravel + Inertia | `composer run dev` (or `php artisan serve` + `npm run dev`) | http://127.0.0.1:8000 |
+| Laravel + Inertia | `php artisan serve` + `npm run dev` (not `composer run dev`: it also starts a queue worker) | http://127.0.0.1:8000 |
 | Django | `uv run python manage.py runserver` | http://127.0.0.1:8000 |
 | Django agentic (ASGI) | `uv run uvicorn config.asgi:application --reload` | http://127.0.0.1:8000 |
 | FastAPI with a frontend | `uv run fastapi dev` | http://127.0.0.1:8000 |
@@ -75,9 +76,14 @@ done.
 | Flutter web | `flutter run -d web-server --web-port 8080` | http://localhost:8080 |
 | Static HTML | `python -m http.server 8080` | http://localhost:8080 |
 
+Only after Rule 0 confirms the app points at local or test data. Never start
+queue workers (`queue:work`, `queue:listen`, `qcluster`, Celery), schedulers
+or `composer run dev` for QA — on a shared queue they take live jobs.
+
 If the app needs a database or service that isn't running, try the project's
-own way of starting it (Docker Compose, SQLite for local, seeders). If it
-still can't run, say so in the final message.
+own way of starting it locally (Docker Compose, SQLite for local). Run seeders
+only against a database you've confirmed is local. If it still can't run,
+say so in the final message.
 
 ## 5. When nothing works
 

@@ -5,6 +5,9 @@
 // Usage (run from the project folder so its own Playwright is found first):
 //   node <path-to>/screenshot.cjs <url> [output-folder] [--full-page] [--sizes=1280x800,1920x1080]
 //
+// Only local URLs (localhost, 127.0.0.1) are allowed: QA never runs against a
+// production or staging site. --allow-remote overrides this when AK asks.
+//
 // Without --sizes it uses mobile 375x812, tablet 768x1024 and desktop 1440x900.
 //
 // Needs Playwright with Chromium. If missing:
@@ -51,6 +54,16 @@ function viewportsFrom(flags) {
     .filter((viewport) => viewport.width > 0 && viewport.height > 0);
 }
 
+function isLocalUrl(url) {
+  const host = new URL(url).hostname;
+  return host === "localhost" || host === "::1" || host === "[::1]" || host.startsWith("127.") || host.endsWith(".localhost") || host.endsWith(".test");
+}
+
+// Query strings can carry tokens; keep them out of the log.
+function withoutQuery(url) {
+  return url.split("?")[0];
+}
+
 function pageSlug(url) {
   const urlPath = new URL(url).pathname.replace(/\/+$/, "");
   return urlPath === "" ? "home" : urlPath.slice(1).replace(/[^a-zA-Z0-9]+/g, "-");
@@ -62,9 +75,9 @@ function collectProblems(page) {
     if (message.type() === "error") problems.push(`console error: ${message.text()}`);
   });
   page.on("pageerror", (error) => problems.push(`page error: ${error.message}`));
-  page.on("requestfailed", (request) => problems.push(`request failed: ${request.url()}`));
+  page.on("requestfailed", (request) => problems.push(`request failed: ${withoutQuery(request.url())}`));
   page.on("response", (response) => {
-    if (response.status() >= 400) problems.push(`HTTP ${response.status()}: ${response.url()}`);
+    if (response.status() >= 400) problems.push(`HTTP ${response.status()}: ${withoutQuery(response.url())}`);
   });
   return problems;
 }
@@ -73,6 +86,10 @@ async function main() {
   const [url, outputFolder = "screenshots", ...flags] = process.argv.slice(2);
   if (!url) {
     console.error("Usage: node screenshot.cjs <url> [output-folder] [--full-page] [--sizes=WxH,WxH]");
+    process.exit(1);
+  }
+  if (!isLocalUrl(url) && !flags.includes("--allow-remote")) {
+    console.error(`Refusing ${withoutQuery(url)}: QA screenshots are taken of a local app only (localhost / 127.0.0.1).`);
     process.exit(1);
   }
   const fullPage = flags.includes("--full-page");

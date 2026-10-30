@@ -231,7 +231,7 @@ to `#AE1A28` — `fromSeed` alone shifts the colour.
 | State management | `flutter_riverpod` 3, hand-written `Notifier`/`AsyncNotifier` (no `@riverpod` codegen — fewer generated files for juniors) | Project already uses something else |
 | Models | `freezed` + `json_serializable` | Never hand-write `fromJson` in new code |
 | Navigation | `go_router` | Only with senior approval |
-| HTTP | `dio` with one `ApiClient` | Firebase-only app → repositories wrap Firestore instead |
+| HTTP | `dio` with one `ApiClient` | Firebase-only app → repositories wrap Firestore instead; development and tests use the Firebase Emulator Suite or a separate dev project, never the production project |
 | Secrets / tokens | `flutter_secure_storage` | Never `shared_preferences` |
 | Preferences | `SharedPreferencesAsync` via a service | Larger offline data → add a local DB |
 | Config | `--dart-define-from-file=env/<env>.json` read in `app_config.dart` | Never hard-code base URLs |

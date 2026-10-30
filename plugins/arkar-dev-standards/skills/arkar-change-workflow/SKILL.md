@@ -21,6 +21,7 @@ with one approval list. Follow the steps in order.
 | **New code you write for the requested feature** — including the edits to existing code that the feature itself needs | None — write it clean and secure from the start. |
 | **The fix for the bug AK reported** — the smallest change that fixes the root cause | None — that's what he asked for. |
 | **Any other change to existing code** — cleanup/refactoring, or a security fix — even when it's safe | **Propose and wait for AK's OK.** Never apply it silently. |
+| **The project's notes files** — creating or updating `ARCHITECTURE.md` (open proposals, known bugs, known debt) and `SECURITY.md` (open items) | None — they are notes, not code. Write them in the same turn as the proposals, creating them from the templates if the project has none. |
 | **Proposals AK skips, ignores or declines** — or when no one is there to answer | **Don't touch that code.** Record it (step 7). |
 
 Label every proposal:

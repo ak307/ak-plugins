@@ -8,9 +8,25 @@ updated automatically when this repo changes.
 **`arkar-dev-standards`** plugin (everything AK created is prefixed `arkar-`):
 
 - **Always-on coding rules** (`plugins/arkar-dev-standards/hooks/coding-rules.md`) —
-  loaded into every Claude Code session at startup by a SessionStart hook:
-  follow an existing project's layout, readable intermediate-level code,
-  naming, comments, and a self-check before finishing.
+  loaded into every Claude Code session at startup by a SessionStart hook.
+  Section 0 is **production safety** (check where tests, migrations, scripts
+  and the app will point before running them; never run destructive database
+  commands, apply migrations to shared databases, fix live data, edit `.env`
+  or print secrets). Then: follow an existing project's layout, readable
+  intermediate-level code, naming, comments, and a self-check before finishing.
+  The first line shows the plugin version, so an old copy is easy to spot.
+- **Production guard** (`hooks/production_guard.py`, run through
+  `production_guard.sh` before every Bash, Read and MCP tool call). Always
+  blocks wipe/rollback migrations, `DROP`/`TRUNCATE`, `DELETE`/`UPDATE`
+  without `WHERE` sent to a database client, `--force` migrations, force
+  push, `reset --hard`, `git clean -f`, recursive deletes of `/`, `~` or the
+  project, and printing a whole `.env`. Asks AK first before tests,
+  migrations, seeders, shells, servers, workers and database clients when
+  the project's `.env` looks like production (`APP_ENV=production`, a
+  non-local database host including LAN IPs, or `prod`/`live` in the database
+  name). Needs Python 3 on the computer; without it, the guard asks before
+  anything database-related instead of letting it through. Its tests:
+  `uvx pytest tests -q`.
 - **`arkar-project-structure` skill** — standard project templates, used whenever
   Claude creates a project, adds a module, or decides where a file goes.
   Templates in `plugins/arkar-dev-standards/skills/arkar-project-structure/references/`:
@@ -90,6 +106,7 @@ and a row for it in the table in that skill's `SKILL.md`.
 
 ```bash
 claude plugin validate .
+uvx pytest tests -q        # production guard: 200+ cases
 ```
 
 Tests for the `arkar-project-structure` skill are in

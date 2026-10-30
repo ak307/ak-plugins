@@ -54,8 +54,26 @@ states; a new page does.
 
 ## 3. Run it and look at it
 
-Start the app (dev server in the background) and open the changed screens in
-a real browser. Use the first that is available:
+**First, check what the app will talk to (Rule 0, production safety).** A
+running app reads `.env`: if its database, queue, mail or storage point at
+production, every click and form submit changes live data and sends real
+messages. So:
+
+- **Local or test data only** (database local or in-memory, mail/SMS on
+  `log`/`array`/`locmem`, queue `sync`): run it and interact fully.
+- **Production, shared or unclear:** don't start the app against it. Say so,
+  and propose a local setup (a `.env.testing`-style local database, SQLite,
+  docker-compose). Until then, check what you can without running it —
+  build, tests that don't touch the database, reading the markup and CSS —
+  and state clearly that the UI wasn't inspected.
+- Never run seeders or create users except in a database you've confirmed is
+  local. Never start queue workers or schedulers for QA.
+- Browse only `localhost` / `127.0.0.1`. Never open a production or staging
+  domain with the browser tools — Claude in Chrome is AK's real browser,
+  signed in as him.
+
+Then start the app (dev server in the background) and open the changed
+screens in a real browser. Use the first that is available:
 
 1. **Claude in Chrome** (`mcp__claude-in-chrome__*` tools) — AK's own Chrome.
 2. **Playwright MCP** (`mcp__playwright__*` tools), if configured.
@@ -77,8 +95,12 @@ For each changed screen:
 - **Interact:** click what you changed, submit forms (valid and invalid), open
   menus and dialogs, use Tab and Escape.
 - **Console and network:** no errors or failed requests.
-- Behind a login: use test credentials from seed data or `.env.example`, or
-  create a local test user the way the project does.
+- Behind a login: use test credentials from local seed data or
+  `.env.example`, or create a test user the way the project does — only in a
+  local database.
+- Screenshots are of local test data. If real personal data (NRIC, salary,
+  medical details) appears, stop: you're not on test data. Delete
+  `qa-screenshots/` when you're done.
 
 ## 4. Fix and re-check
 

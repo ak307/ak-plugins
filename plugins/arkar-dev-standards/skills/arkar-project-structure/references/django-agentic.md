@@ -311,7 +311,8 @@ async def get_store() -> AsyncPostgresStore:
 ```
 
 Create the tables once from a management command
-(`setup_agent_storage`) that calls `setup()` on both.
+(`setup_agent_storage`) that calls `setup()` on both. Claude runs it only
+against a local database; on shared or production databases AK runs it.
 
 ### apps/conversations — the Django side
 

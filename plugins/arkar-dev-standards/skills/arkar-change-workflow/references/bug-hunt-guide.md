@@ -90,6 +90,8 @@ Once you know the root cause, search for the same pattern:
 
 ## 5. Safe testing
 
+Rule 0 (production safety, in the always-on rules) applies first.
+
 - **Never touch production.** Before running anything that connects to a
   database, queue, mail or payment service, check the configuration (`.env`,
   settings) to see where it points. If it points at production or a shared

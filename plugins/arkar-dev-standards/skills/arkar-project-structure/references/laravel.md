@@ -13,6 +13,12 @@ laravel new project-name
 # choose: React starter kit, Pest, MySQL, Laravel Boost: yes
 ```
 
+Laravel Boost gives Claude a Tinker tool (runs any PHP) and database tools
+that use the app's `.env`. Use it only while `.env` points at a local
+database. In a project connected to production, remove the Boost MCP server
+from the project's MCP config (or disable its Tinker and database tools) —
+the production guard also asks before those tools run.
+
 ## Contents
 1. Folder tree
 2. What goes where (with skeletons)
@@ -251,9 +257,52 @@ unversioned; an API used by mobile apps or other teams goes under
 6. `php artisan make:controller LeaveRequestController --resource`.
 7. Routes in `routes/web.php` (and `api.php` for JSON).
 8. Pages in `resources/js/pages/leave-requests/`, type in `resources/js/types/`, Wayfinder imports for links/forms.
-9. Pest feature tests in `tests/Feature/LeaveRequests/`.
+9. Pest feature tests in `tests/Feature/LeaveRequests/` (they run on the
+   test database below, never the `.env` one).
 10. New config → `config/*.php` reading `env()`, and `.env.example`.
 11. `composer ci:check` passes (Pint, Larastan, frontend checks, tests).
+
+## Tests never touch the app's database
+
+`RefreshDatabase` and `DatabaseTruncation` empty every table in the database
+the tests connect to. Unless `phpunit.xml` (or `.env.testing`) overrides it,
+that is the database in `.env` — which may be production. Every project
+sets the test database explicitly and guards it:
+
+```xml
+<!-- phpunit.xml, inside <php> -->
+<env name="APP_ENV" value="testing"/>
+<env name="DB_CONNECTION" value="sqlite"/>
+<env name="DB_DATABASE" value=":memory:"/>
+<env name="MAIL_MAILER" value="array"/>
+<env name="QUEUE_CONNECTION" value="sync"/>
+```
+
+(For MySQL-specific behaviour, use a local test database instead:
+`DB_HOST=127.0.0.1`, `DB_DATABASE=<project>_test`.)
+
+```php
+// tests/TestCase.php — refuse to run against anything but a local test database.
+// The check runs in setUpTraits(), before RefreshDatabase touches anything.
+protected function setUpTraits()
+{
+    $this->ensureLocalTestDatabase();
+
+    return parent::setUpTraits();
+}
+
+private function ensureLocalTestDatabase(): void
+{
+    $database = config('database.connections.'.config('database.default'));
+    $isMemory = ($database['database'] ?? '') === ':memory:';
+    $isLocalTestDatabase = in_array($database['host'] ?? '', ['127.0.0.1', 'localhost', 'mysql'], true)
+        && str_contains($database['database'] ?? '', 'test');
+
+    if (! $isMemory && ! $isLocalTestDatabase) {
+        throw new RuntimeException('Tests must use a local test database. Check phpunit.xml.');
+    }
+}
+```
 
 ## 5. Defaults and when to change them
 
@@ -269,5 +318,5 @@ unversioned; an API used by mobile apps or other teams goes under
 | Tests | Pest | Project already uses PHPUnit classes |
 | Code quality | Pint + Larastan + the kit's frontend check, all via `composer ci:check` | Never |
 | AI tooling | Laravel Boost installed | — |
-| Queues | database driver | Redis available and volume needs it |
+| Queues | database driver (never run a worker on a laptop against a shared database — it takes live jobs) | Redis available and volume needs it |
 | Blade | emails and PDFs only | Never for app pages in an Inertia project |

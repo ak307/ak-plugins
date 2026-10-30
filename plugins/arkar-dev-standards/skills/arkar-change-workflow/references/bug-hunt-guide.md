@@ -97,6 +97,8 @@ Rule 0 (production safety, in the always-on rules) applies first.
 AK connects projects to production so bugs can be investigated against real
 records. Read them only with `scripts/readonly_query.py` (run it from the
 project folder; `uv run --with pymysql --with "psycopg[binary]" python …`).
+It works with MySQL, PostgreSQL and SQLite and finds the connection in `.env`
+itself (Laravel `DB_*`, Django `DB_*`, `DATABASE_URL`, `DATABASE_PATH`).
 It allows one `SELECT`/`WITH`/`SHOW`/`EXPLAIN`/`DESCRIBE` per run, refuses
 writes, locking reads and file access, runs in a read-only transaction with a
 10-second limit, fetches at most 50 rows (`--limit`, max 500), masks
@@ -107,6 +109,8 @@ phone, and logs the statement (not the results) to
 - Start narrow: the reported record by id, only the columns the bug is about.
   Then counts and groupings to see how widespread it is
   (`SELECT status, count(*) … GROUP BY status`), not whole tables.
+- Say in your reply that you read live data and that it was read-only (the
+  tool needs no permission, but AK wants to know).
 - Use what you see to understand the bug and to shape test data; describe it
   in the report ("claim 412: status `finance_approved`, page shows
   'Waiting for finance'") rather than pasting rows with personal data.

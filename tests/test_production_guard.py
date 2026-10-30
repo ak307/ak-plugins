@@ -190,3 +190,47 @@ def test_without_python_the_launcher_asks_instead_of_failing_open(tmp_path):
 def test_guard_errors_never_block_tools(tmp_path):
     result = subprocess.run([BASH, str(LAUNCHER)], input="not json", capture_output=True, text=True)
     assert result.returncode == 0 and result.stdout.strip() == ""
+
+
+# Commands seen in real sessions that only WRITE files or edit code. They must
+# not be blocked just because the text mentions pytest, artisan or a server.
+FILE_WRITES_IN_PRODUCTION_PROJECTS = [
+    "cat >> tests/test_expenses.py <<'EOF'\nimport pytest\n\ndef test_cancel(client):\n    assert client.post('/expenses/1/cancel').status_code == 200\nEOF",
+    "cat > ARCHITECTURE.md <<'EOF'\n# Architecture\nRun locally: uv run fastapi dev. Tests: uv run pytest.\nMigrations: php artisan migrate (AK only).\nEOF",
+    "cat >> tests/test_guard.py <<'EOF'\nBLOCKED = ['php artisan migrate:fresh', 'git push --force']\nEOF",
+    "python3 - <<'EOF'\np='app/main.py'\ns=open(p).read()\ns=s.replace('a','b')  # see uv run pytest\nopen(p,'w').write(s)\nEOF",
+    "tee README.md > /dev/null <<'EOF'\nStart: php artisan serve\nWorker: php artisan queue:work\nEOF",
+    "echo 'run: uv run pytest -q' >> NOTES.md",
+    "git commit -m 'tests: run with uv run pytest against the test DB'",
+    'uv run --with pymysql --with "psycopg[binary]" python /x/readonly_query.py "SELECT id FROM jobs"',
+    "grep -rn 'php artisan migrate' docs/",
+]
+
+
+@pytest.mark.parametrize("command", FILE_WRITES_IN_PRODUCTION_PROJECTS)
+def test_writing_files_that_mention_commands_is_not_blocked(tmp_path, command):
+    folder = project(tmp_path, PRODUCTION_ENVS["app_env"])
+    assert run_guard(bash_event(command, folder)) is None
+
+
+STILL_CAUGHT_IN_PRODUCTION_PROJECTS = [
+    ("cat <<'EOF' | sqlite3 live.db\nDELETE FROM expense_requests;\nEOF", "deny"),
+    ("cat > /tmp/wipe.sql <<'EOF'\nselect 1;\nEOF\nmysql hrms < /tmp/wipe.sql", "ask"),
+    ("uv run -q pytest", "ask"),
+    ("uv run --with httpx pytest tests/test_x.py", "ask"),
+    ("DATABASE_PATH=/tmp/x.db uv run pytest", "ask"),
+    ("docker compose exec -T app php artisan test", "ask"),
+    ("./vendor/bin/sail artisan migrate", "ask"),
+    ("bash -c 'php artisan tinker'", "ask"),
+    ("python3 manage.py shell -c 'print(1)'", "ask"),
+    ("(cd backend && uv run alembic upgrade head)", "ask"),
+    ("cat > notes.md <<'EOF'\nhello\nEOF\nphp artisan migrate:fresh", "deny"),
+]
+
+
+@pytest.mark.parametrize("command,expected", STILL_CAUGHT_IN_PRODUCTION_PROJECTS)
+def test_real_database_commands_are_still_caught(tmp_path, command, expected):
+    folder = project(tmp_path, PRODUCTION_ENVS["app_env"])
+    (folder / "backend").mkdir()
+    decision = run_guard(bash_event(command, folder))
+    assert decision and decision["permissionDecision"] == expected, decision

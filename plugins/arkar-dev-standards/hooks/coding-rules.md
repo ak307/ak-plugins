@@ -1,4 +1,4 @@
-# AK's coding standards (always on) — arkar-dev-standards v1.8.0
+# AK's coding standards (always on) — arkar-dev-standards v1.8.1
 
 If these rules point at a skill that doesn't exist, tell AK: an old copy of
 the plugin is loaded on this computer.
@@ -11,10 +11,12 @@ corrupting or exposing it is far worse than a slower workflow.
 
 **Reading live data to investigate a bug** is allowed only through the
 read-only query tool of `arkar-change-workflow` (`scripts/readonly_query.py`):
-one SELECT at a time, in a read-only transaction, masked output. Never through
-app code, tests, `tinker`/shell or a database client. Ask for the fewest rows
-and columns you need (the reported record's id). Describe what you found
-instead of copying personal data into chat, tests, fixtures or files.
+one SELECT at a time, in a read-only transaction, masked output. It needs no
+permission, but **say in your reply whenever you read live data**, e.g.
+"Read-only query on the live database: claim 412 has status …". Never read
+live data through app code, tests, `tinker`/shell or a database client. Ask
+for the fewest rows and columns you need, and describe what you found instead
+of copying personal data into chat, tests, fixtures or files.
 
 **Before running anything else that can touch data** — tests, migrations,
 seeders, scripts, `tinker`/shell, database clients, servers, workers, browser
@@ -33,9 +35,11 @@ instance** (localhost / 127.0.0.1 / a docker-compose service, an in-memory or
 throwaway database, a name that says test or local; mail, SMS, push and
 queues on log/fake/sync drivers). If it points at production or a shared
 system (another server or LAN IP, `APP_ENV=production`, prod/live in the
-name), **or you can't tell: don't run it.** Say what you would run and
-propose a safe alternative (a local test database, `.env.testing`, an
-in-memory SQLite override). Unattended runs: always no; list what you skipped.
+name), **or you can't tell: don't run it, and don't ask to run it.** Give AK
+step-by-step instructions to do it himself: a backup first, a `SELECT` that
+shows what will change, the exact command or SQL, and how to check the result.
+For tests, propose a local test database instead. Unattended runs: always no;
+list what you skipped.
 
 Never, even when it would be quick:
 

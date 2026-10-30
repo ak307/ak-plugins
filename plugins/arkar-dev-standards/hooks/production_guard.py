@@ -178,8 +178,10 @@ def check_bash(command: str, cwd: Path):
         signals = production_signals(command_folder(command, cwd))
         if signals:
             return "ask", (f"{GUARD_NAME}: this project's .env looks like PRODUCTION ({'; '.join(signals[:3])}). "
-                           "This command can read or change live data. Approve only if it is safe, "
-                           "or point the project at a local/test database first.")
+                           "This command can read or change live data, so Claude should not run it: "
+                           "deny, and ask Claude for step-by-step instructions to run it yourself "
+                           "(backup first), or point the project at a local/test database. "
+                           "Live data can be read with the read-only query tool.")
     return None
 
 

@@ -107,6 +107,8 @@ phone, and logs the statement (not the results) to
 - Start narrow: the reported record by id, only the columns the bug is about.
   Then counts and groupings to see how widespread it is
   (`SELECT status, count(*) … GROUP BY status`), not whole tables.
+- Say in your reply that you read live data and that it was read-only (the
+  tool needs no permission, but AK wants to know).
 - Use what you see to understand the bug and to shape test data; describe it
   in the report ("claim 412: status `finance_approved`, page shows
   'Waiting for finance'") rather than pasting rows with personal data.

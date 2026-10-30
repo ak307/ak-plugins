@@ -39,6 +39,11 @@ the first time you work in the project.
 |---|---|---|---|
 | ViewDailyReportWebController (1,258 lines) | queries, PDF and formatting mixed | extract per action into app/Actions/DailyReports/ as features touch it | 2026-10-30 |
 
+## Known bugs (found, not yet fixed)
+| # | Date | Where | Problem and impact | Status |
+|---|---|---|---|---|
+| 1 | 2026-10-30 | app/routers/requests.py reject | approved requests can still be rejected | confirmed, awaiting decision |
+
 ## Open proposals (cleanup awaiting AK's decision)
 | # | Date | Where | Proposal |
 |---|---|---|---|
@@ -49,5 +54,7 @@ the first time you work in the project.
 ```
 
 Move proposals to "Known debt" when skipped and remove them when applied.
+Keep skipped bugs in "Known bugs" with status "skipped" and remove fixed ones,
+so later sessions don't rediscover or re-propose them.
 Record structural decisions (a new layer, a new pattern) under "Decisions" so
 a later session follows them instead of inventing another approach.

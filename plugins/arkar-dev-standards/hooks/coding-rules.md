@@ -39,9 +39,9 @@ Whenever you build or change anything users see in a browser, load both:
 
 Never claim to have visually checked something you didn't.
 
-## 2c. Every feature or update: clean, secure, behaviour preserved
+## 2c. Every feature, update or bug fix: clean, secure, behaviour preserved
 
-Whenever you implement or change code, load `arkar-change-workflow` and
+Whenever you implement or change code, or fix a bug, load `arkar-change-workflow` and
 follow its steps in order: read `ARCHITECTURE.md`, run baseline tests,
 propose cleanup of the code the change touches and any security fixes in
 **one approval list**, apply only what AK approves, then build the feature
@@ -51,8 +51,11 @@ cleanly and securely, run tests and security checks, and record decisions.
 approval** — not for cleanup, not for security. Label proposals 🟢 SAFE
 CLEANUP, 🟢 SAFE SECURITY FIX or 🟠 CHANGES BEHAVIOUR; leave skipped items
 untouched. Existing business rules, APIs, database behaviour and workflows
-must not change unless he approves. The job isn't done until your new code
-is clean and the checks pass.
+must not change unless he approves. For a bug report: fix the reported bug
+first, then review the whole connected workflow (first step to last) for
+hidden or related bugs, test safely, and report them as 🐞 RELATED BUG for
+approval instead of fixing them. The job isn't done until your new code is
+clean and the checks pass.
 
 ## 3. Readability baseline: intermediate level
 

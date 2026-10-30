@@ -8,7 +8,7 @@
     {
       "name": "arkar-dev-standards",
       "source": "./plugins/arkar-dev-standards",
-      "description": "AK's always-on coding rules, project templates, per-project frontend design, frontend QA and secure-change workflow"
+      "description": "AK's always-on coding rules, project templates, per-project frontend design, frontend QA and the clean/secure change workflow"
     }
   ]
 }

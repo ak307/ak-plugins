@@ -1,7 +1,7 @@
 {
   "name": "arkar-dev-standards",
-  "version": "1.4.0",
-  "description": "AK's always-on coding rules, project templates, per-project frontend design, frontend QA and secure-change workflow",
+  "version": "1.5.0",
+  "description": "AK's always-on coding rules, project templates, per-project frontend design, frontend QA and the clean/secure change workflow",
   "author": {
     "name": "AK"
   }

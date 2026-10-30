@@ -28,11 +28,14 @@ updated automatically when this repo changes.
   tool is connected. For the richest checks, start Claude Code with
   `claude --chrome` (or enable Chrome by default in `/chrome`).
 
-- **`arkar-secure-change` skill** — every feature or update: new code written
-  securely, the change reviewed, tests + code scan + dependency audit + secret
-  scan run, and fixes to existing code **proposed, never applied without
-  approval** (labelled 🟢 SAFE / 🟠 CHANGES BEHAVIOUR). Decisions are kept in
-  each project's `SECURITY.md`. Includes a VAPT (OWASP ZAP) checklist.
+- **`arkar-change-workflow` skill** — every feature or update, in one order:
+  read the project's `ARCHITECTURE.md` (the bigger picture), run baseline
+  tests, propose safe cleanup of the code the change touches and any security
+  fixes in **one approval list** (🟢 SAFE CLEANUP / 🟢 SAFE SECURITY FIX /
+  🟠 CHANGES BEHAVIOUR), apply only approved items, build the feature cleanly
+  and securely, run tests + code scan + dependency audit + secret scan, and
+  record decisions in `ARCHITECTURE.md` and `SECURITY.md`. Includes a cleanup
+  guide (what "OOP" means here) and a VAPT (OWASP ZAP) checklist.
 
 Design ideas adapted from Anthropic's frontend-design and canvas-design
 skills and from UI/UX Pro Max (MIT, Next Level Builder).

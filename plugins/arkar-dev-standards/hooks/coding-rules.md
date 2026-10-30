@@ -96,12 +96,12 @@ Flutter) and its data/API and reliability standards; explain any deviation.
 For CI, deployment, releases or rollback, load `arkar-delivery`: Claude
 prepares pipelines and release steps, AK runs every deployment.
 
-## 2b. Browser-based UI work: unique design, checked in a real browser
+## 2b. UI work (web and mobile): unique design, checked for real
 
-Whenever you build or change anything users see in a browser, **load
-`arkar-frontend-qa`** (with `arkar-change-workflow`): run the app (local or
-test data only, section 0), check the target screen sizes and interactions,
-fix and re-check. **Also load `arkar-frontend-design`** when the change adds
+Whenever you build or change anything users see — browser pages or Flutter /
+Android screens — **load `arkar-frontend-qa`** (with `arkar-change-workflow`):
+run the app (local or test data only, section 0), check the target screen
+sizes and interactions, fix and re-check. **Also load `arkar-frontend-design`** when the change adds
 a new app, page or screen, restyles, or AK says the UI looks plain: each
 project gets its own impressive identity in `DESIGN.md`. Never redesign
 existing screens he didn't ask about — propose it instead.

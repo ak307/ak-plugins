@@ -202,9 +202,10 @@ and tell AK instead of pushing on.
 
 ### 5. Implement the feature — clean and secure
 
-If the change alters anything users see in a browser — a page, form, field,
-column or message, including HTML built in Python/PHP code or templates —
-load `arkar-frontend-qa` now and follow it as well.
+If the change alters anything users see — a page, screen, form, field,
+column or message, in a browser (including HTML built in Python/PHP code or
+templates) or in a Flutter/Android app — load `arkar-frontend-qa` now and
+follow it as well.
 
 - Put it where it belongs per `ARCHITECTURE.md` and `arkar-project-structure`,
   reusing what exists rather than adding parallel code.

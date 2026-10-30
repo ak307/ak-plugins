@@ -67,17 +67,25 @@ Collect everything you'd change in existing code, beyond what the feature
 itself needs:
 
 - **Cleanup** of the code the feature touches (and its immediate
-  neighbours) that would let the feature go in cleanly — see
-  `references/cleanup-guide.md` for what to look for and how "OOP" is defined
-  here.
+  neighbours) that would let the feature go in cleanly. Go through **every
+  smell in section 2 of `references/cleanup-guide.md`** and include each one
+  the feature would otherwise make worse. Propose the clean end state, not a
+  half step: e.g. if the feature adds another branch to an `if type == ...`
+  chain that appears in more than one place, propose one small class per type
+  behind a shared interface (strategy), not just moving the chain into a
+  function. "OOP" is defined in that guide.
 - **Security weaknesses** you found in that code — see
   `references/review-checklist.md`.
 
-If the list is empty, go straight to step 5. Otherwise present it numbered,
-so AK can answer quickly ("approve 1 and 3", "skip all"), add the items to
-the right file (cleanup → `ARCHITECTURE.md` "Open proposals", security →
-`SECURITY.md` "Open"), and **stop and wait for his answer** before
-implementing:
+If the list is empty, go straight to step 5. Otherwise:
+
+1. Write the items to the project files **now**, creating them from the
+   templates if they don't exist yet — cleanup → `ARCHITECTURE.md` "Open
+   proposals", security → `SECURITY.md` "Open". (Creating these two files is
+   not a code change and needs no approval.)
+2. Present the list numbered, so AK can answer quickly ("approve 1 and 3",
+   "skip all").
+3. **Stop and wait for his answer** before implementing:
 
 ```
 Before I add <feature>, I suggest these changes to existing code (I haven't touched anything yet):

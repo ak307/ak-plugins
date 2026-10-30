@@ -15,8 +15,8 @@ expressed, not how good it is.
 Before adding or moving files in an existing project, look at how it is already
 organised (folder layout, file naming, class vs function style, entry point) and
 extend that. Do not reorganise, rename or "modernise" structure unless asked.
-If the existing structure is causing a real problem, say so and propose the
-change instead of making it silently. Consistency inside one project matters
+If the existing structure is causing a real problem, propose the change
+(see 2c) instead of making it silently. Consistency inside one project matters
 more than any general best practice.
 
 ## 2. New projects and new modules: use the standard template
@@ -39,14 +39,20 @@ Whenever you build or change anything users see in a browser, load both:
 
 Never claim to have visually checked something you didn't.
 
-## 2c. Every feature or update: secure change, behaviour preserved
+## 2c. Every feature or update: clean, secure, behaviour preserved
 
-Whenever you implement or change code, load `arkar-secure-change` and follow
-it: write new code securely, review the change and the code it touches, run
-tests and security checks. **Never change existing code for security without
-AK's approval** — propose it labelled 🟢 SAFE or 🟠 CHANGES BEHAVIOUR, and
-leave it untouched if he skips it. Existing business rules, APIs, database
-behaviour and workflows must not change unless he approves.
+Whenever you implement or change code, load `arkar-change-workflow` and
+follow its steps in order: read `ARCHITECTURE.md`, run baseline tests,
+propose cleanup of the code the change touches and any security fixes in
+**one approval list**, apply only what AK approves, then build the feature
+cleanly and securely, run tests and security checks, and record decisions.
+
+**Never change existing code beyond what the feature needs without AK's
+approval** — not for cleanup, not for security. Label proposals 🟢 SAFE
+CLEANUP, 🟢 SAFE SECURITY FIX or 🟠 CHANGES BEHAVIOUR; leave skipped items
+untouched. Existing business rules, APIs, database behaviour and workflows
+must not change unless he approves. The job isn't done until your new code
+is clean and the checks pass.
 
 ## 3. Readability baseline: intermediate level
 

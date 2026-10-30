@@ -1,0 +1,176 @@
+---
+name: arkar-change-workflow
+description: AK's workflow for every code change — understand the bigger picture (ARCHITECTURE.md), protect existing behaviour with tests, propose safe cleanup of the code the change touches plus any security fixes in one approval list, then build the feature cleanly and securely, run tests and security checks, and record decisions. Use this whenever implementing, adding, updating, fixing or refactoring a feature, endpoint, page, form, query, model, upload, permission logic, integration, dependency or configuration in an existing codebase — even if the user doesn't mention cleanup, structure or security.
+---
+
+# Change workflow — clean, secure, behaviour preserved
+
+Every feature request describes only the immediate change. Added one at a time
+as patches, features turn a clean codebase into a "big ball of mud" even
+while all tests pass. AK cares about the code: **the job isn't done until the
+code the change touches is clean** — and existing behaviour must never change
+without his approval.
+
+This one workflow covers structure, cleanliness and security, in one order,
+with one approval list. Follow the steps in order.
+
+## The rules (most important)
+
+| What | Approval? |
+|---|---|
+| **New code you write for the requested feature** — including the edits to existing code that the feature itself needs | None — write it clean and secure from the start. |
+| **Any other change to existing code** — cleanup/refactoring, or a security fix — even when it's safe | **Propose and wait for AK's OK.** Never apply it silently. |
+| **Proposals AK skips, ignores or declines** — or when no one is there to answer | **Don't touch that code.** Record it (step 7). |
+
+Label every proposal:
+
+- **🟢 SAFE CLEANUP — no behaviour change.** A refactor of existing code; same
+  inputs give the same outputs, same API, same data. Say what moves where and
+  why it helps this feature.
+- **🟢 SAFE SECURITY FIX — no behaviour change for legitimate users.** Say why
+  it's safe (e.g. "same results for all valid input").
+- **🟠 CHANGES BEHAVIOUR — needs a decision.** Say exactly who or what is
+  affected and give the options.
+
+Cleanup proposals are always **safe cleaning**: behaviour-preserving
+refactors with tests proving it. Anything that changes behaviour is 🟠, never
+"cleanup".
+
+## Steps
+
+Scale the effort to the change. A copy, config value or CSS-only edit: a
+quick look, no proposal round. Anything that adds or changes logic: every
+step.
+
+### 1. Understand the bigger picture
+
+- Read the project's `ARCHITECTURE.md` (create it in step 7 if missing),
+  `SECURITY.md` and `CLAUDE.md` if present.
+- Read the code the feature will touch, its callers, the data it reads and
+  writes, and the routes/jobs that expose it.
+- Ask: which existing concept does this feature belong to? Is there already a
+  place where this kind of logic lives? Would this be a second or third copy
+  of something? Does the layout follow `arkar-project-structure` for this
+  stack? Note where the feature *should* go if the code were clean.
+
+### 2. Protect existing behaviour (baseline)
+
+Run the existing tests that cover the affected area **before changing
+anything**; note any that already fail. If the code you'll touch — or propose
+to clean — has no tests, write **characterisation tests** that pin down
+today's behaviour (valid inputs → same results, same response shape, same side
+effects, same errors). These tests are the safety net for everything after.
+
+### 3. Propose — one approval list, then wait
+
+Collect everything you'd change in existing code, beyond what the feature
+itself needs:
+
+- **Cleanup** of the code the feature touches (and its immediate
+  neighbours) that would let the feature go in cleanly — see
+  `references/cleanup-guide.md` for what to look for and how "OOP" is defined
+  here.
+- **Security weaknesses** you found in that code — see
+  `references/review-checklist.md`.
+
+If the list is empty, go straight to step 5. Otherwise present it numbered,
+so AK can answer quickly ("approve 1 and 3", "skip all"), add the items to
+the right file (cleanup → `ARCHITECTURE.md` "Open proposals", security →
+`SECURITY.md` "Open"), and **stop and wait for his answer** before
+implementing:
+
+```
+Before I add <feature>, I suggest these changes to existing code (I haven't touched anything yet):
+
+1. 🟢 SAFE CLEANUP — no behaviour change
+   app/routers/orders.py — the discount calculation is copy-pasted in create_order and update_order (2 × 30 lines).
+   Fix: move it into DiscountCalculator in services/pricing.py; both endpoints call it. The new bulk-order
+   endpoint can then reuse it instead of a third copy. Covered by 6 characterisation tests.
+2. 🟢 SAFE SECURITY FIX — no behaviour change for legitimate users
+   app/services/order_service.py:88 — ORDER BY built from the request's sort value.
+   Fix: allow-list the sort columns; same results for every valid sort.
+3. 🟠 CHANGES BEHAVIOUR — needs a decision
+   GET /orders/export has no login. Fix: require login. Affects: the nightly report script calls it without a token.
+
+Reply e.g. "approve 1 and 2" or "skip all". Skipped items stay untouched; I'll still build the feature cleanly in new code.
+```
+
+If no one can answer (an unattended run), don't apply any proposals: build
+the feature in new code (step 5) and leave the proposals open.
+
+### 4. Apply only the approved items
+
+Apply each approved item as a small step, running the baseline tests after
+each — they must pass **unchanged** (never edit an existing test to make a
+refactor pass; that means behaviour changed). Add a regression test for each
+security fix. If a cleanup turns out larger or riskier than proposed, stop
+and tell AK instead of pushing on.
+
+### 5. Implement the feature — clean and secure
+
+- Put it where it belongs per `ARCHITECTURE.md` and `arkar-project-structure`,
+  reusing what exists rather than adding parallel code.
+- Follow the always-on coding standards and `references/cleanup-guide.md`:
+  one way to do one job, small focused functions, classes for real concepts.
+- Write it securely (`references/review-checklist.md`): validated input,
+  parameterised queries, escaped output, authorisation on every action, no
+  secrets in code or logs.
+- Add tests for the new behaviour.
+
+### 6. Check, then finish clean
+
+Run, per stack (`references/scanners.md`):
+
+1. **Tests** — the baseline again plus the new tests; all must pass.
+2. **Code scan** — e.g. bandit / ruff `S` (Python), Larastan (PHP).
+3. **Dependency audit** — pip-audit, composer audit, npm audit.
+4. **Secret scan** — detect-secrets on the changed files, plus reading config.
+
+If a tool can't run, say so. Confirm scanner findings in the code before
+reporting them.
+
+Then a **final cleanliness review of your own diff**: no duplication you
+introduced, no long functions, clear names, comments that explain why, the
+code in the right place. Fix anything in your new code. The job is done only
+when your new code is clean and the checks pass.
+
+### 7. Report and record
+
+Short report:
+
+1. **What changed** — the feature, and (separately) the approved cleanup and
+   fixes applied.
+2. **Behaviour check** — baseline tests before/after; new tests.
+3. **Checks run** — each tool and its result; anything that couldn't run.
+4. **Open items** — proposals still awaiting a decision or skipped.
+
+Record decisions that should outlast the session:
+
+- **`ARCHITECTURE.md`** (template `references/architecture-md-template.md`):
+  update when the structure changed or a new concept was added; keep "Open
+  proposals" and "Known debt" current (skipped cleanup goes to known debt).
+- **`SECURITY.md`** (template `references/security-md-template.md`): open,
+  skipped, fixed and accepted security items.
+
+Don't re-propose items AK already skipped unless the code around them changed
+materially — then say why you're raising it again.
+
+## Specific situations
+
+- **Huge legacy files** (e.g. 1,000-line controllers): never propose a
+  rewrite as part of a feature. Propose extracting only the part the feature
+  touches into a proper class (an Action, a service), so each feature leaves
+  the file smaller. Record the rest as known debt.
+- **No way to test the code** (no test setup, heavy external dependencies):
+  limit cleanup proposals to mechanical, low-risk refactors (rename, extract
+  method) and say that coverage is missing.
+- **Dependencies:** never upgrade silently. Patch/minor with a CVE fix is
+  usually 🟢; major is 🟠.
+- **Secrets in code:** propose moving them to `.env` (🟢) and say they should
+  be rotated — rotation is AK's call.
+- **Personal data (NRIC, phone, salary, medical):** only when needed, masked
+  where full values aren't needed, never in logs, behind authorisation.
+- **LLM / agent features:** tools take user identity from the run context,
+  tool and document text is untrusted, write actions need permission checks.
+- **UI work:** also follow `arkar-frontend-design` and `arkar-frontend-qa`.
+  **New projects:** `arkar-project-structure` first.

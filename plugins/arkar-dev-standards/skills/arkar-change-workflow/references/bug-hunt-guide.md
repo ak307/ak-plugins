@@ -97,6 +97,8 @@ Rule 0 (production safety, in the always-on rules) applies first.
 AK connects projects to production so bugs can be investigated against real
 records. Read them only with `scripts/readonly_query.py` (run it from the
 project folder; `uv run --with pymysql --with "psycopg[binary]" python …`).
+It works with MySQL, PostgreSQL and SQLite and finds the connection in `.env`
+itself (Laravel `DB_*`, Django `DB_*`, `DATABASE_URL`, `DATABASE_PATH`).
 It allows one `SELECT`/`WITH`/`SHOW`/`EXPLAIN`/`DESCRIBE` per run, refuses
 writes, locking reads and file access, runs in a read-only transaction with a
 10-second limit, fetches at most 50 rows (`--limit`, max 500), masks

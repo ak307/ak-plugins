@@ -51,7 +51,8 @@ about. Follow the steps below with these additions, and read
 - **Look at the real data first** when the bug is about specific records
   ("claim 412 shows the wrong status"). Query them with the read-only tool —
   `uv run --with pymysql --with "psycopg[binary]" python <this skill>/scripts/readonly_query.py "SELECT …"`
-  from the project folder — selecting only the columns and rows you need
+  from the project folder (MySQL, PostgreSQL and SQLite; it reads the
+  connection from `.env`) — selecting only the columns and rows you need
   (guide section 5). It refuses anything but one read query, runs it in a
   read-only transaction and masks personal data. It needs no permission, but
   say in your reply that you read live data, read-only. Never query live data

@@ -80,8 +80,11 @@ about. Follow the steps below with these additions, and read
   (e.g. "🐞 RELATED BUG (confirmed)"), never just the emoji.
 - **Report the other findings; don't fix them.** Put them in the step 3
   approval list as 🐞 RELATED BUG, confirmed first, then suspected, ordered by
-  impact. Add them to `ARCHITECTURE.md` "Known bugs". Fix them only when AK
-  approves, each with its own regression test.
+  impact. Add them to `ARCHITECTURE.md` "Known bugs" in the same turn —
+  if the project has no `ARCHITECTURE.md` yet, create it from
+  `references/architecture-md-template.md` (a notes file, not a code change:
+  no approval needed). Fix them only when AK approves, each with its own
+  regression test.
 
 Do this for every real bug report. For a trivial local bug (a label typo,
 one CSS glitch), the review is a quick check of the same pattern nearby.

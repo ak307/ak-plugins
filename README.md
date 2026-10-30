@@ -36,6 +36,11 @@ updated automatically when this repo changes.
   and securely, run tests + code scan + dependency audit + secret scan, and
   record decisions in `ARCHITECTURE.md` and `SECURITY.md`. Includes a cleanup
   guide (what "OOP" means here) and a VAPT (OWASP ZAP) checklist.
+  For bug reports: reproduce with a failing test, fix the reported bug, then
+  review the whole connected workflow (first step to last, scope chosen per
+  project) for hidden or related bugs, test safely (never production), and
+  report findings as 🐞 RELATED BUG (confirmed / suspected) for approval;
+  they're recorded under "Known bugs" in `ARCHITECTURE.md`.
 
 Design ideas adapted from Anthropic's frontend-design and canvas-design
 skills and from UI/UX Pro Max (MIT, Next Level Builder).

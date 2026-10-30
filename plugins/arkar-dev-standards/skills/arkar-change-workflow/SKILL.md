@@ -1,6 +1,6 @@
 ---
 name: arkar-change-workflow
-description: AK's workflow for every code change — understand the bigger picture (ARCHITECTURE.md), protect existing behaviour with tests, propose safe cleanup of the code the change touches plus any security fixes in one approval list, then build the feature cleanly and securely, run tests and security checks, and record decisions. Use this whenever implementing, adding, updating, fixing or refactoring a feature, endpoint, page, form, query, model, upload, permission logic, integration, dependency or configuration in an existing codebase — even if the user doesn't mention cleanup, structure or security.
+description: AK's workflow for every code change and bug fix — understand the bigger picture (ARCHITECTURE.md), protect existing behaviour with tests, propose safe cleanup plus any security fixes in one approval list, build cleanly and securely, run tests and security checks, and record decisions. For bug reports, fix the reported bug, then review the whole connected workflow for hidden or related bugs, test safely, and report findings for approval. Use this whenever implementing, adding, updating, fixing, debugging or refactoring a feature, bug, endpoint, page, form, query, model, upload, permission logic, integration, dependency or configuration in an existing codebase — even if the user doesn't mention cleanup, structure, security or other bugs.
 ---
 
 # Change workflow — clean, secure, behaviour preserved
@@ -19,6 +19,7 @@ with one approval list. Follow the steps in order.
 | What | Approval? |
 |---|---|
 | **New code you write for the requested feature** — including the edits to existing code that the feature itself needs | None — write it clean and secure from the start. |
+| **The fix for the bug AK reported** — the smallest change that fixes the root cause | None — that's what he asked for. |
 | **Any other change to existing code** — cleanup/refactoring, or a security fix — even when it's safe | **Propose and wait for AK's OK.** Never apply it silently. |
 | **Proposals AK skips, ignores or declines** — or when no one is there to answer | **Don't touch that code.** Record it (step 7). |
 
@@ -31,10 +32,49 @@ Label every proposal:
   it's safe (e.g. "same results for all valid input").
 - **🟠 CHANGES BEHAVIOUR — needs a decision.** Say exactly who or what is
   affected and give the options.
+- **🐞 RELATED BUG (confirmed / suspected) — fix changes behaviour
+  (intended).** A bug AK didn't report. Say where it is, what's wrong, the
+  impact, the evidence, and the proposed fix.
 
 Cleanup proposals are always **safe cleaning**: behaviour-preserving
 refactors with tests proving it. Anything that changes behaviour is 🟠, never
 "cleanup".
+
+## Bug reports: fix it, then look for what AK can't see
+
+When AK reports a bug, the reported bug is often not the only one. Other
+steps of the same workflow may have hidden or related bugs he doesn't know
+about. Follow the steps below with these additions, and read
+`references/bug-hunt-guide.md`:
+
+- **Step 2 — reproduce first.** Write a test that fails because of the
+  reported bug before changing anything, so you know you found the real cause.
+- **Fix the reported bug first.** Find the root cause, not the symptom. Make
+  the smallest fix, with no unrelated changes. The new test must pass and the
+  existing tests must pass unchanged. This needs no approval. If the same
+  mistake sits in the exact lines you're fixing (e.g. the same lookup table)
+  and also breaks another step, you may fix it there too. Say so separately
+  and give it its own test. The same mistake anywhere else is a finding, not
+  part of the fix.
+- **Then review the surrounding workflow.** Choose the scope yourself, based on
+  the project and the bug (guide section 1): usually the record's whole life
+  from the first step to the final step, every alternative path and role,
+  every place its status is shown, and the same root cause anywhere else. Be
+  deliberate: wide enough to catch what AK can't see, but not so wide it
+  wastes time. Always say what you covered and what you didn't.
+- **Test safely.** Use the test database, fixtures and a local app only. Check
+  where the configuration points before running anything, and never touch
+  production data, send real messages or make payments.
+- **Report in the format in guide section 7.** Always include the lines
+  "Workflow reviewed: …" and "Not reviewed: …", and write each label in full
+  (e.g. "🐞 RELATED BUG (confirmed)"), never just the emoji.
+- **Report the other findings; don't fix them.** Put them in the step 3
+  approval list as 🐞 RELATED BUG, confirmed first, then suspected, ordered by
+  impact. Add them to `ARCHITECTURE.md` "Known bugs". Fix them only when AK
+  approves, each with its own regression test.
+
+Do this for every real bug report. For a trivial local bug (a label typo,
+one CSS glitch), the review is a quick check of the same pattern nearby.
 
 ## Steps
 
@@ -64,7 +104,7 @@ effects, same errors). These tests are the safety net for everything after.
 ### 3. Propose — one approval list, then wait
 
 Collect everything you'd change in existing code, beyond what the feature
-itself needs:
+(or the reported bug fix) itself needs:
 
 - **Cleanup** of the code the feature touches (and its immediate
   neighbours) that would let the feature go in cleanly. Go through **every
@@ -76,12 +116,15 @@ itself needs:
   function. "OOP" is defined in that guide.
 - **Security weaknesses** you found in that code — see
   `references/review-checklist.md`.
+- **Related bugs** found while reviewing the workflow (bug reports only) — see
+  `references/bug-hunt-guide.md`.
 
 If the list is empty, go straight to step 5. Otherwise:
 
 1. Write the items to the project files **now**, creating them from the
    templates if they don't exist yet — cleanup → `ARCHITECTURE.md` "Open
-   proposals", security → `SECURITY.md` "Open". (Creating these two files is
+   proposals", related bugs → `ARCHITECTURE.md` "Known bugs", security →
+   `SECURITY.md` "Open". (Creating these two files is
    not a code change and needs no approval.)
 2. Present the list numbered, so AK can answer quickly ("approve 1 and 3",
    "skip all").
@@ -146,8 +189,9 @@ when your new code is clean and the checks pass.
 
 Short report:
 
-1. **What changed** — the feature, and (separately) the approved cleanup and
-   fixes applied.
+1. **What changed** — the feature or the reported bug fix (with its root
+   cause), and (separately) the approved cleanup and fixes applied. For a
+   bug fix, also the workflow scope reviewed and what wasn't reviewed.
 2. **Behaviour check** — baseline tests before/after; new tests.
 3. **Checks run** — each tool and its result; anything that couldn't run.
 4. **Open items** — proposals still awaiting a decision or skipped.

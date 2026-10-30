@@ -1,6 +1,6 @@
 ---
 name: arkar-frontend-qa
-description: AK's quality floor for browser-based UI work (including HTML served from Python, PHP or templates) — run the app in a real browser, inspect it at the project's target screen sizes, meet a small hard accessibility/usability floor (other checks advisory), fix and re-check, and report honestly what was verified. Use this whenever building, changing, styling or fixing anything users see in a browser — web pages, React/Vue/Inertia/Blade/Django-template screens, Livewire components, dashboards, forms, layouts, CSS or Tailwind — even a small UI tweak, and even if the user doesn't ask for testing.
+description: AK's quality floor for user interfaces — web (including HTML served from Python, PHP or templates) and mobile (Flutter, native Android): run the app, inspect it at the project's target screen sizes, meet a small hard accessibility/usability floor (other checks advisory), fix and re-check, and report honestly what was verified. Use this whenever building, changing, styling or fixing anything users see — web pages, React/Vue/Inertia/Blade/Django-template screens, Livewire components, dashboards, forms, layouts, CSS or Tailwind, Flutter or Android screens and widgets — even a small UI tweak, and even if the user doesn't ask for testing.
 ---
 
 # Frontend quality and visual QA
@@ -141,8 +141,16 @@ browser tool, a missing database or service, a login you couldn't get — say
 exactly what wasn't verified and why. Never claim to have seen, clicked or
 tested something you didn't.
 
+## Mobile apps
+
+For Flutter (Android/iOS) and native Android screens, follow
+`references/mobile-qa.md` instead of the browser steps: the same idea —
+hard floor, every state, look at the real app at the target sizes — with
+the mobile specifics (dp/sp, text scaling, Semantics, widget and golden
+tests, emulator checks). For a Flutter **web** build, the browser steps
+apply.
+
 ## When this doesn't apply
 
-Backend-only changes with no UI change, mobile apps that don't run in a
-browser (Flutter for Android/iOS), emails/PDF templates, and pure questions.
-For a Flutter **web** build, the viewport and inspection steps still apply.
+Backend-only changes with no UI change, emails/PDF templates, and pure
+questions.

@@ -6,7 +6,7 @@ first — `config/`, `apps/`, the custom user model, settings, naming, uv and
 tests all work the same way. Differences from `django.md` are called out here.
 
 Versions this was written against (Oct 2026): `langchain` 1.4, `langgraph`
-1.2, `langchain-openai` 1.7, `langsmith` 0.14, Python 3.12. Pin with `~=` (e.g.
+1.2, `langchain-openai` 1.7, `langsmith` 0.14, Python 3.13. Pin with `~=` (e.g.
 `langgraph~=1.2`) — patch releases ship almost daily. If the installed major
 version differs, check the migration notes before copying patterns from here.
 
@@ -281,27 +281,36 @@ code: review prompt changes like code changes and run the evals.
 
 ```python
 import os
+from contextlib import asynccontextmanager
 
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.store.postgres.aio import AsyncPostgresStore
 from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
 
+POOL_KWARGS = {"autocommit": True, "row_factory": dict_row, "prepare_threshold": 0}
 _pool: AsyncConnectionPool | None = None
 
 
 async def get_pool() -> AsyncConnectionPool:
-    """Open the pool lazily inside the running event loop (Django has no ASGI lifespan hook)."""
+    """The web process's shared pool, opened lazily in its event loop (Django has no ASGI lifespan hook)."""
     global _pool
     if _pool is None:
         _pool = AsyncConnectionPool(
             os.environ["AGENT_DB_URL"],
             open=False,
             max_size=10,
-            kwargs={"autocommit": True, "row_factory": dict_row, "prepare_threshold": 0},
+            kwargs=POOL_KWARGS,
         )
         await _pool.open()
     return _pool
+
+
+@asynccontextmanager
+async def task_storage():
+    """For background tasks: each run gets its own event loop, so it needs its own small pool."""
+    async with AsyncConnectionPool(os.environ["AGENT_DB_URL"], max_size=2, kwargs=POOL_KWARGS) as pool:
+        yield AsyncPostgresSaver(pool), AsyncPostgresStore(pool)
 
 
 async def get_checkpointer() -> AsyncPostgresSaver:
@@ -311,6 +320,11 @@ async def get_checkpointer() -> AsyncPostgresSaver:
 async def get_store() -> AsyncPostgresStore:
     return AsyncPostgresStore(await get_pool())
 ```
+
+The shared pool belongs to the ASGI web process. Background tasks (Django-Q2
+runs them in worker processes, each run in a new event loop via
+`asyncio.run`) use `async with task_storage() as (checkpointer, store):` —
+a pool from another loop fails with "attached to a different loop".
 
 Create the tables once from a management command
 (`setup_agent_storage`) that calls `setup()` on both. Claude runs it only
@@ -342,8 +356,14 @@ async def stream_reply(request, conversation_id):
         try:
             async for part in graph.astream(
                 graph_input, config=config, context=context,
-                stream_mode="messages", version="v2",
+                stream_mode=["messages", "updates"], version="v2",
             ):
+                if part["type"] == "updates" and "__interrupt__" in part["data"]:
+                    # The run paused for the user's approval (HumanInTheLoopMiddleware):
+                    # send the pending action to the page and stop; the run resumes later.
+                    pending = part["data"]["__interrupt__"][0].value
+                    yield f"event: approval\ndata: {json.dumps(pending, default=str)}\n\n"
+                    continue
                 if part["type"] != "messages":
                     continue
                 chunk, metadata = part["data"]
@@ -351,7 +371,7 @@ async def stream_reply(request, conversation_id):
                     reply.append(chunk.content)
                     yield f"data: {json.dumps({'delta': chunk.content})}\n\n"
         except asyncio.CancelledError:
-            pass  # client closed the page
+            raise  # client closed the page; the finally block still saves the partial reply
         finally:
             await conversation_service.save_assistant_reply(conversation, "".join(reply))
 
@@ -362,6 +382,10 @@ async def stream_reply(request, conversation_id):
 ```
 
 (For a custom `StateGraph`, the node name is your own, e.g. `call_model`.)
+The page shows an `approval` event as an Approve / Reject card. The decision
+goes to a separate POST view that checks the same ownership, then resumes the
+run on the same `thread_id` with
+`Command(resume={"decisions": [{"type": "approve"}]})` (or `"reject"`).
 Use `await request.auser()` in async views, not `request.user`. Keep GZip and
 other buffering middleware off streaming routes.
 

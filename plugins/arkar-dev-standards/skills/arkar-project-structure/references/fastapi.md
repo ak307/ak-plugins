@@ -27,7 +27,7 @@ project-name/                  # kebab-case folder name
 │   │   └── logging.py         # logging setup called from main.py
 │   ├── routers/               # HTTP endpoints, one file per resource
 │   │   ├── __init__.py
-│   │   └── health.py
+│   │   └── health.py          # /health/live and /health/ready
 │   ├── schemas/               # Pydantic request/response models, one file per resource
 │   │   └── __init__.py
 │   ├── models/                # SQLAlchemy tables, one file per resource
@@ -45,7 +45,7 @@ project-name/                  # kebab-case folder name
 │   └── test_health.py
 ├── .env.example               # every setting, with safe placeholder values
 ├── .gitignore                 # includes .env, .venv/, __pycache__/
-├── .python-version            # 3.12
+├── .python-version            # 3.13
 ├── pyproject.toml             # dependencies + ruff + pytest + [tool.fastapi]
 ├── uv.lock
 └── README.md                  # install, configure, run, test
@@ -185,9 +185,14 @@ class Base(DeclarativeBase):
 
 
 def get_db() -> Iterator[Session]:
-    """Give each request its own session and always close it."""
+    """One session and one transaction per request: commit if the endpoint succeeds, roll back if it raises."""
     with SessionLocal() as db:
-        yield db
+        try:
+            yield db
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
 
 
 DbSession = Annotated[Session, Depends(get_db)]
@@ -282,8 +287,7 @@ def create_user(db: Session, data: UserCreate, current_user: User) -> User:
         raise ForbiddenError("Only admins can create users")
     user = User(email=data.email, full_name=data.full_name)
     db.add(user)
-    db.commit()
-    db.refresh(user)
+    db.flush()  # gets the id; the request commits (core/database.py)
     return user
 
 
@@ -291,8 +295,7 @@ def update_user(db: Session, user_id: int, data: UserUpdate, current_user: User)
     user = get_user(db, user_id, current_user)
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(user, field, value)
-    db.commit()
-    db.refresh(user)
+    db.flush()
     return user
 ```
 
@@ -305,9 +308,11 @@ Services don't know about HTTP: they never raise `HTTPException` or return
 `Response` objects. They return data or raise a domain exception from
 `app/core/exceptions.py`, which `main.py` maps to a status code.
 
-Each service function commits its own work. When one request must make
-several writes that succeed or fail together, write one service function
-that does all of them and commits once.
+Services never call `commit()`: the request owns the transaction
+(`get_db`), so several service calls in one request succeed or fail
+together. Use `db.flush()` when you need generated IDs. Status changes lock
+the row (`select(...).with_for_update()`) before checking the status — see
+`reliability-and-observability.md`.
 
 ### app/routers/users.py — thin HTTP layer
 
@@ -414,12 +419,25 @@ in the lifespan, set explicit timeouts, and read base URL and model name from
 
 ```python
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
-router = APIRouter(tags=["health"])
+from app.core.database import DbSession
+
+router = APIRouter(prefix="/health", tags=["health"])
 
 
-@router.get("/health")
-def health_check():
+@router.get("/live")
+def live():
+    return {"status": "ok"}
+
+
+@router.get("/ready")
+def ready(db: DbSession):
+    try:
+        db.execute(text("SELECT 1"))
+    except Exception:
+        return JSONResponse(status_code=503, content={"status": "unavailable", "failed": "database"})
     return {"status": "ok"}
 ```
 
@@ -523,7 +541,7 @@ aren't create/update/delete: `POST /leave-requests/{id}/approve`.
 
 | Decision | Default | Change only when |
 |---|---|---|
-| Python / packages | Python 3.12, `uv` with `pyproject.toml` + `uv.lock` | Deployment server can't run uv → export `requirements.txt` from uv |
+| Python / packages | Python 3.13, `uv` with `pyproject.toml` + `uv.lock` | Deployment server can't run uv → export `requirements.txt` from uv |
 | Lint / format | `ruff` (configured in `pyproject.toml`) | Never |
 | Database library | SQLAlchemy 2.0, sync sessions, `pymysql` | The project already uses something else |
 | Async | See section 3 | — |

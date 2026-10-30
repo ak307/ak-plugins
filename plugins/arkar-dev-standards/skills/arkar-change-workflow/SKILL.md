@@ -216,7 +216,9 @@ load `arkar-frontend-qa` now and follow it as well.
   secrets in code or logs. For new routes, pages, cookies, headers, uploads
   or dependencies, also check `references/vapt-checklist.md` — what the
   company's VAPT (OWASP ZAP) scans flag.
-- Add tests for the new behaviour.
+- Add tests for the new behaviour — including the permission cases (owner,
+  another user, not logged in) and every status transition it touches; see
+  `references/testing-strategy.md`.
 
 ### 6. Check, then finish clean
 

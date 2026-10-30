@@ -43,7 +43,7 @@ updated automatically when this repo changes.
 
 Tests for the guard and the read-only tool:
 `uvx --with "psycopg[binary]" --with pymysql pytest tests -q`.
-- **`arkar-project-structure` skill** — standard project templates, used whenever
+- **`arkar-project-structure` skill** — standard project templates plus the cross-stack data/API and reliability/observability standards (`references/data-and-api.md`, `references/reliability-and-observability.md`), used whenever
   Claude creates a project, adds a module, or decides where a file goes.
   Templates in `plugins/arkar-dev-standards/skills/arkar-project-structure/references/`:
   FastAPI, Django, Django agentic (LangChain / LangGraph / LangSmith),
@@ -60,6 +60,13 @@ Tests for the guard and the read-only tool:
   tool is connected. For the richest checks, start Claude Code with
   `claude --chrome` (or enable Chrome by default in `/chrome`).
 
+- **`arkar-delivery` skill** — CI pipelines per stack (GitHub Actions:
+  lint, types, tests on a CI database, dependency audit, secret scan,
+  build), environments, deploy recipes (Linux + nginx, Windows IIS, Docker
+  Compose), backups before migrations, release and rollback checklists,
+  feature flags. Claude prepares; AK runs every deployment (the guard asks
+  before ssh/rsync to servers, kubectl, docker push, terraform apply, firebase
+  deploy and similar, and blocks terraform destroy / Firebase data deletes).
 - **`arkar-change-workflow` skill** — every feature or update, in one order:
   read the project's `ARCHITECTURE.md` (the bigger picture), run baseline
   tests, propose safe cleanup of the code the change touches and any security

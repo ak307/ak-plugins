@@ -228,6 +228,49 @@ STILL_CAUGHT_IN_PRODUCTION_PROJECTS = [
 ]
 
 
+DEPLOY_COMMANDS = [
+    "ssh deploy@10.20.1.15 'cd /var/www/hrms && php artisan migrate --pretend'",
+    "scp dist.zip deploy@hr.cbm.com.sg:/var/www/",
+    "rsync -az ./public/ deploy@10.20.1.15:/var/www/hrms/public/",
+    "kubectl apply -f k8s/",
+    "kubectl rollout restart deployment/api",
+    "helm upgrade api ./chart",
+    "terraform apply -auto-approve",
+    "docker push registry.cbm.local/hrms:1.4.0",
+    "firebase deploy --only firestore:rules",
+    "vercel --prod",
+    "gcloud run deploy api --source .",
+    "az webapp deploy --resource-group rg --name hrms --src-path app.zip",
+    "gh workflow run deploy.yml",
+    "gh release create v1.4.0",
+    "git push origin v1.4.0",
+    "git push --tags",
+]
+
+
+@pytest.mark.parametrize("command", DEPLOY_COMMANDS)
+def test_deploy_commands_always_ask_even_in_local_projects(tmp_path, command):
+    folder = project(tmp_path, LOCAL_ENVS["laravel_local"])
+    decision = run_guard(bash_event(command, folder))
+    assert decision and decision["permissionDecision"] == "ask", decision
+
+
+@pytest.mark.parametrize("command", ["terraform destroy", "firebase firestore:delete --all-collections",
+                                     "firebase database:remove /users"])
+def test_destroying_cloud_resources_is_blocked(tmp_path, command):
+    folder = project(tmp_path, LOCAL_ENVS["laravel_local"])
+    decision = run_guard(bash_event(command, folder))
+    assert decision and decision["permissionDecision"] == "deny"
+
+
+@pytest.mark.parametrize("command", ["git push", "git push -u origin feature/leave-cancel", "ssh-keygen -t ed25519",
+                                     "rsync -a src/ build/", "docker build -t hrms .", "terraform plan",
+                                     "kubectl get pods", "gh pr create --fill", "firebase emulators:start"])
+def test_everyday_dev_commands_are_not_deploys(tmp_path, command):
+    folder = project(tmp_path, LOCAL_ENVS["laravel_local"])
+    assert run_guard(bash_event(command, folder)) is None
+
+
 @pytest.mark.parametrize("command,expected", STILL_CAUGHT_IN_PRODUCTION_PROJECTS)
 def test_real_database_commands_are_still_caught(tmp_path, command, expected):
     folder = project(tmp_path, PRODUCTION_ENVS["app_env"])

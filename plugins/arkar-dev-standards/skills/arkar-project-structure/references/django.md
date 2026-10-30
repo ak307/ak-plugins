@@ -6,7 +6,7 @@ Cashflow Automation; settings, auth and tooling follow current Django
 guidance. For a Django project whose main job is running LLM agents, use
 `django-agentic.md` instead — it builds on this one.
 
-Version policy: latest Django 6.x on Python 3.12+. Use Django 5.2 LTS only for
+Version policy: latest Django 6.x on Python 3.13. Use Django 5.2 LTS only for
 an app that will be left running for years with little maintenance.
 
 ## Contents
@@ -25,7 +25,7 @@ project-name/                      # kebab-case folder name
 ├── config/                        # project package — always named config
 │   ├── __init__.py
 │   ├── settings.py                # reads .env; no secrets in this file
-│   ├── urls.py                    # includes each app's urls.py + healthz
+│   ├── urls.py                    # includes each app's urls.py + /health/live, /health/ready
 │   ├── asgi.py
 │   └── wsgi.py
 ├── apps/                          # every project app lives here
@@ -70,7 +70,7 @@ project-name/                      # kebab-case folder name
 ├── media/                         # uploads (gitignored, never served by Django in prod)
 ├── .env.example
 ├── .gitignore
-├── .python-version                # 3.12
+├── .python-version                # 3.13
 ├── pyproject.toml                 # dependencies + ruff + pytest config
 ├── uv.lock
 └── README.md
@@ -359,7 +359,8 @@ urlpatterns = [
 ```
 
 `config/urls.py` mounts each app — `path("leave-requests/", include("apps.leave_requests.urls"))`
-— plus a `healthz/` view that runs a trivial database query and returns 200.
+— plus `health/live/` (always 200) and `health/ready/` (runs `SELECT 1`,
+503 if the database is unreachable); see `reliability-and-observability.md`.
 
 ### api.py — JSON endpoints (only when needed)
 
@@ -450,7 +451,7 @@ def pytest_configure(config):
 
 | Decision | Default | Change only when |
 |---|---|---|
-| Python / packages | Python 3.12, `uv` with `pyproject.toml` + `uv.lock` | Server can't run uv → export `requirements.txt` from uv |
+| Python / packages | Python 3.13, `uv` with `pyproject.toml` + `uv.lock` | Server can't run uv → export `requirements.txt` from uv |
 | Lint / format | `ruff` (lint + format), configured in `pyproject.toml` | Never |
 | Database | MySQL (`mysqlclient`), strict mode | Project already uses another DB |
 | Config | `django-environ` reading `.env` | Never |

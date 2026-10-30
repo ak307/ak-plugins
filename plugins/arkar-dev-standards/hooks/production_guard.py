@@ -33,6 +33,8 @@ ALWAYS_BLOCK = [
      "it wipes or rolls back the database"),
     (r"\bartisan\s+(migrate|db:seed|db:wipe)\S*[^\n;&|]*\s--force\b",
      "--force skips Laravel's production confirmation"),
+    (r"\bterraform\s+destroy\b", "it destroys infrastructure"),
+    (r"\bfirebase\s+(firestore:delete|database:remove|auth:import)\b", "it deletes or overwrites live Firebase data"),
     (r"\bmanage\.py\s+(flush|sqlflush|reset_db)\b",
      "it deletes all data"),
     (r"\bmanage\.py\s+migrate\s+\S+\s+zero\b",
@@ -73,6 +75,27 @@ DATABASE_COMMANDS = [
     r"^(fastapi\s+(dev|run)|uvicorn|gunicorn|hypercorn|daphne)\b",
     r"^(celery|rq|dramatiq)\b.*\bworker\b",
     r"^(mysql|mariadb|psql|sqlite3|sqlcmd|mongosh|redis-cli)\b",
+]
+
+# Deploying or changing servers and cloud resources: always ask, whatever the .env
+# says. Claude prepares deployments; AK runs them (arkar-delivery).
+DEPLOY_COMMANDS = [
+    r"^ssh\s+(?!-V\b)",
+    r"^scp\s+.*\S+:",
+    r"^rsync\s+.*\S+:",
+    r"^kubectl\s+(apply|create|delete|edit|patch|replace|rollout|scale|set|exec|drain|cordon)\b",
+    r"^helm\s+(install|upgrade|uninstall|rollback|delete)\b",
+    r"^terraform\s+(apply|import|state\s+(rm|mv|push))\b",
+    r"^docker\s+(push|-h|--host|context\s+use)\b",
+    r"^firebase\s+(deploy|hosting:channel:deploy|functions:delete|firestore:indexes)\b",
+    r"^(vercel|netlify)\b.*(--prod|deploy)",
+    r"^(fly|flyctl)\s+deploy\b",
+    r"^gcloud\s+.*\b(deploy|sql\s+(import|export|instances\s+(patch|delete|restart)))\b",
+    r"^az\s+.*\b(deploy|webapp\s+(restart|stop|config)|sql\s+db\s+(delete|import))\b",
+    r"^aws\s+.*\b(deploy|update-service|update-function-code|rds\s+(delete|modify|restore))\b",
+    r"^eb\s+deploy\b",
+    r"^gh\s+(workflow\s+run|release\s+create)\b",
+    r"^git\s+push\b.*(--tags|\bv\d+\.\d+)",
 ]
 
 # Wrappers in front of the real command: `uv run`, `php`, `npx`, `docker compose exec app`, ...
@@ -232,6 +255,10 @@ def check_bash(command: str, cwd: Path):
     if re.search(EXPLICIT_PRODUCTION, lowered):
         return "ask", f"{GUARD_NAME}: this command uses PRODUCTION configuration. Approve only if you are sure."
     segments = list(command_segments(lowered))
+    if any(re.search(pattern, segment) for segment in segments for pattern in DEPLOY_COMMANDS):
+        return "ask", (f"{GUARD_NAME}: this deploys or changes a server or cloud resource. Claude prepares "
+                       "deployments and AK runs them: deny, and ask Claude for the numbered release steps "
+                       "(backup first) to run yourself.")
     if any(re.search(pattern, segment) for segment in segments for pattern in DATABASE_COMMANDS):
         signals = production_signals(command_folder(command, cwd))
         if signals:

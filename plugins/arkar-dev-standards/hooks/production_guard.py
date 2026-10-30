@@ -61,18 +61,41 @@ DESTRUCTIVE_SQL = [
 ]
 
 # Run app code against the configured database: ask when it looks like production.
+# Matched only where a command starts (see command_segments), so text that merely
+# mentions "pytest" — a test file being written, a README — doesn't count.
 DATABASE_COMMANDS = [
-    r"\bartisan\s+(migrate|db:seed|db|tinker|test|queue:(work|listen)|schedule:(run|work)|horizon|serve)\b",
-    r"\bcomposer\s+(run\s+)?(dev|test)\b",
-    r"\b(vendor/bin/)?(pest|phpunit)\b",
-    r"\bmanage\.py\s+(?!(check|makemigrations|sqlmigrate|help|collectstatic|startapp|showmigrations)\b)\w+",
-    r"\bpytest\b",
-    r"\balembic\s+(upgrade|stamp)\b",
-    r"\b(fastapi\s+(dev|run)|uvicorn|gunicorn|hypercorn|daphne)\b",
-    r"\b(celery|rq|dramatiq)\b[^\n;&|]*\bworker\b",
-    r"\b(mysql|mariadb|psql|sqlite3|sqlcmd|mongosh|redis-cli)\b",
-    r"\bdocker\s+compose\b[^\n;&|]*\b(exec|run)\b[^\n;&|]*\b(artisan|manage\.py|pytest|mysql|psql)\b",
+    r"^artisan\s+(migrate|db:seed|db\b|tinker|test|queue:(work|listen)|schedule:(run|work)|horizon|serve)",
+    r"^composer\s+(run(-script)?\s+)?(dev|test)\b",
+    r"^(pest|phpunit)\b",
+    r"^(\S*/)?manage\.py\s+(?!(check|makemigrations|sqlmigrate|help|collectstatic|startapp|showmigrations)\b)\w+",
+    r"^pytest\b",
+    r"^alembic\s+(upgrade|stamp)\b",
+    r"^(fastapi\s+(dev|run)|uvicorn|gunicorn|hypercorn|daphne)\b",
+    r"^(celery|rq|dramatiq)\b.*\bworker\b",
+    r"^(mysql|mariadb|psql|sqlite3|sqlcmd|mongosh|redis-cli)\b",
 ]
+
+# Wrappers in front of the real command: `uv run`, `php`, `npx`, `docker compose exec app`, ...
+UV_VALUE_OPTIONS = r"--(with|with-requirements|project|directory|python|env-file|extra|group|package|from)|-p"
+COMMAND_WRAPPERS = re.compile(
+    r"^(sudo|time|exec|nohup|env|command)\s+"
+    r"|^\w+=(\"[^\"]*\"|'[^']*'|\S*)\s+"
+    rf"|^(uv\s+run|uvx|poetry\s+run|pipenv\s+run|pdm\s+run|hatch\s+run)((\s+({UV_VALUE_OPTIONS})(=\S+|\s+\S+))|(\s+--?[\w-]+))*\s+"
+    r"|^python3?(\.\d+)?\s+(-m\s+)?"
+    r"|^php\s+"
+    r"|^(npx|pnpm|yarn|bunx)\s+"
+    r"|^(\./|vendor/bin/)"
+    r"|^docker(-compose|\s+compose)\s+(exec|run)(\s+-\S+)*\s+\S+\s+"
+    r"|^sail\s+"
+    r"|^(bash|sh|zsh)\s+-c\s+[\"']?"
+    r"|^[({]\s*"
+)
+SEGMENT_SEPARATORS = re.compile(r"\n|;|&&|\|\||\|")
+
+# Heredocs: `cat > file <<'EOF' ... EOF` only writes text to a file; it never runs.
+HEREDOC_START = re.compile(r"<<-?\s*(['\"]?)(\w+)\1")
+FILE_WRITER = re.compile(r"(^|&&|;|\|\|)\s*(cat|tee)\b[^<]*$")
+PIPE_TO_RUNNER = re.compile(r"\|\s*(sudo\s+)?(bash|sh|zsh|python3?|php|node|mysql|mariadb|psql|sqlite3|sqlcmd|mongosh)\b")
 
 # Any command that names production config explicitly.
 EXPLICIT_PRODUCTION = r"(\.env\.(production|prod|live)\b|\benv/(prod|production|live)\.json\b|--env[= ](production|prod)\b)"
@@ -160,8 +183,42 @@ def command_folder(command: str, cwd: Path) -> Path:
     return target if target.is_absolute() else (cwd / target)
 
 
+def without_file_contents(command: str) -> str:
+    """Drop heredoc bodies that are only written to a file, because they never run."""
+    lines = command.split("\n")
+    kept = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        kept.append(line)
+        match = HEREDOC_START.search(line)
+        if match:
+            terminator = match.group(2)
+            end = index + 1
+            while end < len(lines) and lines[end].strip() != terminator:
+                end += 1
+            only_written_to_file = FILE_WRITER.search(line[:match.start()]) and not PIPE_TO_RUNNER.search(line)
+            if not only_written_to_file:
+                kept.extend(lines[index + 1:end])
+            index = end
+        index += 1
+    return "\n".join(kept)
+
+
+def command_segments(text: str):
+    """Yield each command in the text with wrappers like `uv run` or `php` removed."""
+    for segment in SEGMENT_SEPARATORS.split(text):
+        segment = segment.strip()
+        previous = None
+        while segment != previous:
+            previous = segment
+            segment = COMMAND_WRAPPERS.sub("", segment, count=1).strip()
+        if segment:
+            yield segment
+
+
 def check_bash(command: str, cwd: Path):
-    lowered = command.lower()
+    lowered = without_file_contents(command).lower()
     for pattern, why in ALWAYS_BLOCK:
         if re.search(pattern, lowered):
             return "deny", f"{GUARD_NAME}: blocked because {why}. If it is really needed, AK runs it himself after a backup."
@@ -174,7 +231,8 @@ def check_bash(command: str, cwd: Path):
                         f"To see where the project points, run: {SAFE_ENV_HINT}")
     if re.search(EXPLICIT_PRODUCTION, lowered):
         return "ask", f"{GUARD_NAME}: this command uses PRODUCTION configuration. Approve only if you are sure."
-    if any(re.search(pattern, lowered) for pattern in DATABASE_COMMANDS):
+    segments = list(command_segments(lowered))
+    if any(re.search(pattern, segment) for segment in segments for pattern in DATABASE_COMMANDS):
         signals = production_signals(command_folder(command, cwd))
         if signals:
             return "ask", (f"{GUARD_NAME}: this project's .env looks like PRODUCTION ({'; '.join(signals[:3])}). "

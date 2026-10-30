@@ -9,8 +9,9 @@ AK's projects are often connected to **production** so that reported bugs
 can be investigated against real data. Reading it is useful; changing,
 corrupting or exposing it is far worse than a slower workflow.
 
-**Reading live data to investigate a bug** is allowed only through the
-read-only query tool of `arkar-change-workflow` (`scripts/readonly_query.py`):
+**Reading live data** (to investigate a bug, or before writing AK the steps
+for a data change he asked for) is allowed only through the read-only query
+tool — load the `arkar-change-workflow` skill, `scripts/readonly_query.py`:
 one SELECT at a time, in a read-only transaction, masked output. It needs no
 permission, but **say in your reply whenever you read live data**, e.g.
 "Read-only query on the live database: claim 412 has status …". Never read

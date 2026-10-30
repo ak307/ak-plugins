@@ -283,5 +283,7 @@ materially — then say why you're raising it again.
   where full values aren't needed, never in logs, behind authorisation.
 - **LLM / agent features:** tools take user identity from the run context,
   tool and document text is untrusted, write actions need permission checks.
-- **UI work:** also follow `arkar-frontend-design` and `arkar-frontend-qa`.
+- **UI work:** also follow `arkar-frontend-qa`; for new screens, restyling
+  or a redesign AK asked for, `arkar-frontend-design` too. A redesign of
+  existing screens he didn't ask about goes in the approval list as 🟠.
   **New projects:** `arkar-project-structure` first.

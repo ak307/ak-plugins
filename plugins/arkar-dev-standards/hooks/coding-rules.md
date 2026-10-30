@@ -1,4 +1,4 @@
-# AK's coding standards (always on) — arkar-dev-standards v1.8.1
+# AK's coding standards (always on) — arkar-dev-standards v1.9.0
 
 If these rules point at a skill that doesn't exist, tell AK: an old copy of
 the plugin is loaded on this computer.
@@ -103,14 +103,13 @@ deviating.
 
 ## 2b. Browser-based UI work: unique design, checked in a real browser
 
-Whenever you build or change anything users see in a browser, load both:
-
-- `arkar-frontend-design` — every project gets its own creative, impressive
-  identity (recorded in the project's `DESIGN.md`); never a basic or
-  template-looking UI.
-- `arkar-frontend-qa` — the quality floor: run the app, inspect it at the
-  project's target screen sizes, test interactions, fix and re-check. Only
-  run and click through an app whose data is local or test data (section 0).
+- `arkar-frontend-qa` — for any change users see in a browser: run the app
+  (local or test data only, section 0), check the project's target screen
+  sizes and interactions, fix and re-check.
+- `arkar-frontend-design` — also, when building a new app, page or screen,
+  restyling, or when AK says the UI looks plain: each project gets its own
+  impressive identity in `DESIGN.md`. Never redesign existing screens he
+  didn't ask about; propose it instead.
 
 Never claim to have visually checked something you didn't.
 

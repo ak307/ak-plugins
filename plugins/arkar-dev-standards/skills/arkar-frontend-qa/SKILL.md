@@ -37,13 +37,17 @@ project's design may deliberately override.
   (its style can match the design).
 - Form fields have labels; errors say what's wrong and how to fix it.
 - Motion respects `prefers-reduced-motion` (a calmer version is fine).
+- Destructive actions (delete, reject, cancel) confirm first, naming what
+  will be affected, or offer undo.
 - No horizontal page scroll, clipped content or overlapping text on the
   project's target screens.
 - No console errors or failed requests.
 
 **Advisory — `references/design-checklist.md`:** layout, type, colour,
-component states, forms, feedback and motion, responsive behaviour,
-elevation / interaction / icon rules, chart choice. Follow them by default.
+component states (including offline), forms, feedback and motion, responsive
+behaviour, elevation / interaction / icon rules, chart choice, 200% text
+size, translation-ready text (and tall scripts like Myanmar), component
+code. Follow them by default.
 The project's identity may deliberately break one (e.g. low-contrast
 decorative display type, no hover states on a touch-only kiosk, unusual
 navigation) — record it under "Deliberate deviations" in `DESIGN.md` and

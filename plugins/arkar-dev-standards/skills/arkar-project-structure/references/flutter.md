@@ -192,9 +192,10 @@ Auth tokens and anything secret: `flutter_secure_storage`. Plain preferences:
 
 ### core/theme/app_theme.dart
 
-For CBM apps, the brand primary colour is `#AE1A28`. Build the colour scheme
-with `ColorScheme.fromSeed(seedColor: ...)` and then set `primary` explicitly
-to `#AE1A28` — `fromSeed` alone shifts the colour.
+Build the colour scheme from the app's own palette:
+`ColorScheme.fromSeed(seedColor: ...)`, then set `primary` explicitly when an
+exact brand colour is required — `fromSeed` alone shifts it. Use the CBM red
+`#AE1A28` only when AK asks for CBM branding or the app already uses it.
 
 ### Firebase-only apps: security rules are the authorisation
 

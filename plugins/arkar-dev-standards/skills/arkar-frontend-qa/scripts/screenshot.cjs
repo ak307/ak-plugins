@@ -10,10 +10,12 @@
 //
 // Without --sizes it uses mobile 375x812, tablet 768x1024 and desktop 1440x900.
 //
-// Needs Playwright with Chromium. If missing:
-//   npm install --no-save playwright && npx playwright install chromium
+// Needs Playwright with Chromium. If missing, install it outside the project
+// (so no project files or install scripts change):
+//   npm install --prefix ~/.arkar/playwright playwright && npx --prefix ~/.arkar/playwright playwright install chromium
 
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 
 const DEFAULT_VIEWPORTS = [
@@ -23,8 +25,9 @@ const DEFAULT_VIEWPORTS = [
 ];
 
 function loadPlaywright() {
-  // Prefer the project's own copy (current folder), then any global one.
-  for (const searchFrom of [process.cwd(), __dirname]) {
+  // Prefer the project's own copy, then the shared one in ~/.arkar/playwright, then a global one.
+  const sharedCopy = path.join(os.homedir(), ".arkar", "playwright");
+  for (const searchFrom of [process.cwd(), sharedCopy, __dirname]) {
     try {
       return require(require.resolve("playwright", { paths: [searchFrom] }));
     } catch {
@@ -35,7 +38,7 @@ function loadPlaywright() {
     return require("playwright");
   } catch {
     console.error(
-      "Playwright is not installed. Run: npm install --no-save playwright && npx playwright install chromium",
+      "Playwright is not installed. Run: npm install --prefix ~/.arkar/playwright playwright && npx --prefix ~/.arkar/playwright playwright install chromium",
     );
     process.exit(2);
   }
@@ -83,7 +86,7 @@ function collectProblems(page) {
 }
 
 async function main() {
-  const [url, outputFolder = "screenshots", ...flags] = process.argv.slice(2);
+  const [url, outputFolder = "qa-screenshots", ...flags] = process.argv.slice(2);
   if (!url) {
     console.error("Usage: node screenshot.cjs <url> [output-folder] [--full-page] [--sizes=WxH,WxH]");
     process.exit(1);
@@ -100,11 +103,15 @@ async function main() {
   const browser = await chromium.launch();
   let problemCount = 0;
 
+  try {
   for (const viewport of viewports) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
     const problems = collectProblems(page);
 
-    await page.goto(url, { waitUntil: "networkidle" });
+    // "load" plus a short settle, not "networkidle": pages with live updates
+    // (polling, server-sent events) never go idle.
+    await page.goto(url, { waitUntil: "load", timeout: 30000 });
+    await page.waitForTimeout(800);
 
     // A page wider than the viewport means content overflows sideways.
     const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -119,9 +126,13 @@ async function main() {
     problemCount += problems.length;
     await page.close();
   }
-
-  await browser.close();
+  } finally {
+    await browser.close();
+  }
   console.log(problemCount === 0 ? "No console, network or overflow problems found." : `${problemCount} problem(s) found.`);
 }
 
-main();
+main().catch((error) => {
+  console.error(`Screenshot failed: ${error.message}`);
+  process.exit(1);
+});

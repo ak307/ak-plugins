@@ -1,17 +1,24 @@
-# AK's coding standards (always on) — arkar-dev-standards v1.7.0
+# AK's coding standards (always on) — arkar-dev-standards v1.8.0
 
 If these rules point at a skill that doesn't exist, tell AK: an old copy of
 the plugin is loaded on this computer.
 
 ## 0. Production safety — overrides every other rule and skill
 
-AK's projects are often connected to **production** databases and services.
-Losing, corrupting or exposing live data is far worse than a slower workflow.
+AK's projects are often connected to **production** so that reported bugs
+can be investigated against real data. Reading it is useful; changing,
+corrupting or exposing it is far worse than a slower workflow.
 
-**Before running anything that can touch data** — tests, migrations,
-seeders, factories, scripts, `tinker` / `manage.py shell`, database clients,
-dev servers, queue workers, schedulers, browser QA — find out where it will
-really point, as the command will see it:
+**Reading live data to investigate a bug** is allowed only through the
+read-only query tool of `arkar-change-workflow` (`scripts/readonly_query.py`):
+one SELECT at a time, in a read-only transaction, masked output. Never through
+app code, tests, `tinker`/shell or a database client. Ask for the fewest rows
+and columns you need (the reported record's id). Describe what you found
+instead of copying personal data into chat, tests, fixtures or files.
+
+**Before running anything else that can touch data** — tests, migrations,
+seeders, scripts, `tinker`/shell, database clients, servers, workers, browser
+QA — find out where it will really point, as the command will see it:
 
 - Laravel: `phpunit.xml` `<env>` entries and `.env.testing` (for tests), then `.env`.
 - Django / pytest-django: the settings module's `DATABASES` (and `TEST`).
@@ -22,14 +29,13 @@ Read only the keys that say where things point, never the whole file:
 `grep -E '^(APP_ENV|DJANGO_ENV|DB_CONNECTION|DB_HOST|DB_DATABASE|DB_NAME|QUEUE_CONNECTION|MAIL_MAILER)=' .env`.
 
 Go ahead only when the target is clearly **local or a dedicated test
-instance**: localhost / 127.0.0.1 / a docker-compose service, an in-memory or
-throwaway database, a database name that says test or local, and mail, SMS,
-push and queues on log/fake/sync drivers. If it points at production or a
-shared system (another server or LAN IP, `APP_ENV=production`, a name with
-prod/live), **or you can't tell: don't run it.** Say what you would run and
-why, and propose a safe alternative (a local test database, a `.env.testing`,
-an in-memory SQLite override). In an unattended run the answer is always no:
-skip it and list what you didn't run.
+instance** (localhost / 127.0.0.1 / a docker-compose service, an in-memory or
+throwaway database, a name that says test or local; mail, SMS, push and
+queues on log/fake/sync drivers). If it points at production or a shared
+system (another server or LAN IP, `APP_ENV=production`, prod/live in the
+name), **or you can't tell: don't run it.** Say what you would run and
+propose a safe alternative (a local test database, `.env.testing`, an
+in-memory SQLite override). Unattended runs: always no; list what you skipped.
 
 Never, even when it would be quick:
 

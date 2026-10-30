@@ -9,7 +9,7 @@ test safely and report what you found. Used in the bug-fix path of
 2. Tracing the workflow
 3. Where hidden bugs usually are
 4. Same root cause elsewhere
-5. Safe testing
+5. Reading live data and testing safely
 6. Confirmed vs suspected
 7. Report format
 
@@ -88,9 +88,37 @@ Once you know the root cause, search for the same pattern:
   (location and one line on the risk). Don't investigate each one in depth
   unless it's in money, approval or permission code.
 
-## 5. Safe testing
+## 5. Reading live data and testing safely
 
 Rule 0 (production safety, in the always-on rules) applies first.
+
+### Reading live data
+
+AK connects projects to production so bugs can be investigated against real
+records. Read them only with `scripts/readonly_query.py` (run it from the
+project folder; `uv run --with pymysql --with "psycopg[binary]" python …`).
+It allows one `SELECT`/`WITH`/`SHOW`/`EXPLAIN`/`DESCRIBE` per run, refuses
+writes, locking reads and file access, runs in a read-only transaction with a
+10-second limit, fetches at most 50 rows (`--limit`, max 500), masks
+passwords, tokens, salary, medical details, NRIC, bank numbers, e-mail and
+phone, and logs the statement (not the results) to
+`~/.arkar/readonly-queries.log`.
+
+- Start narrow: the reported record by id, only the columns the bug is about.
+  Then counts and groupings to see how widespread it is
+  (`SELECT status, count(*) … GROUP BY status`), not whole tables.
+- Use what you see to understand the bug and to shape test data; describe it
+  in the report ("claim 412: status `finance_approved`, page shows
+  'Waiting for finance'") rather than pasting rows with personal data.
+- If the tool says no read-only database user is configured, mention once
+  that AK can add `READONLY_DATABASE_URL` for a user with SELECT only, e.g.
+  MySQL: `CREATE USER 'claude_ro'@'%' IDENTIFIED BY '…'; GRANT SELECT ON hrms.* TO 'claude_ro'@'%';`
+  (AK runs that himself).
+- Never use the app (`tinker`, `manage.py shell`, scripts, the running site),
+  tests or a database client to look at live data, and never write to it —
+  data repairs are scripts for AK (Rule 0).
+
+### Testing
 
 - **Never touch production.** Before running anything that connects to a
   database, queue, mail or payment service, check the configuration (`.env`,

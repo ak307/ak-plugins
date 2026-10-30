@@ -106,7 +106,7 @@ def get_chat_model(temperature: float = 0.2) -> ChatOpenAI:
     return ChatOpenAI(
         model=os.environ["LLM_MODEL"],
         base_url=os.environ["LLM_BASE_URL"],
-        api_key=os.getenv("LLM_API_KEY", "EMPTY"),
+        api_key=os.environ["LLM_API_KEY"],  # vLLM runs with --api-key
         temperature=temperature,
         timeout=60,
         max_retries=2,
@@ -116,7 +116,9 @@ def get_chat_model(temperature: float = 0.2) -> ChatOpenAI:
 ```
 
 Settings come from environment variables (loaded by `config/settings.py` from
-`.env`), so `agents/` never imports `django.conf`. Pass vLLM-specific options
+`.env`), so `agents/` never imports `django.conf`. Start vLLM with
+`--api-key` and keep it on the internal network, so the model server isn't
+open to anyone who can reach it. Pass vLLM-specific options
 (e.g. `chat_template_kwargs`) through `extra_body=`, not `model_kwargs`. Tool
 calling requires vLLM to run with `--enable-auto-tool-choice` and a
 `--tool-call-parser` for the model. For structured output use
@@ -328,6 +330,12 @@ against a local database; on shared or production databases AK runs it.
 ```python
 async def stream_reply(request, conversation_id):
     user = await request.auser()
+    if not user.is_authenticated:
+        return HttpResponse(status=401)
+    # Only the owner's conversation; anyone else gets 404, not someone else's chat.
+    conversation = await Conversation.objects.filter(pk=conversation_id, owner=user).afirst()
+    if conversation is None:
+        raise Http404
     ...
     async def events():
         reply = []
@@ -400,6 +408,11 @@ views don't hold a worker thread per request.
 - **Documents / RAG:** the existing vector database (Qdrant) behind a search
   tool in `agents/shared_tools/`.
 - **Tests:** `InMemorySaver` from `langgraph.checkpoint.memory`.
+- **Retention:** checkpoints and the store hold whole conversations. Deleting
+  a `Conversation` deletes its checkpoint thread
+  (`await checkpointer.adelete_thread(thread_id)`) and the user's memories when
+  they leave; agree a retention period with AK (PDPA) and purge older threads
+  with a scheduled task.
 - Set `LANGGRAPH_STRICT_MSGPACK=true` in production.
 
 ## 7. LangSmith: tracing and evals
@@ -421,7 +434,10 @@ Evals live in `evals/`, separate from unit tests: a JSONL dataset per agent,
 evaluators in `evaluators.py` (`(inputs, outputs, reference_outputs) -> score`,
 LLM-as-judge via `openevals` when needed), and a pytest file that runs them.
 They call the real model, so they run on demand or nightly, not on every
-commit. Add a case to the dataset whenever a real conversation goes wrong.
+commit. When a real conversation goes wrong, add a case **rewritten with
+synthetic data** — no real names, staff IDs, NRIC, phone numbers, salaries or
+medical details — because datasets are committed to git and may be uploaded to
+LangSmith (only with approval).
 
 ## 8. Testing
 

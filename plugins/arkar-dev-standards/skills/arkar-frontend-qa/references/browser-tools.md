@@ -31,7 +31,7 @@ connected.
 Available if AK added it once with:
 
 ```
-claude mcp add --scope user playwright -- npx @playwright/mcp@latest
+claude mcp add --scope user playwright -- npx @playwright/mcp@0.0.83
 ```
 
 Use its navigate, click, type, screenshot, resize and console tools. Resize
@@ -51,9 +51,12 @@ node "<skill folder>/scripts/screenshot.cjs" http://localhost:8000/leave-request
   width). Default is 375×812, 768×1024 and 1440×900.
 - Run it from the project folder. It uses the project's Playwright if present,
   otherwise a global one.
-- If Playwright is missing, install it outside the project's dependencies:
-  `npm install --no-save playwright` then `npx playwright install chromium`.
-  Don't add it to `package.json` unless the project already uses Playwright.
+- If Playwright is missing, install it once per computer, outside any
+  project (so no project files or install scripts change):
+  `npm install --prefix ~/.arkar/playwright playwright` then
+  `npx --prefix ~/.arkar/playwright playwright install chromium`. The script
+  finds it there. Don't add it to `package.json` unless the project already
+  uses Playwright.
 - Then **look at each PNG** with the Read tool — the script only finds
   machine-detectable problems; layout and design problems need your eyes.
 - Save screenshots in a `qa-screenshots/` folder and make sure it's in

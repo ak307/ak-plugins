@@ -59,8 +59,13 @@ it touches. Each item: what to check, the usual fix per stack.
   apps (Laravel `VerifyCsrfToken`/`@csrf`, Django `CsrfViewMiddleware`).
 - Logout invalidates the session; password change invalidates other sessions
   where the framework supports it.
+- Admin accounts and the Django admin / Filament / back-office: two-factor
+  authentication (Fortify 2FA, `django-otp`), and staff-only access.
 
 ## 5. Authorisation (who may do what)
+
+(Laravel/Inertia: everything passed as page props is visible in the page
+source — pass Resources with only the needed fields, never models.)
 
 The most common real-world hole. For every new action/endpoint:
 
@@ -75,6 +80,13 @@ The most common real-world hole. For every new action/endpoint:
   - FastAPI: `CurrentUser` dependency + ownership check in the service.
 - Admin/bulk/export endpoints get the strictest checks.
 - Don't trust IDs, roles or prices sent by the client.
+- **Status changes** (approve, reject, cancel, pay): lock the record, check
+  its current status and the user's right, and write — in one transaction
+  (`lockForUpdate()` / `select_for_update()`), so double clicks and two
+  approvers can't both succeed. Nobody approves their own request.
+- **Firebase-only apps:** Firestore/Storage security rules are the
+  authorisation — rules check `request.auth.uid` against the owner, are tested
+  with the emulator, and App Check is on.
 
 ## 6. Files: uploads, downloads, paths
 
@@ -85,6 +97,16 @@ The most common real-world hole. For every new action/endpoint:
   ID to a stored path. Block `../` traversal.
 - Images/PDF generation from user HTML (dompdf etc.): disable remote resource
   loading unless needed.
+- Excel/CSV **imports**: parse with a library that blocks XML external
+  entities (openpyxl with `defusedxml` installed; PhpSpreadsheet's default
+  XML security), limit file size and row count (zip bombs), and validate every
+  row like form input.
+- Excel/CSV **exports**: cells that start with `=`, `+`, `-`, `@`, tab or
+  carriage return are prefixed with `'` so spreadsheet formulas from user
+  data don't run (CSV/formula injection).
+- Rich text from users (comments, descriptions with formatting): sanitise to
+  an allow-list of tags (`nh3` in Python, HTMLPurifier in PHP, DOMPurify in
+  the browser) before storing or showing it.
 
 ## 7. External calls, redirects, SSRF
 

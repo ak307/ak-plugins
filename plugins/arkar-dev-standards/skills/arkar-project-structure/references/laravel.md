@@ -46,7 +46,7 @@ project-name/
 │   │   ├── Requests/              # one FormRequest per create/update action
 │   │   │   ├── StoreLeaveRequestRequest.php
 │   │   │   └── UpdateLeaveRequestRequest.php
-│   │   ├── Resources/             # API resources (JSON shape), only for Api/
+│   │   ├── Resources/             # the JSON shape of a model: API responses AND Inertia props
 │   │   │   └── LeaveRequestResource.php
 │   │   └── Middleware/
 │   ├── Models/
@@ -102,20 +102,32 @@ logic belongs in an Action. Prefer the seven resource actions
 a small method (`approve`) or a separate invokable controller.
 
 ```php
+use App\Http\Resources\LeaveRequestResource;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class LeaveRequestController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        Gate::authorize('viewAny', LeaveRequest::class);
+
+        $leaveRequests = LeaveRequest::query()
+            ->visibleTo($request->user())
+            ->with('staff')
+            ->latest()
+            ->paginate(20);
+
         return Inertia::render('leave-requests/index', [
-            'leaveRequests' => LeaveRequest::with('staff')->latest()->paginate(20),
+            'leaveRequests' => LeaveRequestResource::collection($leaveRequests),
         ]);
     }
 
     public function store(StoreLeaveRequestRequest $request, SubmitLeaveRequest $submitLeaveRequest): RedirectResponse
     {
+        Gate::authorize('create', LeaveRequest::class);
+
         $submitLeaveRequest->handle($request->user(), $request->validated());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Leave request submitted.')]);
@@ -136,8 +148,15 @@ class LeaveRequestController extends Controller
 }
 ```
 
-The kit's base `Controller` has no `authorize()` helper — use
-`Gate::authorize(...)`. Success/error messages use the kit's toast flash
+Every controller method authorises first — `Gate::authorize(...)` with the
+model's Policy — and list queries are scoped to what the user may see
+(`visibleTo()` scope). The kit's base `Controller` has no `authorize()`
+helper.
+
+**Inertia props are public.** Everything passed to `Inertia::render` is in
+the page's HTML, readable by the user. Pass Resources that list exactly the
+fields the page needs — never models or paginators of models, which send
+every non-hidden column (and loaded relations) to the browser. Success/error messages use the kit's toast flash
 (`Inertia::flash('toast', ...)`), not `->with('success', ...)`, which the
 frontend never shows.
 
@@ -153,11 +172,14 @@ class ApproveLeaveRequest
 {
     public function handle(LeaveRequest $leaveRequest, User $reviewer): LeaveRequest
     {
-        if ($leaveRequest->status !== LeaveStatus::Pending) {
-            throw new LeaveRequestException('Only pending requests can be approved.');
-        }
-
         return DB::transaction(function () use ($leaveRequest, $reviewer) {
+            // Lock the row, then check: two approvers clicking at once can't both pass.
+            $leaveRequest = LeaveRequest::whereKey($leaveRequest->id)->lockForUpdate()->firstOrFail();
+
+            if ($leaveRequest->status !== LeaveStatus::Pending) {
+                throw new LeaveRequestException('Only pending requests can be approved.');
+            }
+
             $leaveRequest->update([
                 'status' => LeaveStatus::Approved,
                 'reviewed_by' => $reviewer->id,
@@ -169,6 +191,32 @@ class ApproveLeaveRequest
     }
 }
 ```
+
+**Status changes = lock, check, write — in one transaction.** Checking the
+status before the transaction, or without `lockForUpdate()`, lets a double
+click or two approvers approve twice.
+
+### Policies — who may do what
+
+```php
+class LeaveRequestPolicy
+{
+    public function view(User $user, LeaveRequest $leaveRequest): bool
+    {
+        return $leaveRequest->staff_id === $user->id || $leaveRequest->staff->manager_id === $user->id;
+    }
+
+    public function approve(User $user, LeaveRequest $leaveRequest): bool
+    {
+        // The staff member's manager approves; nobody approves their own request.
+        return $leaveRequest->staff->manager_id === $user->id && $leaveRequest->staff_id !== $user->id;
+    }
+}
+```
+
+Adapt the rule to how the project models approvers (roles, departments),
+but always check the record, not just the role. Pest tests cover each
+action for the owner, another user (403) and a guest.
 
 Actions are injected into controller methods, jobs and commands. `Services/`
 holds only clients for external systems (Outlook, SMS gateway, an LLM server).
@@ -183,7 +231,8 @@ their own names (`Requests/Settings/ProfileUpdateRequest`).
 
 Use the same style as the kit's `User` model: PHP attributes for mass
 assignment and hidden fields, `casts()` (with enum casts), relationships and
-small scopes. No business workflows inside models. In
+small scopes (e.g. `scopeVisibleTo(Builder $query, User $user)` returning
+only rows the user may see). No business workflows inside models. In
 `AppServiceProvider::boot()`, call `Model::preventLazyLoading(! app()->isProduction())`
 so N+1 queries fail loudly in development.
 
@@ -237,7 +286,7 @@ unversioned; an API used by mobile apps or other teams goes under
 | Action | verb + noun, under `Actions/<Area>/` | `Actions\LeaveRequests\ApproveLeaveRequest` |
 | FormRequest | `Store<Model>Request`, `Update<Model>Request` | `StoreLeaveRequestRequest` |
 | Policy | `<Model>Policy` | `LeaveRequestPolicy` |
-| Resource | `<Model>Resource` | `LeaveRequestResource` |
+| Resource | `<Model>Resource` (API responses and Inertia props) | `LeaveRequestResource` |
 | Enum | singular PascalCase, TitleCase cases | `LeaveStatus::Approved` |
 | Route URIs | plural kebab-case, snake_case parameter | `/leave-requests/{leave_request}` |
 | Route names | `<uri>.<action>` | `leave-requests.approve` |

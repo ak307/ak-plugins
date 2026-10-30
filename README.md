@@ -25,8 +25,24 @@ updated automatically when this repo changes.
   the project's `.env` looks like production (`APP_ENV=production`, a
   non-local database host including LAN IPs, or `prod`/`live` in the database
   name). Needs Python 3 on the computer; without it, the guard asks before
-  anything database-related instead of letting it through. Its tests:
-  `uvx pytest tests -q`.
+  anything database-related instead of letting it through.
+- **Read-only live-data tool**
+  (`skills/arkar-change-workflow/scripts/readonly_query.py`) — the only way
+  Claude reads a live database when investigating a reported bug: one
+  `SELECT`/`SHOW`/`EXPLAIN` per run, refused if it writes, locks rows or
+  touches files, run in a READ ONLY transaction with a 10-second limit, at
+  most 50 rows, personal data masked, every statement logged to
+  `~/.arkar/readonly-queries.log`. Works with MySQL, PostgreSQL and SQLite.
+
+  **Recommended once per project:** a database user that can only read, in
+  `.env` as `READONLY_DATABASE_URL` — the tool then never uses the app's own
+  (writable) user. MySQL:
+  `CREATE USER 'claude_ro'@'%' IDENTIFIED BY '<password>'; GRANT SELECT ON <db>.* TO 'claude_ro'@'%';`
+  then `READONLY_DATABASE_URL=mysql://claude_ro:<password>@<host>:3306/<db>`.
+  PostgreSQL: `CREATE ROLE claude_ro LOGIN PASSWORD '<password>'; GRANT CONNECT ON DATABASE <db> TO claude_ro; GRANT USAGE ON SCHEMA public TO claude_ro; GRANT SELECT ON ALL TABLES IN SCHEMA public TO claude_ro;`
+
+Tests for the guard and the read-only tool:
+`uvx --with "psycopg[binary]" --with pymysql pytest tests -q`.
 - **`arkar-project-structure` skill** — standard project templates, used whenever
   Claude creates a project, adds a module, or decides where a file goes.
   Templates in `plugins/arkar-dev-standards/skills/arkar-project-structure/references/`:
@@ -106,7 +122,7 @@ and a row for it in the table in that skill's `SKILL.md`.
 
 ```bash
 claude plugin validate .
-uvx pytest tests -q        # production guard: 200+ cases
+uvx --with "psycopg[binary]" --with pymysql pytest tests -q   # guard + read-only tool: 250+ cases
 ```
 
 Tests for the `arkar-project-structure` skill are in

@@ -22,7 +22,8 @@ project-name/                  # kebab-case folder name
 │   │   ├── __init__.py
 │   │   ├── config.py          # Settings class, reads .env
 │   │   ├── database.py        # engine, SessionLocal, Base, DbSession dependency
-│   │   ├── exceptions.py      # domain errors (NotFoundError, ConflictError, ...)
+│   │   ├── exceptions.py      # domain errors (NotFoundError, ConflictError, ForbiddenError, ...)
+│   │   ├── security.py        # token checks (decode_access_token)
 │   │   └── logging.py         # logging setup called from main.py
 │   ├── routers/               # HTTP endpoints, one file per resource
 │   │   ├── __init__.py
@@ -80,11 +81,12 @@ middleware, routers and error handlers. No endpoint logic here.
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.core.database import engine
-from app.core.exceptions import ConflictError, NotFoundError
+from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
 from app.core.logging import setup_logging
 from app.routers import health, users
 
@@ -96,7 +98,17 @@ async def lifespan(app: FastAPI):
     engine.dispose()
 
 
-app = FastAPI(title=settings.app_name, version=settings.app_version, lifespan=lifespan)
+# API docs are for development; production doesn't publish its API map.
+show_docs = settings.app_env != "production"
+app = FastAPI(
+    title=settings.app_name,
+    version=settings.app_version,
+    lifespan=lifespan,
+    docs_url="/docs" if show_docs else None,
+    redoc_url=None,
+    openapi_url="/openapi.json" if show_docs else None,
+)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts)
 
 app.include_router(health.router)
 app.include_router(users.router)
@@ -110,6 +122,11 @@ async def handle_not_found(request: Request, error: NotFoundError):
 @app.exception_handler(ConflictError)
 async def handle_conflict(request: Request, error: ConflictError):
     return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={"detail": str(error)})
+
+
+@app.exception_handler(ForbiddenError)
+async def handle_forbidden(request: Request, error: ForbiddenError):
+    return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(error)})
 ```
 
 If CORS is needed, add `CORSMiddleware` here with origins from
@@ -127,7 +144,10 @@ class Settings(BaseSettings):
 
     app_name: str = "Project Name API"
     app_version: str = "0.1.0"
+    app_env: str = "local"         # local | staging | production
     database_url: SecretStr
+    jwt_secret: SecretStr
+    allowed_hosts: list[str] = ["localhost", "127.0.0.1", "testserver"]  # testserver = TestClient
     cors_origins: list[str] = []   # in .env as JSON: CORS_ORIGINS=["https://a.cbm.com.sg"]
 
 
@@ -188,6 +208,8 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True)
     full_name: Mapped[str] = mapped_column(String(255))
+    is_active: Mapped[bool] = mapped_column(default=True)
+    is_admin: Mapped[bool] = mapped_column(default=False)
 ```
 
 Add the import to `app/models/__init__.py` (`from app.models.user import User`)
@@ -229,23 +251,35 @@ when the service holds state (e.g. a client for an external API).
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import ForbiddenError, NotFoundError
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 
 
-def get_user(db: Session, user_id: int) -> User:
+def ensure_can_manage(current_user: User, user_id: int) -> None:
+    """Users manage their own profile; admins manage everyone's."""
+    if current_user.id != user_id and not current_user.is_admin:
+        raise ForbiddenError("You can't access this user")
+
+
+def get_user(db: Session, user_id: int, current_user: User) -> User:
+    ensure_can_manage(current_user, user_id)
     user = db.get(User, user_id)
     if user is None:
         raise NotFoundError("User not found")
     return user
 
 
-def list_users(db: Session) -> list[User]:
-    return list(db.scalars(select(User).order_by(User.id)))
+def list_users(db: Session, current_user: User, page: int = 1, page_size: int = 50) -> list[User]:
+    if not current_user.is_admin:
+        raise ForbiddenError("Only admins can list users")
+    query = select(User).order_by(User.id).limit(page_size).offset((page - 1) * page_size)
+    return list(db.scalars(query))
 
 
-def create_user(db: Session, data: UserCreate) -> User:
+def create_user(db: Session, data: UserCreate, current_user: User) -> User:
+    if not current_user.is_admin:
+        raise ForbiddenError("Only admins can create users")
     user = User(email=data.email, full_name=data.full_name)
     db.add(user)
     db.commit()
@@ -253,14 +287,19 @@ def create_user(db: Session, data: UserCreate) -> User:
     return user
 
 
-def update_user(db: Session, user_id: int, data: UserUpdate) -> User:
-    user = get_user(db, user_id)
+def update_user(db: Session, user_id: int, data: UserUpdate, current_user: User) -> User:
+    user = get_user(db, user_id, current_user)
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(user, field, value)
     db.commit()
     db.refresh(user)
     return user
 ```
+
+Every service function that reads or changes a record takes the current user
+and checks they may do it — not just that they are logged in (a user may
+open *their own* record, not `/users/{any id}`). Lists are paginated, never
+"all rows".
 
 Services don't know about HTTP: they never raise `HTTPException` or return
 `Response` objects. They return data or raise a domain exception from
@@ -276,30 +315,93 @@ that does all of them and commits once.
 from fastapi import APIRouter, status
 
 from app.core.database import DbSession
+from app.dependencies import CurrentUser
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
 from app.services import user_service
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
+@router.get("", response_model=list[UserResponse])
+def list_users(db: DbSession, current_user: CurrentUser, page: int = 1):
+    return user_service.list_users(db, current_user, page=page)
+
+
 @router.get("/{user_id}", response_model=UserResponse)
-def get_user(user_id: int, db: DbSession):
-    return user_service.get_user(db, user_id)
+def get_user(user_id: int, db: DbSession, current_user: CurrentUser):
+    return user_service.get_user(db, user_id, current_user)
 
 
 @router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def create_user(data: UserCreate, db: DbSession):
-    return user_service.create_user(db, data)
+def create_user(data: UserCreate, db: DbSession, current_user: CurrentUser):
+    return user_service.create_user(db, data, current_user)
 
 
 @router.patch("/{user_id}", response_model=UserResponse)
-def update_user(user_id: int, data: UserUpdate, db: DbSession):
-    return user_service.update_user(db, user_id, data)
+def update_user(user_id: int, data: UserUpdate, db: DbSession, current_user: CurrentUser):
+    return user_service.update_user(db, user_id, data, current_user)
 ```
 
 A router function reads the request, calls one service function, and returns
 the result. Dependencies are written as `Annotated` aliases (`DbSession`,
 `CurrentUser` in `dependencies.py`), never `= Depends(...)` defaults.
+
+### app/dependencies.py and app/core/security.py — who is calling
+
+Every router except `health` takes `CurrentUser`. The example checks a JWT
+signed with `settings.jwt_secret` (PyJWT); with company SSO (Microsoft
+Entra, Keycloak), `decode_access_token` validates that provider's token
+instead — the rest stays the same.
+
+```python
+# app/core/security.py
+import jwt
+
+from app.core.config import settings
+
+
+def decode_access_token(token: str) -> int:
+    """Return the user id in a valid token; raise jwt.PyJWTError otherwise."""
+    payload = jwt.decode(token, settings.jwt_secret.get_secret_value(), algorithms=["HS256"])
+    return int(payload["sub"])
+```
+
+```python
+# app/dependencies.py
+from typing import Annotated
+
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+
+from app.core.database import DbSession
+from app.core.security import decode_access_token
+from app.models.user import User
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
+
+
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: DbSession) -> User:
+    not_authenticated = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Not authenticated",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        user_id = decode_access_token(token)
+    except jwt.PyJWTError:
+        raise not_authenticated
+    user = db.get(User, user_id)
+    if user is None or not user.is_active:
+        raise not_authenticated
+    return user
+
+
+CurrentUser = Annotated[User, Depends(get_current_user)]
+```
+
+Tests override `get_current_user` (`app.dependency_overrides[get_current_user] = lambda: some_user`)
+and cover, for each endpoint: the owner, another user (403) and no token (401).
 
 ### app/clients/ — external systems
 
@@ -414,7 +516,7 @@ aren't create/update/delete: `POST /leave-requests/{id}/approve`.
 4. `app/services/thing_service.py` — the logic and queries.
 5. `app/routers/things.py` — endpoints calling the service.
 6. Register in `app/main.py`: `app.include_router(things.router)`.
-7. `tests/test_things.py` — at least the happy path and one error case.
+7. `tests/test_things.py` — the happy path, one error case, and the permission cases: owner, another user (403), no token (401).
 8. New settings → `config.py` **and** `.env.example`.
 
 ## 6. Defaults and when to change them

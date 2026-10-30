@@ -30,7 +30,9 @@ Two sources, used together:
     there are three or more branches, or a new feature would add another.
   - Don't wrap plain functions in a "stateless" class of `@classmethod`s just
     to look object-oriented; a module of functions is fine where the template
-    uses functions.
+    uses functions. (Laravel Actions are not this: one class per operation,
+    injected where it's used, is the PHP template's unit. Python services are
+    modules of functions.)
   - Dependencies passed in (constructor/parameters), not created deep inside.
 
 ## 2. Smells worth proposing

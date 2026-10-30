@@ -17,6 +17,8 @@ skill and the project's `DESIGN.md`.
 9. Elevation, interaction and icon rules
 10. Charts — pick by question
 11. Common defects to look for in screenshots
+12. Language and text size
+13. Component code
 
 ## 1. Layout and hierarchy
 
@@ -32,6 +34,7 @@ skill and the project's `DESIGN.md`.
 
 - At most two typefaces; one is usually enough.
 - Body text 16 px on mobile (never below 14 px for anything users must read).
+  Font sizes in `rem`, so the user's browser text size is respected.
 - Line length about 50–80 characters for paragraphs.
 - Line height ~1.4–1.6 for body, tighter for headings.
 - Weight and size, not colour alone, create hierarchy.
@@ -44,7 +47,10 @@ skill and the project's `DESIGN.md`.
   semantic colours for success / warning / error / info.
 - Text contrast at least 4.5:1 (3:1 for large text and UI component borders).
 - Don't rely on colour alone to convey meaning — add an icon or text.
-- Dark mode only if the project supports it; if it does, check both.
+- Light, dark or both is decided per project and recorded in `DESIGN.md`
+  ("Themes"). If dark is supported, the same tokens are redefined under
+  `prefers-color-scheme: dark` (plus a toggle class if the app offers one);
+  components never know which theme is active. Check both.
 
 ## 4. Components and states
 
@@ -55,12 +61,17 @@ consistently across the app:
 |---|---|
 | Button | default, hover, focus-visible, pressed, disabled, loading |
 | Input | empty, filled, focus, error (with message), disabled, read-only |
-| List / table | loading (skeleton), empty (with next step), error (with retry), populated, very long content |
+| List / table | loading (skeleton the shape of the real content, so nothing jumps), empty (with next step), error (with retry), offline (cached data marked as possibly out of date, or a message that says it's the connection, not a failure), populated, very long content |
 | Dialog / drawer | open, closing, focus trapped, Escape closes, focus returns to trigger |
 | Navigation | current page marked, collapsed (mobile), expanded |
 
 Empty states say what's missing and what to do next ("No leave requests yet —
-Submit your first request").
+Submit your first request"). No dead ends: every state offers a way forward
+or back.
+
+**Destructive actions** (delete, reject, cancel, remove access) ask for
+confirmation that names the thing ("Reject Tan's leave request for 3–5 Nov?")
+or offer undo straight after. This one is part of the hard floor.
 
 ## 5. Forms
 
@@ -86,7 +97,7 @@ Submit your first request").
 
 | Width | Expect |
 |---|---|
-| 375 (mobile) | single column; navigation collapses (menu button or bottom bar); tables become cards or scroll inside their own container; tap targets ≥ 44×44 px; no horizontal page scroll |
+| 320–375 (mobile) | nothing breaks down to 320 wide; single column; navigation collapses (menu button or bottom bar); tables become cards or scroll inside their own container; tap targets ≥ 44×44 px; no horizontal page scroll |
 | 768 (tablet) | two columns where it helps; navigation may stay collapsed; forms not stretched edge to edge |
 | 1440 (desktop) | content has a max width (often 1200–1320 px) or a deliberate full-width layout; no lines of text running the full screen width |
 
@@ -120,7 +131,8 @@ Design each size on purpose — a phone layout is not the desktop layout squeeze
   meaningful icons have 3:1 contrast and an accessible name.
 - **Colour tokens:** components use semantic tokens (`--color-primary`,
   `--color-surface`, `--color-danger`), never raw hex; avoid grey text on grey
-  backgrounds.
+  backgrounds. In Tailwind, extend the theme with the project's tokens;
+  arbitrary values (`p-[13px]`, `text-[#3a3a3a]`) are defects.
 
 ## 10. Charts — pick by question
 
@@ -151,3 +163,39 @@ and give a text alternative (the key number in words).
 - Console errors, 404s for assets, failed API calls.
 - Emoji used as icons; mixed icon styles; random shadows; clickable cards
   without a pointer cursor or hover state.
+- Content jumping as images or data load (images without width/height or
+  `aspect-ratio`, no reserved space for async content).
+- Text clipped or overlapping at 200% browser zoom.
+
+## 12. Language and text size
+
+- **Text size:** layouts survive 200% browser zoom and larger default text —
+  no fixed heights on text containers, no `overflow: hidden` cutting off
+  copy, buttons that grow with their label.
+- **Translation-ready** (when the app has, or will have, more than one
+  language): every user-facing string goes through the project's message
+  catalogue (Laravel `__()`, Django `gettext`, i18next / react-intl); no
+  sentences built by joining strings (word order differs between languages);
+  layouts tolerate text 30–50% longer than English; dates, numbers and
+  plurals use `Intl.*` / the framework's locale formatting; the `lang`
+  attribute is correct.
+- **Scripts with tall glyphs** (Myanmar, Thai, Tamil, Devanagari): line
+  height ≥ 1.6 for body text and no fixed-height single-line boxes, or
+  stacked marks get clipped. Pick fonts that cover the script (Noto Sans
+  Myanmar / Padauk for Burmese) and test with real text.
+- Use logical CSS properties (`margin-inline-start`, `padding-inline`) so
+  right-to-left languages work later without rewrites.
+
+## 13. Component code
+
+- **Presentation separate from data:** components take data and callbacks;
+  fetching, business rules and formatting of domain data live in hooks,
+  loaders, Inertia props or the backend — not inside the component.
+- **States are explicit:** model loading / empty / error / success as a real
+  state (a discriminated union, a status enum, `AsyncValue` in Flutter), not
+  guessed from `data && !error` checks.
+- **Empty, error and loading are components** reused across pages, not
+  inline ternaries repeated per page.
+- **Small and composed:** extract a component when a render function no
+  longer fits on a screen or a subtree repeats; name by role
+  (`LeaveBalanceCard`), not appearance (`BlueBox`).

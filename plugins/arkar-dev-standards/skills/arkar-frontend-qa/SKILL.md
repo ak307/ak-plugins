@@ -1,6 +1,6 @@
 ---
 name: arkar-frontend-qa
-description: AK's quality floor for browser-based UI work — run the app in a real browser, inspect it at the project's target screen sizes, meet a small hard accessibility/usability floor (other checks advisory), fix and re-check, and report honestly what was verified. Use this whenever building, changing, styling or fixing anything users see in a browser — web pages, React/Vue/Inertia/Blade/Django-template screens, Livewire components, dashboards, forms, layouts, CSS or Tailwind — even a small UI tweak, and even if the user doesn't ask for testing.
+description: AK's quality floor for browser-based UI work (including HTML served from Python, PHP or templates) — run the app in a real browser, inspect it at the project's target screen sizes, meet a small hard accessibility/usability floor (other checks advisory), fix and re-check, and report honestly what was verified. Use this whenever building, changing, styling or fixing anything users see in a browser — web pages, React/Vue/Inertia/Blade/Django-template screens, Livewire components, dashboards, forms, layouts, CSS or Tailwind — even a small UI tweak, and even if the user doesn't ask for testing.
 ---
 
 # Frontend quality and visual QA
@@ -19,6 +19,13 @@ Correctness, security and the code standards still apply.
 - Identify the main user journeys for the change.
 - Look at the existing app: its components, tokens and `DESIGN.md` if present
   (see `arkar-frontend-design`). Don't add a second component library.
+- Build the change in the app's current look. If the app has no real visual
+  identity (default fonts, plain unstyled pages) and no redesign has been
+  proposed before (`ARCHITECTURE.md` / `DESIGN.md`), end your reply with this
+  proposal — even when it is your only one: 🟠 CHANGES BEHAVIOUR (visual) —
+  redesign with `arkar-frontend-design`, which screens, what stays the same.
+  Record it in `ARCHITECTURE.md` "Open proposals". Don't do the redesign
+  unless AK approves it.
 - Find how the app runs locally (README, `package.json`, `composer.json`,
   `manage.py`) and which tests/checks exist.
 
@@ -37,13 +44,17 @@ project's design may deliberately override.
   (its style can match the design).
 - Form fields have labels; errors say what's wrong and how to fix it.
 - Motion respects `prefers-reduced-motion` (a calmer version is fine).
+- Destructive actions (delete, reject, cancel) confirm first, naming what
+  will be affected, or offer undo.
 - No horizontal page scroll, clipped content or overlapping text on the
   project's target screens.
 - No console errors or failed requests.
 
 **Advisory — `references/design-checklist.md`:** layout, type, colour,
-component states, forms, feedback and motion, responsive behaviour,
-elevation / interaction / icon rules, chart choice. Follow them by default.
+component states (including offline), forms, feedback and motion, responsive
+behaviour, elevation / interaction / icon rules, chart choice, 200% text
+size, translation-ready text (and tall scripts like Myanmar), component
+code. Follow them by default.
 The project's identity may deliberately break one (e.g. low-contrast
 decorative display type, no hover states on a touch-only kiosk, unusual
 navigation) — record it under "Deliberate deviations" in `DESIGN.md` and
@@ -119,7 +130,10 @@ Done only when, as far as the environment allows:
 - the hard floor is met;
 - the relevant interactions were tried;
 - problems found were fixed and re-checked;
-- the existing automated checks pass.
+- the existing automated checks pass;
+- if the app looks plain (default fonts, unstyled pages), your reply ends
+  with the 🟠 redesign proposal from section 1 — unless one is already on
+  record.
 
 In the final message, say briefly what you checked (screens, sizes,
 interactions) and what you fixed. **If something couldn't be checked** — no

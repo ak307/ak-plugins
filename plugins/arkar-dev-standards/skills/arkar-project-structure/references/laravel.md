@@ -265,7 +265,9 @@ custom routes on the same resource use the same name.
   or controller actions from `@/actions/...` — never hard-coded URLs or
   `route()`.
 - Page props are typed with a type from `resources/js/types/`. Reuse
-  `components/ui` (shadcn) before writing new components.
+  `components/ui` (shadcn) before writing new components, restyled through
+  the project's `DESIGN.md` tokens (the theme in `resources/css/app.css`) —
+  never the kit's default look as the design.
 
 ### API (only when needed)
 

@@ -1,6 +1,6 @@
 ---
 name: arkar-frontend-design
-description: Creates a unique, creative, impressive visual identity for each web project — tailored to its purpose, users and tone — and keeps it consistent across the project's screens via a DESIGN.md. Use this whenever designing, building, restyling or redesigning anything users see in a browser (pages, dashboards, forms, kiosks, admin screens, landing pages, React/Vue/Inertia/Blade/Django templates, CSS/Tailwind), especially new apps and screens, or when a UI is described as plain, boring, ugly or outdated — even if the user doesn't ask for design.
+description: Creates a unique, creative, impressive visual identity for each web project — tailored to its purpose, users and tone — and keeps it consistent across the project's screens via a DESIGN.md. Use this when building a new web app, page, screen, dashboard, landing page or kiosk, when restyling or redesigning, or when a UI is described as plain, boring, ugly or outdated — even if the user doesn't ask for design. Small changes to an existing screen (a field, a column, copy, a UI bug) don't need it; arkar-frontend-qa covers those.
 ---
 
 # Frontend design — a unique identity for every project
@@ -26,11 +26,19 @@ Look for `DESIGN.md` at the project root.
 - **No `DESIGN.md`, but the app has a consistent look or design system** (a
   component library, theme tokens, coherent screens): derive its identity
   from the code, write it into `DESIGN.md`, and design within it ambitiously.
-- **No `DESIGN.md` and no real identity** (default fonts, ad-hoc CSS, a new
-  project, or a UI described as plain, boring, ugly or outdated): create an
-  identity with the process below. For an existing app, this redesigns the
-  visual layer of the screens you touch while keeping content, behaviour, URLs
-  and data the same — say so in the final message.
+- **No `DESIGN.md` and no real identity, in a new project** — or AK asks
+  for a redesign, or describes the UI as plain, boring, ugly or outdated:
+  create an identity with the process below. For an existing app, the
+  redesign changes the visual layer only — content, behaviour, URLs and data
+  stay the same — and you say so in the final message.
+- **No real identity, in an existing app, and AK asked for something else**
+  (a new field, a fix, a new page in an old app): don't redesign existing
+  screens on your own — that changes what users see without approval. Build
+  the requested change to fit the current look as well as it can, and put a
+  redesign in the change workflow's approval list as 🟠 CHANGES BEHAVIOUR
+  (visual): which screens, the direction you'd take, what stays the same.
+  New pages you add may get the stronger identity only if they still sit
+  comfortably next to the old ones; otherwise propose it with the redesign.
 
   Don't let "fix it" wording shrink the design. When a page has no identity
   and the user says it looks bad, that complaint **is** a design brief: the
@@ -79,6 +87,11 @@ Read `references/creative-process.md`, then:
 
 **Colour:** choose the palette for the concept. Use the CBM red `#AE1A28` as
 primary only when AK asks for CBM branding or the project already uses it.
+
+**Component libraries** (shadcn/ui, Flutter Material, Django admin themes):
+reuse their components for behaviour and accessibility, but restyle them
+through the project's `DESIGN.md` tokens — never ship a library's default
+look as the design.
 
 ## 4. Critique for uniqueness, then refine
 

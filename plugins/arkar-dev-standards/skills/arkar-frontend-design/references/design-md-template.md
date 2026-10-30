@@ -21,6 +21,8 @@ tablet, landscape, 1280×800, touch" or "phones 360–430 wide + desktop 1440";
 these are the sizes QA checks>
 Primary job: <the one thing the main screen makes effortless>
 Tone: <three adjectives>
+Themes: <light | dark | both — and why>
+Languages: <e.g. English only; or English + Burmese (needs tall-script line height)>
 
 ## Colour
 | Token | Value | Use |

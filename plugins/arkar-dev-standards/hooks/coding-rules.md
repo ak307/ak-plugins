@@ -1,4 +1,4 @@
-# AK's coding standards (always on) — arkar-dev-standards v1.8.1
+# AK's coding standards (always on) — arkar-dev-standards v1.9.0
 
 If these rules point at a skill that doesn't exist, tell AK: an old copy of
 the plugin is loaded on this computer.
@@ -49,7 +49,8 @@ Never, even when it would be quick:
   `DROP`, `TRUNCATE`, `DELETE`/`UPDATE` without `WHERE`, `--force` on
   migrate/seed. AK runs these himself, after a backup.
 - Apply migrations (`migrate`, `alembic upgrade`, `artisan migrate`) to
-  anything but a confirmed local database. Write the migration file, show its
+  anything but a confirmed local database, or write code that changes the
+  schema when the app runs (`create_all`, `ALTER TABLE` at startup). Write the migration file, show its
   SQL, and flag drops, renames, type changes, NOT NULL without a default and
   big-table changes as 🟠. Applying it to a shared or production database is
   AK's job, after a backup.
@@ -103,14 +104,13 @@ deviating.
 
 ## 2b. Browser-based UI work: unique design, checked in a real browser
 
-Whenever you build or change anything users see in a browser, load both:
-
-- `arkar-frontend-design` — every project gets its own creative, impressive
-  identity (recorded in the project's `DESIGN.md`); never a basic or
-  template-looking UI.
-- `arkar-frontend-qa` — the quality floor: run the app, inspect it at the
-  project's target screen sizes, test interactions, fix and re-check. Only
-  run and click through an app whose data is local or test data (section 0).
+Whenever you build or change anything users see in a browser, **load
+`arkar-frontend-qa`** (with `arkar-change-workflow`): run the app (local or
+test data only, section 0), check the target screen sizes and interactions,
+fix and re-check. **Also load `arkar-frontend-design`** when the change adds
+a new app, page or screen, restyles, or AK says the UI looks plain: each
+project gets its own impressive identity in `DESIGN.md`. Never redesign
+existing screens he didn't ask about — propose it instead.
 
 Never claim to have visually checked something you didn't.
 

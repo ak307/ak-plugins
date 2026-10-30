@@ -1,6 +1,6 @@
 ---
 name: arkar-project-structure
-description: AK's standard project templates — folder layout, entry point, file and class naming — so every project on the same stack looks the same. Covers FastAPI, Django, Django + LangChain/LangGraph agents, Laravel and Flutter. Use this whenever creating a new project or app, scaffolding or bootstrapping code, adding a new module, resource, endpoint, router, service, model or layer, or deciding where a new file should go or what to name it — even if the user doesn't mention structure or conventions. Also use when asked to review, standardise or restructure a project's layout.
+description: AK's standard project templates — folder layout, entry point, file and class naming — plus the cross-stack standards for database design, migrations, API contracts, background jobs, logging, error tracking and health checks, so every project on the same stack looks and behaves the same. Covers FastAPI, Django, Django + LangChain/LangGraph agents, Laravel and Flutter. Use this whenever creating a new project or app, scaffolding or bootstrapping code, adding a new module, resource, endpoint, router, service, model, table, migration, background job or integration, or deciding where a new file should go or what to name it — even if the user doesn't mention structure or conventions. Also use when asked to review, standardise or restructure a project's layout.
 ---
 
 # Project structure
@@ -40,6 +40,14 @@ FastAPI.
 Read the matching file before writing any code. It gives the folder tree, what
 belongs in each file, naming rules and the checklist for adding a new resource.
 
+Two standards apply to every stack — read the parts you need:
+
+| When you add or change | Read |
+|---|---|
+| A model, table, column, migration, query-heavy screen, or API endpoint | `references/data-and-api.md` — types, constraints, indexes, soft delete, audit trail, safe migrations, N+1 and pagination, the API error/pagination/versioning/idempotency contract |
+| Status changes, background jobs, scheduled tasks, calls to other systems, logging, error tracking, health checks — and every new project | `references/reliability-and-observability.md` |
+| CI, deployment, environments, releases | the `arkar-delivery` skill |
+
 If the stack has no template yet, use that framework's official/default project
 layout (e.g. `npm create vite`, `dotnet new`) rather
 than inventing one, apply the always-on coding rules, and tell the user in one
@@ -63,3 +71,8 @@ reply so the decision is visible.
   `main.py`, no `crud/` instead of `services/`, no project-named Django package
   instead of `config/`).
 - `README.md` says how to install, configure (`.env`) and run.
+- New projects also have: `/health/live` and `/health/ready`, JSON logs with
+  a request ID in production, error tracking wired (GlitchTip/Sentry SDK, no
+  personal data), a test-database guard, and a CI file from `arkar-delivery`.
+- New tables follow `data-and-api.md` section 7 (types, constraints,
+  indexes, audit trail where people's records change).

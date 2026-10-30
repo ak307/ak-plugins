@@ -51,7 +51,11 @@ about. Follow the steps below with these additions, and read
   reported bug before changing anything, so you know you found the real cause.
 - **Fix the reported bug first.** Find the root cause, not the symptom. Make
   the smallest fix, with no unrelated changes. The new test must pass and the
-  existing tests must pass unchanged. This needs no approval.
+  existing tests must pass unchanged. This needs no approval. If the same
+  mistake sits in the exact lines you're fixing (e.g. the same lookup table)
+  and also breaks another step, you may fix it there too. Say so separately
+  and give it its own test. The same mistake anywhere else is a finding, not
+  part of the fix.
 - **Then review the surrounding workflow.** Choose the scope yourself, based on
   the project and the bug (guide section 1): usually the record's whole life
   from the first step to the final step, every alternative path and role,
@@ -61,6 +65,9 @@ about. Follow the steps below with these additions, and read
 - **Test safely.** Use the test database, fixtures and a local app only. Check
   where the configuration points before running anything, and never touch
   production data, send real messages or make payments.
+- **Report in the format in guide section 7.** Always include the lines
+  "Workflow reviewed: …" and "Not reviewed: …", and write each label in full
+  (e.g. "🐞 RELATED BUG (confirmed)"), never just the emoji.
 - **Report the other findings; don't fix them.** Put them in the step 3
   approval list as 🐞 RELATED BUG, confirmed first, then suspected, ordered by
   impact. Add them to `ARCHITECTURE.md` "Known bugs". Fix them only when AK

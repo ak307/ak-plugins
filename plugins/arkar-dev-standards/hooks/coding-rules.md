@@ -49,7 +49,8 @@ Never, even when it would be quick:
   `DROP`, `TRUNCATE`, `DELETE`/`UPDATE` without `WHERE`, `--force` on
   migrate/seed. AK runs these himself, after a backup.
 - Apply migrations (`migrate`, `alembic upgrade`, `artisan migrate`) to
-  anything but a confirmed local database. Write the migration file, show its
+  anything but a confirmed local database, or write code that changes the
+  schema when the app runs (`create_all`, `ALTER TABLE` at startup). Write the migration file, show its
   SQL, and flag drops, renames, type changes, NOT NULL without a default and
   big-table changes as 🟠. Applying it to a shared or production database is
   AK's job, after a backup.

@@ -103,13 +103,13 @@ deviating.
 
 ## 2b. Browser-based UI work: unique design, checked in a real browser
 
-- `arkar-frontend-qa` — for any change users see in a browser: run the app
-  (local or test data only, section 0), check the project's target screen
-  sizes and interactions, fix and re-check.
-- `arkar-frontend-design` — also, when building a new app, page or screen,
-  restyling, or when AK says the UI looks plain: each project gets its own
-  impressive identity in `DESIGN.md`. Never redesign existing screens he
-  didn't ask about; propose it instead.
+Whenever you build or change anything users see in a browser, **load
+`arkar-frontend-qa`** (with `arkar-change-workflow`): run the app (local or
+test data only, section 0), check the target screen sizes and interactions,
+fix and re-check. **Also load `arkar-frontend-design`** when the change adds
+a new app, page or screen, restyles, or AK says the UI looks plain: each
+project gets its own impressive identity in `DESIGN.md`. Never redesign
+existing screens he didn't ask about — propose it instead.
 
 Never claim to have visually checked something you didn't.
 

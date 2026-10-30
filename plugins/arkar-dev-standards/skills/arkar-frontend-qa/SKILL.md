@@ -19,6 +19,12 @@ Correctness, security and the code standards still apply.
 - Identify the main user journeys for the change.
 - Look at the existing app: its components, tokens and `DESIGN.md` if present
   (see `arkar-frontend-design`). Don't add a second component library.
+- Build the change in the app's current look. If the app has no real visual
+  identity (default fonts, plain unstyled pages) and no redesign has been
+  proposed before (`ARCHITECTURE.md` / `DESIGN.md`), add one line to the
+  approval list: 🟠 CHANGES BEHAVIOUR (visual) — redesign with
+  `arkar-frontend-design`, which screens, what stays the same. Don't do the
+  redesign unless AK approves it.
 - Find how the app runs locally (README, `package.json`, `composer.json`,
   `manage.py`) and which tests/checks exist.
 

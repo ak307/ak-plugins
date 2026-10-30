@@ -1,6 +1,6 @@
 ---
 name: arkar-change-workflow
-description: AK's workflow for every code change and bug fix — understand the bigger picture (ARCHITECTURE.md), protect existing behaviour with tests, propose safe cleanup plus any security fixes in one approval list, build cleanly and securely, run tests and security checks, and record decisions. For bug reports, fix the reported bug, then review the whole connected workflow for hidden or related bugs, test safely, and report findings for approval. Use this whenever implementing, adding, updating, fixing, debugging or refactoring a feature, bug, endpoint, page, form, query, model, upload, permission logic, integration, dependency or configuration in an existing codebase — even if the user doesn't mention cleanup, structure, security or other bugs.
+description: AK's workflow for every code change and bug fix — understand the bigger picture (ARCHITECTURE.md), protect existing behaviour with tests, propose safe cleanup plus any security fixes in one approval list, build cleanly and securely, run tests and security checks, and record decisions. For bug reports, look at the affected live records through a read-only, masked query tool, fix the reported bug, then review the whole connected workflow for hidden or related bugs, test safely, and report findings for approval. Use this whenever implementing, adding, updating, fixing, debugging, investigating or refactoring a feature, bug, endpoint, page, form, query, model, upload, permission logic, integration, dependency or configuration in an existing codebase — or when asked why a record or page shows the wrong data — even if the user doesn't mention cleanup, structure, security or other bugs.
 ---
 
 # Change workflow — clean, secure, behaviour preserved
@@ -21,6 +21,7 @@ with one approval list. Follow the steps in order.
 | **New code you write for the requested feature** — including the edits to existing code that the feature itself needs | None — write it clean and secure from the start. |
 | **The fix for the bug AK reported** — the smallest change that fixes the root cause | None — that's what he asked for. |
 | **Any other change to existing code** — cleanup/refactoring, or a security fix — even when it's safe | **Propose and wait for AK's OK.** Never apply it silently. |
+| **The project's notes files** — creating or updating `ARCHITECTURE.md` (open proposals, known bugs, known debt) and `SECURITY.md` (open items) | None — they are notes, not code. Write them in the same turn as the proposals, creating them from the templates if the project has none. |
 | **Proposals AK skips, ignores or declines** — or when no one is there to answer | **Don't touch that code.** Record it (step 7). |
 
 Label every proposal:
@@ -47,8 +48,17 @@ steps of the same workflow may have hidden or related bugs he doesn't know
 about. Follow the steps below with these additions, and read
 `references/bug-hunt-guide.md`:
 
+- **Look at the real data first** when the bug is about specific records
+  ("claim 412 shows the wrong status"). Query them with the read-only tool —
+  `uv run --with pymysql --with "psycopg[binary]" python <this skill>/scripts/readonly_query.py "SELECT …"`
+  from the project folder — selecting only the columns and rows you need
+  (guide section 5). It refuses anything but one read query, runs it in a
+  read-only transaction and masks personal data. Never query live data any
+  other way.
 - **Step 2 — reproduce first.** Write a test that fails because of the
   reported bug before changing anything, so you know you found the real cause.
+  Build its data with factories shaped like what you saw — never copy real
+  names, IDs or personal details into tests or fixtures.
 - **Fix the reported bug first.** Find the root cause, not the symptom. Make
   the smallest fix, with no unrelated changes. The new test must pass and the
   existing tests must pass unchanged. This needs no approval. If the same
@@ -71,8 +81,11 @@ about. Follow the steps below with these additions, and read
   (e.g. "🐞 RELATED BUG (confirmed)"), never just the emoji.
 - **Report the other findings; don't fix them.** Put them in the step 3
   approval list as 🐞 RELATED BUG, confirmed first, then suspected, ordered by
-  impact. Add them to `ARCHITECTURE.md` "Known bugs". Fix them only when AK
-  approves, each with its own regression test.
+  impact. Add them to `ARCHITECTURE.md` "Known bugs" in the same turn —
+  if the project has no `ARCHITECTURE.md` yet, create it from
+  `references/architecture-md-template.md` (a notes file, not a code change:
+  no approval needed). Fix them only when AK approves, each with its own
+  regression test.
 
 Do this for every real bug report. For a trivial local bug (a label typo,
 one CSS glitch), the review is a quick check of the same pattern nearby.
@@ -95,9 +108,10 @@ you couldn't run, and propose a local test database.
 - Read the project's `ARCHITECTURE.md` (create it in step 7 if missing),
   `SECURITY.md` and `CLAUDE.md` if present.
 - Read the code the feature will touch, its callers, the models and data
-  flow it reads and writes, and the routes/jobs that expose it. Don't query
-  live data rows to understand it; if you need sample data, use factories on
-  a local database or ask AK.
+  flow it reads and writes, and the routes/jobs that expose it. When real
+  data would answer a question (which statuses exist, how a column is
+  actually filled), use the read-only query tool (`scripts/readonly_query.py`)
+  with counts and a few masked rows — never other ways of querying live data.
 - Ask: which existing concept does this feature belong to? Is there already a
   place where this kind of logic lives? Would this be a second or third copy
   of something? Does the layout follow `arkar-project-structure` for this
@@ -147,7 +161,9 @@ If the list is empty, go straight to step 5. Otherwise:
    templates if they don't exist yet — cleanup → `ARCHITECTURE.md` "Open
    proposals", related bugs → `ARCHITECTURE.md` "Known bugs", security →
    `SECURITY.md` "Open". (Creating these two files is
-   not a code change and needs no approval.)
+   not a code change and needs no approval.) In `SECURITY.md`, record the
+   location and the kind of weakness only — never exploit steps, payloads,
+   credentials or personal data, because the file is committed with the code.
 2. Present the list numbered, so AK can answer quickly ("approve 1 and 3",
    "skip all").
 3. **Stop and wait for his answer** before implementing:
@@ -189,8 +205,11 @@ and tell AK instead of pushing on.
 - Follow the always-on coding standards and `references/cleanup-guide.md`:
   one way to do one job, small focused functions, classes for real concepts.
 - Write it securely (`references/review-checklist.md`): validated input,
-  parameterised queries, escaped output, authorisation on every action, no
-  secrets in code or logs.
+  parameterised queries, escaped output, authorisation on every action
+  (*this* user, *this* record), status changes locked in one transaction, no
+  secrets in code or logs. For new routes, pages, cookies, headers, uploads
+  or dependencies, also check `references/vapt-checklist.md` — what the
+  company's VAPT (OWASP ZAP) scans flag.
 - Add tests for the new behaviour.
 
 ### 6. Check, then finish clean

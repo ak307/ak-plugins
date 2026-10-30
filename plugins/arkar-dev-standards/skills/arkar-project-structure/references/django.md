@@ -195,7 +195,10 @@ STORAGES = {
 }
 
 # Production security (all driven by env so local dev stays simple)
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# Trust X-Forwarded-Proto only behind a proxy that always sets it (nginx/IIS
+# terminating TLS); otherwise clients could claim HTTPS.
+if env.bool("DJANGO_BEHIND_TLS_PROXY", default=False):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SECURE_HSTS_SECONDS = env.int("DJANGO_HSTS_SECONDS", default=0)
@@ -294,12 +297,21 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.leave_requests.constants import LeaveStatus
-from apps.leave_requests.exceptions import LeaveRequestError
+from apps.leave_requests.exceptions import LeaveRequestError, LeaveRequestPermissionError
 from apps.leave_requests.models import LeaveRequest
 
 
+def can_approve(reviewer, leave_request: LeaveRequest) -> bool:
+    """Approvers need the permission, and nobody approves their own request."""
+    return reviewer.has_perm("leave_requests.approve_leaverequest") and leave_request.staff_id != reviewer.id
+
+
 @transaction.atomic
-def approve_leave_request(leave_request: LeaveRequest, reviewer) -> LeaveRequest:
+def approve_leave_request(leave_request_id: int, reviewer) -> LeaveRequest:
+    # Lock the row, then check: two approvers clicking at once can't both pass.
+    leave_request = LeaveRequest.objects.select_for_update().get(pk=leave_request_id)
+    if not can_approve(reviewer, leave_request):
+        raise LeaveRequestPermissionError("You can't approve this request.")
     if leave_request.status != LeaveStatus.PENDING:
         raise LeaveRequestError("Only pending requests can be approved.")
     leave_request.status = LeaveStatus.APPROVED
@@ -309,9 +321,18 @@ def approve_leave_request(leave_request: LeaveRequest, reviewer) -> LeaveRequest
     return leave_request
 ```
 
+**Status changes = lock, check, write — in one transaction.** Reading the
+record outside the transaction, or without `select_for_update()`, lets a
+double click or two approvers approve twice. Permission checks (may *this*
+user act on *this* record?) live in the service, so views, the API and
+agent tools all get them.
+
 ### views/ — thin
 
-A view reads the request, calls a service, and renders or redirects. Use
+A view reads the request, calls a service, and renders or redirects. List
+views filter the queryset to what the user may see
+(`LeaveRequest.objects.filter(staff=request.user)` or the managers' view),
+never `.all()`, and paginate. Use
 function views with decorators (`@login_required`, `@require_POST`) by default;
 use Django's generic class-based views (`ListView`, `DetailView`) when they fit
 exactly. Put the shared "catch domain error → message → redirect" handling in

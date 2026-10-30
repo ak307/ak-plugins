@@ -196,6 +196,15 @@ For CBM apps, the brand primary colour is `#AE1A28`. Build the colour scheme
 with `ColorScheme.fromSeed(seedColor: ...)` and then set `primary` explicitly
 to `#AE1A28` — `fromSeed` alone shifts the colour.
 
+### Firebase-only apps: security rules are the authorisation
+
+With no backend of your own, `firestore.rules` / `storage.rules` are the only
+thing stopping one user from reading or changing another's data. Every
+collection has rules that check `request.auth.uid` against the document's
+owner (never `allow read, write: if true` or `if request.auth != null` alone),
+rules are tested with the emulator (`@firebase/rules-unit-testing`), and App
+Check is on. Change the rules whenever a feature changes a data path.
+
 ## 3. Naming rules
 
 | Thing | Rule | Example |

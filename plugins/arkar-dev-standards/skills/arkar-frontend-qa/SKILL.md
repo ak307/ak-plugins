@@ -1,6 +1,6 @@
 ---
 name: arkar-frontend-qa
-description: AK's quality floor for browser-based UI work — run the app in a real browser, inspect it at the project's target screen sizes, meet a small hard accessibility/usability floor (other checks advisory), fix and re-check, and report honestly what was verified. Use this whenever building, changing, styling or fixing anything users see in a browser — web pages, React/Vue/Inertia/Blade/Django-template screens, Livewire components, dashboards, forms, layouts, CSS or Tailwind — even a small UI tweak, and even if the user doesn't ask for testing.
+description: AK's quality floor for browser-based UI work (including HTML served from Python, PHP or templates) — run the app in a real browser, inspect it at the project's target screen sizes, meet a small hard accessibility/usability floor (other checks advisory), fix and re-check, and report honestly what was verified. Use this whenever building, changing, styling or fixing anything users see in a browser — web pages, React/Vue/Inertia/Blade/Django-template screens, Livewire components, dashboards, forms, layouts, CSS or Tailwind — even a small UI tweak, and even if the user doesn't ask for testing.
 ---
 
 # Frontend quality and visual QA
@@ -130,7 +130,10 @@ Done only when, as far as the environment allows:
 - the hard floor is met;
 - the relevant interactions were tried;
 - problems found were fixed and re-checked;
-- the existing automated checks pass.
+- the existing automated checks pass;
+- if the app looks plain (default fonts, unstyled pages), your reply ends
+  with the 🟠 redesign proposal from section 1 — unless one is already on
+  record.
 
 In the final message, say briefly what you checked (screens, sizes,
 interactions) and what you fixed. **If something couldn't be checked** — no

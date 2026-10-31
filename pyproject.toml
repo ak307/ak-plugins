@@ -1,0 +1,10 @@
+# Settings for the repo's own checks (the plugin itself has no Python package).
+[tool.ruff]
+line-length = 160
+extend-exclude = ["evals/fixtures"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -134,7 +134,7 @@ EVERYDAY_COMMANDS = [
     "uv run python manage.py makemigrations",
     "uv run python manage.py check",
     "cat .env.example",
-    f"grep -E '^(APP_ENV|DB_HOST)=' .env",
+    "grep -E '^(APP_ENV|DB_HOST)=' .env",
     "php artisan route:list",
     "php artisan make:model LeaveRequest -mfs",
     "php artisan vendor:publish --tag=config --force",

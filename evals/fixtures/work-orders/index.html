@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Work Orders — Facilities</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/data.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead__title">
+      <h1>Work orders</h1>
+      <p id="today-label" class="masthead__date"></p>
+    </div>
+    <dl class="stats" id="stats" aria-label="Summary of the orders currently shown"></dl>
+  </header>
+
+  <section class="elevation" aria-labelledby="elevation-heading">
+    <div class="elevation__head">
+      <h2 id="elevation-heading">Buildings</h2>
+      <p class="elevation__hint">Each lit window is an open order. Red windows are overdue. Select a building to filter.</p>
+      <button type="button" class="chip chip--on-dark" id="all-buildings">All buildings</button>
+    </div>
+    <div class="elevation__row" id="building-strip"></div>
+  </section>
+
+  <main class="board">
+    <section class="panel workload" aria-labelledby="workload-heading">
+      <h2 id="workload-heading">Technician workload</h2>
+      <p class="panel__note">Open orders against what each person can carry. Select a technician to see their orders.</p>
+      <ul class="legend" aria-label="Legend">
+        <li><span class="swatch swatch--overdue"></span>Overdue</li>
+        <li><span class="swatch swatch--ontrack"></span>Not yet due</li>
+        <li><span class="swatch swatch--empty"></span>Free capacity</li>
+        <li><span class="swatch swatch--over"></span>Over capacity</li>
+      </ul>
+      <ul class="tech-list" id="tech-list"></ul>
+    </section>
+
+    <section class="panel orders" aria-labelledby="orders-heading">
+      <div class="orders__head">
+        <h2 id="orders-heading">Open orders</h2>
+        <p id="result-count" class="orders__count" aria-live="polite"></p>
+      </div>
+
+      <form class="toolbar" id="toolbar" onsubmit="return false">
+        <label class="field">Trade
+          <select id="filter-trade"></select>
+        </label>
+        <label class="field">Priority
+          <select id="filter-priority"></select>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="filter-overdue">
+          Overdue only
+        </label>
+        <button type="button" class="chip chip--tech" id="clear-technician" hidden></button>
+        <button type="button" class="link-button" id="clear-filters">Clear filters</button>
+      </form>
+
+      <table class="order-table">
+        <thead>
+          <tr>
+            <th scope="col">Order</th>
+            <th scope="col">Building</th>
+            <th scope="col">Trade</th>
+            <th scope="col">Priority</th>
+            <th scope="col">Status</th>
+            <th scope="col">Technician</th>
+            <th scope="col">Due</th>
+          </tr>
+        </thead>
+        <tbody id="order-rows"></tbody>
+      </table>
+      <p class="empty" id="empty-state" hidden>No work orders match. Clear a filter to see the rest.</p>
+    </section>
+  </main>
+</body>
+</html>

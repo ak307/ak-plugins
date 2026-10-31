@@ -1,0 +1,46 @@
+# Checks on every push to ak-plugins: the safeguards can't silently break.
+# No AI calls here — the behaviour evals (evals/run.py) are run by hand before a release.
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["54329:5432"]
+        options: >-
+          --health-cmd="pg_isready -U postgres" --health-interval=5s
+          --health-timeout=5s --health-retries=20
+    env:
+      # Read-only tool tests and the FastAPI template run against this throwaway server.
+      ARKAR_TEST_POSTGRES_URL: postgresql+psycopg://postgres@127.0.0.1:54329/postgres
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Plugin manifest and structure
+        run: npx -y @anthropic-ai/claude-code plugin validate .
+
+      - name: Lint the repo's Python (guard, read-only tool, tests, evals)
+        run: uvx --from 'ruff>=0.12,<1' ruff check tests evals scripts plugins/arkar-dev-standards/hooks plugins/arkar-dev-standards/skills/arkar-change-workflow/scripts
+
+      - name: Production guard, read-only tool, hooks and template code
+        run: uvx --with "psycopg[binary]" --with pymysql --with pyyaml pytest -q
+
+      - name: Subagent rules file is in sync with the always-on rules
+        run: |
+          python3 scripts/build_subagent_context.py
+          git diff --exit-code plugins/arkar-dev-standards/hooks/subagent-context.json

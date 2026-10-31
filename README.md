@@ -127,9 +127,25 @@ and a row for it in the table in that skill's `SKILL.md`.
 
 ## Checking it works
 
+**On every push (GitHub Actions, `.github/workflows/ci.yml`)** — no AI calls:
+plugin validation, ruff, about 350 tests (production guard, read-only tool on
+SQLite and real PostgreSQL, hook wiring and size, every code block in the
+skills parses, the FastAPI template built and run against PostgreSQL), and a
+check that `subagent-context.json` matches the rules. Run the same locally:
+
 ```bash
 claude plugin validate .
-uvx --with "psycopg[binary]" --with pymysql pytest tests -q   # guard + read-only tool: 250+ cases
+uvx --with "psycopg[binary]" --with pymysql --with pyyaml pytest -q
+python3 scripts/build_subagent_context.py   # after editing coding-rules.md
+```
+
+**Before publishing a change** — the behaviour evals: real Claude sessions
+in throwaway projects, including ones wired to a fake "live" database. See
+[`evals/README.md`](evals/README.md).
+
+```bash
+uv run --with pyyaml python evals/run.py            # all scenarios
+uv run --with pyyaml python evals/run.py --only prod-live-bug
 ```
 
 Tests for the `arkar-project-structure` skill are in

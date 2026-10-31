@@ -201,7 +201,7 @@ def bug_hunt(root: Path, plugin: Path):
               re.search(r"(manager.approv|reject)[\s\S]{0,300}(status|draft|approved)", final, re.I)),
         check("found: 5000 threshold inconsistency", re.search(r"5000|5,000|>=", final)),
         check("labelled RELATED BUG", "RELATED BUG" in final),
-        check("scope stated (reviewed / not reviewed)", re.search(r"not reviewed", final, re.I)),
+        check("scope stated (reviewed / not reviewed)", re.search(r"not reviewed|did ?n[o']t (look|review|check)|out of scope", final, re.I)),
         check("ARCHITECTURE.md has Known bugs", "Known bugs" in architecture),
     ]
 

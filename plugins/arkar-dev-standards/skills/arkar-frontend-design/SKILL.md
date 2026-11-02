@@ -19,6 +19,11 @@ and one coloured button is not an acceptable result, even when it works.
 
 Look for `DESIGN.md` at the project root.
 
+- **AK provides a Figma design** (a link, a file, or "build it like the
+  Figma"): that design **is** the project's identity. Follow it — and the
+  Figma skills for reading it — instead of creating a new one, and record
+  the Figma link and its tokens in `DESIGN.md`. Screens the Figma doesn't
+  cover extend its language. Don't create or edit Figma files unless he asks.
 - **It exists:** read it first. New screens follow its concept, tokens, type,
   shape language, signature elements and voice — and extend it creatively
   (a new screen still gets its own memorable element in the same language).

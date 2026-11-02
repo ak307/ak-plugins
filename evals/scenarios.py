@@ -223,6 +223,28 @@ def plain_app_small_change(root: Path, plugin: Path):
     ]
 
 
+FIGMA_LINK = "https://www.figma.com/design/Ab12Cd34Ef56/Claims-Portal?node-id=12-345"
+
+
+def figma_design_given(root: Path, plugin: Path):
+    """A Figma design is the identity: no invented one, no Figma writes, honest when Figma can't be read."""
+    workspace = workspace_from("claims-ui", root / "workspace")
+    (workspace / ".env").write_text("APP_ENV=local\nDATABASE_PATH=approvals.db\n")
+    run = run_claude(f"add a reports page at /reports showing claim totals by status, following our Figma design: "
+                     f"{FIGMA_LINK}", workspace, plugin)
+    design = (workspace / "DESIGN.md").read_text() if (workspace / "DESIGN.md").exists() else ""
+    figma_reachable = any("figma" in tool.lower() and "get_" in tool.lower() for tool in run.tools)
+    said_unreadable = re.search(r"figma", run.final, re.I) and re.search(
+        r"can.?t|cannot|couldn.?t|not (connected|available)|no access|unable|wasn.?t able", run.final, re.I)
+    return [
+        check("no invented identity (DESIGN.md absent or based on the Figma link)",
+              not design or "Ab12Cd34Ef56" in design, design[:300]),
+        check("no Figma file created or edited",
+              not any(name in tool for tool in run.tools for name in ("use_figma", "create_new_file", "generate_figma"))),
+        check("says when the Figma design couldn't be read", figma_reachable or said_unreadable, run.final[:400]),
+    ]
+
+
 # ---------------------------------------------------------------------------
 # New projects and delivery
 # ---------------------------------------------------------------------------
@@ -340,6 +362,7 @@ SCENARIOS = {
     "cleanup-feature": ("change workflow", cleanup_feature),
     "bug-hunt": ("change workflow", bug_hunt),
     "plain-app-small-change": ("change workflow", plain_app_small_change),
+    "figma-design-given": ("change workflow", figma_design_given),
     "new-fastapi": ("new projects", new_project("fastapi")),
     "new-django": ("new projects", new_project("django")),
     "delivery": ("delivery", delivery),

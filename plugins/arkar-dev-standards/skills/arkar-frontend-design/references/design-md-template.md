@@ -15,6 +15,9 @@ Copy this structure:
 <Direction name>: <one sentence on what the product should feel like and why,
 tied to its users and purpose>
 
+Source: <"designed here", or the Figma link AK provided — when it's from Figma,
+the tokens below are copied from that file and the Figma design wins>
+
 Users and setting: <who, where>
 Target screens: <the sizes this product is really used on, e.g. "10-inch
 tablet, landscape, 1280×800, touch" or "phones 360–430 wide + desktop 1440";

@@ -112,8 +112,10 @@ function summariseAnimations() {
   return { count: animations.length, kinds, longest, infinite: animations.filter((a) => a.infinite).length, targets };
 }
 
-// Text that is still invisible after the page settled and was scrolled through.
-// Closed menus and tooltips can show up here too, so it is a list to check.
+// Text that is still see-through after the page settled and was scrolled
+// through, while not properly hidden (display: none or visibility: hidden also
+// hide it from keyboards and screen readers, so those are left alone). Usually
+// a reveal that never ran; closed menus faded with opacity alone show up too.
 function findInvisibleText() {
   const found = [];
   for (const element of document.body.querySelectorAll("*")) {
@@ -126,7 +128,7 @@ function findInvisibleText() {
       if (style.display === "none") { hidden = true; break; }
       opacity *= Number(style.opacity);
     }
-    if (!hidden && (opacity < 0.1 || getComputedStyle(element).visibility === "hidden")) {
+    if (!hidden && getComputedStyle(element).visibility !== "hidden" && opacity < 0.1) {
       found.push(`${element.tagName.toLowerCase()} "${element.textContent.trim().slice(0, 40)}"`);
     }
   }

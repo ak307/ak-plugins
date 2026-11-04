@@ -112,7 +112,9 @@ For each changed screen:
   on repeated actions, and calms down with reduced motion. With the
   screenshot script, add `--motion`; with Claude in Chrome or Playwright MCP,
   check `document.getAnimations()` while triggering and repeat with reduced
-  motion emulated. A new or restyled screen with no motion is a defect.
+  motion emulated. A new or restyled screen with no motion is a defect; so is
+  motion that is showy, slow, confusing or still moving once the screen has
+  arrived.
 - **Console and network:** no errors or failed requests.
 - Behind a login: use test credentials from local seed data or
   `.env.example`, or create a test user the way the project does — only in a

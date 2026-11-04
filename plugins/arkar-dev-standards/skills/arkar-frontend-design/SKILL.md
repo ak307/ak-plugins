@@ -94,7 +94,9 @@ Read `references/creative-process.md`, then:
   living loading states, and one signature moment from the project's world.
   Repeated everyday actions stay quick and never block the user. Motion
   tokens (durations, easings, stagger) and the library choice go in
-  `DESIGN.md`. A page without motion is not finished.
+  `DESIGN.md`. A page without motion is not finished — and motion must be
+  beautiful, premium and professional: calm, purposeful, never confusing,
+  distracting or in the way (the rules in `motion.md` section 0).
 
 **Colour:** choose the palette for the concept. Use the CBM red `#AE1A28` as
 primary only when AK asks for CBM branding or the project already uses it.

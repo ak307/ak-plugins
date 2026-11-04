@@ -4,11 +4,62 @@ Every project gets **rich, designed motion**: pages that flow into each other,
 content that arrives with intent, controls that answer the hand, and one
 memorable moment per main screen. A static page that works is not finished.
 
+The bar is **beautiful, premium and professional** — the calm, precise
+motion of a top-tier product, never a demo of effects. Rich means *complete
+and considered*, not *busy*. Motion must never confuse or annoy: if a user
+would notice the animation more than what it shows, it's wrong.
+
 Motion is part of the identity. Its character comes from `DESIGN.md`
-(crisp and mechanical, soft and settling, springy and playful …) and is used
-the same way on every screen. What makes motion feel cheap is not the amount
-of it — it's **generic, identical motion** (the same fade-up on everything)
-and motion that makes people wait.
+(crisp and mechanical, soft and settling, gently springy …) and is used the
+same way on every screen. What makes motion feel cheap is **generic,
+identical motion** (the same fade-up on everything), **showy motion**, and
+motion that makes people wait.
+
+## 0. Premium, calm and clear — the rules every animation passes
+
+**What premium motion looks like:**
+
+- **Subtle distances and scales:** things travel 4–16 px, scale between
+  0.96 and 1, fade with them. Large flights across the screen only for a real
+  spatial change (a drawer, a shared element).
+- **Refined easing:** smooth deceleration into place (`--ease-out`), no
+  linear movement, no hard stops. Springs are well damped — at most a hint
+  of overshoot on a toggle or a landing element, never a wobble.
+- **Choreography, not chaos:** one thing leads, others follow in reading
+  order with a short stagger; elements that belong together move together;
+  never several unrelated things moving at once.
+- **Spatial logic:** motion shows where things come from and go — forward
+  steps slide one way and back steps the other, a modal grows from the
+  button that opened it, a deleted item leaves and the gap closes. The same
+  action always moves the same way.
+- **Restraint at rest:** once a screen has arrived, it is still. Ambient
+  motion is limited to the signature visual on public pages — slow, small,
+  and paused when off-screen.
+- **Consistency:** the same tokens, easings and patterns on every screen, so
+  the product feels like one crafted object.
+
+**Never (confusing or annoying):**
+
+- Content held back: a reveal lasts a moment (≤ 250 ms per element) and
+  starts as soon as the element is in view; data appears as soon as it loads;
+  nothing waits for an intro to finish.
+- Scroll-jacking: changing scroll speed or direction, snapping the page,
+  pinning sections the user can't scroll past quickly.
+- Things moving on their own while someone reads or works: auto-rotating
+  carousels, pulsing badges, looping attention-grabbers, parallax on
+  business screens.
+- Gimmicks: bounce, wobble, rotation, flip, zoom-blasts, typewriter text,
+  confetti for ordinary actions, cursor-following effects on business apps.
+- Motion that moves the target under the cursor or finger, shifts layout
+  while the user is about to click, or steals focus.
+- Replaying the entrance on every visit, refresh, poll or filter of a screen
+  people use all day.
+- Long sequences: a first-view entrance completes within ~0.9 s in total,
+  even with many items.
+
+**Test:** watch each animation at normal speed three times, then imagine the
+fiftieth time today. If it would feel slow, distracting or unclear by then,
+make it shorter, smaller or remove it.
 
 ## 1. The layers — build all six
 
@@ -16,15 +67,16 @@ and motion that makes people wait.
 |---|---|---|
 | **Navigation** | Moving between pages, tabs and steps feels continuous, never a hard cut | cross-fade with a slight slide; a list card expanding into its detail page (shared element); wizard steps sliding forward/back by direction |
 | **Entrance** | A screen builds in a choreographed order the first time it appears | header, then key figures, then the list with a short stagger; a chart drawing its lines; numbers counting up to their value |
-| **Scroll** (public pages) | Sections reveal and respond as they enter view | staggered reveal per section; a subtle parallax layer; a progress line that follows reading |
-| **Micro-interactions** | Every control answers hover, press, focus, success and error | buttons that press in; toggles that slide with a small overshoot; a check mark that draws itself; a field that shakes once on error; a copied/saved confirmation that morphs from the button |
+| **Scroll** (public pages) | Sections reveal gently as they enter view — never controlling the scroll itself | a soft staggered reveal per section; a slow, small depth layer in the signature visual; a progress line that follows reading |
+| **Micro-interactions** | Every control answers hover, press, focus, success and error — quietly | buttons that press in slightly; toggles that slide into place; a check mark that draws itself; an invalid field that nudges once and shows its message; a saved confirmation that morphs from the button |
 | **Layout changes** | Things that are added, removed, reordered, filtered, expanded or opened move to their new place instead of jumping | list items animating in and out; cards re-flowing on filter; accordions growing; modals and drawers opening from the element that was clicked |
-| **Waiting** | Loading feels alive and shows the shape of what's coming | skeletons with a soft shimmer in the layout of the real content; progress that moves; optimistic updates that settle when the server answers |
+| **Waiting** | Loading feels alive and shows the shape of what's coming | skeletons with a slow, low-contrast shimmer in the layout of the real content; progress that moves; optimistic updates that settle when the server answers |
 
 Plus **one signature moment per main screen**, drawn from the project's world
 and recorded in `DESIGN.md`: the occupancy gauge sweeping to today's value, a
-ticket "printing" when a request is submitted, the approval stamp landing on
-the claim. Make it excellent; it's what people remember.
+ticket sliding out when a request is submitted, the approval mark settling
+onto the claim. Make it excellent and short; it's what people remember —
+elegant, never theatrical.
 
 ## 2. Timing and feel
 
@@ -38,7 +90,7 @@ Record these as tokens in `DESIGN.md` and use them everywhere:
 | `--duration-expressive` | 500–900 ms | first-view entrance sequence, the signature moment |
 | `--ease-out` | e.g. `cubic-bezier(0.22, 1, 0.36, 1)` | things arriving |
 | `--ease-in-out` | e.g. `cubic-bezier(0.65, 0, 0.35, 1)` | things moving across the screen |
-| spring | stiffness/damping per character | toggles, drag, playful identities |
+| spring | well damped (barely any overshoot) | toggles, drag, things landing |
 | stagger | 30–60 ms per item, **max ~8 items** then the rest together | lists, card grids |
 
 Things arriving ease out; things leaving are faster than things arriving;
@@ -62,8 +114,9 @@ motion, tuned for people who use them all day:
 - **Large tables:** animate the container and the changed rows, not every
   row of a 200-row table.
 
-Public pages (landing, marketing, kiosks) can go further: scroll-driven
-storytelling, bigger entrances, ambient motion in the signature visual.
+Public pages (landing, marketing, kiosks) can go a little further: richer
+first-view entrances, gentle reveals as sections come into view, and slow
+ambient motion in the signature visual — still within the rules in section 0.
 
 ## 4. How to build it, per stack
 

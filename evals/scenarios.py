@@ -272,11 +272,13 @@ def measure_motion(site: Path) -> dict:
         server.terminate()
     load = re.search(r"motion: (\d+) animation\(s\) on load, (-?\d+) more while scrolling.*?longest (\d+) ms", output)
     reduced = re.search(r"reduced motion: (\d+) animation\(s\); longest (\d+) ms; (\d+) looping", output)
+    looping = re.search(r"longest \d+ ms; (\d+) looping\n", output)
     return {
         "output": output[-1200:],
         "on_load": int(load.group(1)) if load else 0,
         "while_scrolling": int(load.group(2)) if load else 0,
         "longest": int(load.group(3)) if load else 0,
+        "looping": int(looping.group(1)) if looping else 0,
         "stuck_text": "text still invisible" in output,
         "reduced_ok": bool(reduced) and "long or looping animations still run" not in output
                       and "text invisible with reduced motion" not in output,
@@ -299,6 +301,10 @@ def motion_checks(run, project: Path, scrolling_expected: bool) -> list:
               re.search(r"startViewTransition|view-transition|\.animate\(|@keyframes[\s\S]{0,400}(out|leave|exit|remove)|"
                         r"FLIP|getBoundingClientRect", code, re.I)),
         check("no text left invisible", not measured.get("stuck_text", True), detail),
+        check("calm: nothing longer than ~1.2 s, at most one looping animation",
+              0 < measured.get("longest", 0) <= 1200 and measured.get("looping", 0) <= 1, detail),
+        check("no scroll-jacking", not re.search(r"scroll-snap-type\s*:\s*y\s+mandatory|addEventListener\(\s*['\"]"
+                                                 r"(wheel|mousewheel)['\"]", code)),
         check("reduced motion respected", measured.get("reduced_ok"), detail),
         check("DESIGN.md records motion tokens",
               re.search(r"##\s*Motion", design) and re.search(r"\d{2,4}\s*ms", design), design[:200]),
@@ -323,9 +329,10 @@ def motion_business(root: Path, plugin: Path):
                      "site, and move a work order to the next column. they use it all day.", workspace, plugin)
     project = workspace / "workboard"
     checks = motion_checks(run, project, scrolling_expected=False)
-    measured_longest = measure_motion(project).get("longest", 0)
-    checks.append(check("quick for daily use: nothing on load runs longer than ~1 s", 0 < measured_longest <= 1100,
-                        f"longest {measured_longest} ms"))
+    measured = measure_motion(project)
+    checks.append(check("quick for daily use: nothing longer than ~1 s, nothing looping",
+                        0 < measured.get("longest", 0) <= 1000 and measured.get("looping", 0) == 0,
+                        measured.get("output", "")))
     return checks
 
 

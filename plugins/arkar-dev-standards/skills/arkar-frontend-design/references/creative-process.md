@@ -70,7 +70,7 @@ Turn the chosen direction into a design system for the project:
   the concept (sharp and engineered, soft and friendly, layered and physical).
 - **Spacing and grid:** a spacing scale and the grid/alignment rule.
 - **Motion character:** how things move (crisp and mechanical, soft and
-  settling, springy and playful), the timing tokens, and the signature moment
+  settling, gently springy — always calm and premium), the timing tokens, and the signature moment
   per main screen — see `motion.md`.
 - **Signature elements:** one per main screen, related to each other.
 - **Voice:** how labels, empty states and errors sound.
@@ -165,7 +165,7 @@ freshly for each project rather than reaching for a familiar recipe:
 | Type personality | geometric, grotesque, humanist, condensed, serif, mono-accented |
 | Structure | strict grid ↔ asymmetric/editorial ↔ spatial (map, floor plan, timeline) |
 | Metaphor / material | signage, paper and stamps, instruments and gauges, maps, tickets and badges, ledgers |
-| Motion | crisp and mechanical ↔ soft and settling ↔ springy and playful ↔ cinematic and layered |
+| Motion | crisp and mechanical ↔ soft and settling ↔ gently springy ↔ layered and spatial (always calm and premium) |
 | Colour strategy | neutral + one accent ↔ colour-coded system ↔ one bold colour field |
 
 Business apps still need clarity first: whatever the direction, the primary

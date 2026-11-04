@@ -93,9 +93,13 @@ or offer undo straight after. This one is part of the hard floor.
 - Durations follow the `DESIGN.md` tokens: controls 100–150 ms, menus and
   list changes 180–250 ms, page transitions and modals 300–450 ms, the
   entrance and signature moment up to ~900 ms. Repeated everyday actions
-  stay at the quick end; springs and overshoot only where the identity is
-  playful.
+  stay at the quick end; springs well damped, with at most a hint of
+  overshoot.
 - Content is usable while it animates; nothing waits for an intro.
+- Premium and calm: subtle distances (4–16 px), smooth well-damped easing,
+  choreographed order, still at rest. No scroll-jacking, auto-rotating
+  carousels, looping attention-grabbers, bounce/wobble/rotation gimmicks,
+  or entrances replayed on every visit to an everyday screen.
 - Animate opacity and transform, not layout properties (width, top) — smoother;
   reserve space so nothing shifts.
 - Under `@media (prefers-reduced-motion: reduce)`, replace movement with a

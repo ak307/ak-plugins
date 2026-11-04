@@ -87,10 +87,20 @@ or offer undo straight after. This one is part of the hard floor.
 
 - Every action gets feedback within ~100 ms (state change, spinner, toast).
 - Operations over ~1 s show loading; over ~5 s show progress if measurable.
-- Transitions 150–250 ms, easing out; nothing bounces for the sake of it.
-- Animate opacity and transform, not layout properties (width, top) — smoother.
-- Wrap non-essential motion in `@media (prefers-reduced-motion: reduce)` and
-  turn it off there.
+- Motion is present and designed (see `arkar-frontend-design`'s `motion.md`):
+  screen transitions, a first-view entrance, micro-interactions on controls,
+  animated layout changes, living loading states, one signature moment.
+- Durations follow the `DESIGN.md` tokens: controls 100–150 ms, menus and
+  list changes 180–250 ms, page transitions and modals 300–450 ms, the
+  entrance and signature moment up to ~900 ms. Repeated everyday actions
+  stay at the quick end; springs and overshoot only where the identity is
+  playful.
+- Content is usable while it animates; nothing waits for an intro.
+- Animate opacity and transform, not layout properties (width, top) — smoother;
+  reserve space so nothing shifts.
+- Under `@media (prefers-reduced-motion: reduce)`, replace movement with a
+  quick fade or an instant change — and make sure nothing that starts hidden
+  for an animation stays hidden.
 - No progress bar or skeleton where nothing is actually loading.
 
 ## 7. Responsive behaviour

@@ -246,6 +246,90 @@ def figma_design_given(root: Path, plugin: Path):
 
 
 # ---------------------------------------------------------------------------
+# Motion: graded by running the QA script's --motion check on what was built
+# ---------------------------------------------------------------------------
+
+SCREENSHOT_SCRIPT = Path(__file__).resolve().parents[1] / "plugins" / "arkar-dev-standards" / "skills" / \
+    "arkar-frontend-qa" / "scripts" / "screenshot.cjs"
+
+
+def measure_motion(site: Path) -> dict:
+    """Serve the built site locally and run the motion check on its index page."""
+    import socket
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    index = next(iter(sorted(site.rglob("index.html"), key=lambda path: len(path.parts))), None)
+    if index is None:
+        return {"error": "no index.html"}
+    server = subprocess.Popen(["python3", "-m", "http.server", str(port), "--bind", "127.0.0.1"], cwd=site,
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        url = f"http://127.0.0.1:{port}/{index.relative_to(site).as_posix()}"
+        output = subprocess.run(["node", str(SCREENSHOT_SCRIPT), url, str(site.parent / "motion-shots"),
+                                 "--sizes=1440x900", "--motion"], capture_output=True, text=True, timeout=180).stdout
+    finally:
+        server.terminate()
+    load = re.search(r"motion: (\d+) animation\(s\) on load, (-?\d+) more while scrolling.*?longest (\d+) ms", output)
+    reduced = re.search(r"reduced motion: (\d+) animation\(s\); longest (\d+) ms; (\d+) looping", output)
+    return {
+        "output": output[-1200:],
+        "on_load": int(load.group(1)) if load else 0,
+        "while_scrolling": int(load.group(2)) if load else 0,
+        "longest": int(load.group(3)) if load else 0,
+        "stuck_text": "text still invisible" in output,
+        "reduced_ok": bool(reduced) and "long or looping animations still run" not in output
+                      and "text invisible with reduced motion" not in output,
+    }
+
+
+def motion_checks(run, project: Path, scrolling_expected: bool) -> list:
+    measured = measure_motion(project)
+    design = next((path.read_text() for path in project.rglob("DESIGN.md")), "")
+    code = "".join(path.read_text(errors="ignore") for path in project.rglob("*")
+                   if path.is_file() and path.suffix in (".css", ".js", ".html"))
+    detail = measured.get("output", measured.get("error", ""))
+    checks = [
+        check("design skill loaded", run.loaded("design"), str(run.skills)),
+        check("animations run on load", measured.get("on_load", 0) > 0, detail),
+        check("micro-interactions on controls (hover/active/focus transitions)",
+              re.search(r":(hover|active|focus-visible)[^{]*\{[^}]*(transform|transition|animation)", code)
+              or re.search(r"transition\s*:[^;]*(transform|all|background|box-shadow)", code)),
+        check("layout changes animated (items in/out or view transitions)",
+              re.search(r"startViewTransition|view-transition|\.animate\(|@keyframes[\s\S]{0,400}(out|leave|exit|remove)|"
+                        r"FLIP|getBoundingClientRect", code, re.I)),
+        check("no text left invisible", not measured.get("stuck_text", True), detail),
+        check("reduced motion respected", measured.get("reduced_ok"), detail),
+        check("DESIGN.md records motion tokens",
+              re.search(r"##\s*Motion", design) and re.search(r"\d{2,4}\s*ms", design), design[:200]),
+    ]
+    if scrolling_expected:
+        checks.insert(2, check("scroll-driven reveals", measured.get("while_scrolling", 0) > 0, detail))
+    return checks
+
+
+def motion_landing(root: Path, plugin: Path):
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build a landing page for 'Harbour Lights', a new app for CBM's car parks where drivers find a "
+                     "free space and pay by phone. plain HTML/CSS/JS in folder harbour-lights, index.html, ready to "
+                     "open in a browser.", workspace, plugin)
+    return motion_checks(run, workspace / "harbour-lights", scrolling_expected=True)
+
+
+def motion_business(root: Path, plugin: Path):
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build a work-order board in folder workboard: plain HTML/CSS/JS with mock data, index.html. "
+                     "facilities supervisors see work orders in columns (new, assigned, in progress, done), filter by "
+                     "site, and move a work order to the next column. they use it all day.", workspace, plugin)
+    project = workspace / "workboard"
+    checks = motion_checks(run, project, scrolling_expected=False)
+    measured_longest = measure_motion(project).get("longest", 0)
+    checks.append(check("quick for daily use: nothing on load runs longer than ~1 s", 0 < measured_longest <= 1100,
+                        f"longest {measured_longest} ms"))
+    return checks
+
+
+# ---------------------------------------------------------------------------
 # New projects and delivery
 # ---------------------------------------------------------------------------
 
@@ -363,6 +447,8 @@ SCENARIOS = {
     "bug-hunt": ("change workflow", bug_hunt),
     "plain-app-small-change": ("change workflow", plain_app_small_change),
     "figma-design-given": ("change workflow", figma_design_given),
+    "motion-landing": ("motion", motion_landing),
+    "motion-business": ("motion", motion_business),
     "new-fastapi": ("new projects", new_project("fastapi")),
     "new-django": ("new projects", new_project("django")),
     "delivery": ("delivery", delivery),

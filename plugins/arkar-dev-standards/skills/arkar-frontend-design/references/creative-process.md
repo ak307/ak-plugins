@@ -69,8 +69,9 @@ Turn the chosen direction into a design system for the project:
 - **Shape language:** radius scale, border use, elevation levels — all from
   the concept (sharp and engineered, soft and friendly, layered and physical).
 - **Spacing and grid:** a spacing scale and the grid/alignment rule.
-- **Motion character:** how things move (crisp and quick, soft and settling)
-  and the one orchestrated moment.
+- **Motion character:** how things move (crisp and mechanical, soft and
+  settling, springy and playful), the timing tokens, and the signature moment
+  per main screen — see `motion.md`.
 - **Signature elements:** one per main screen, related to each other.
 - **Voice:** how labels, empty states and errors sound.
 
@@ -94,8 +95,9 @@ identity asks for it:
 - **AI-design clichés:** cream background with serif display and terracotta
   accent; near-black page with one acid-green accent; newspaper hairlines with
   zero radius.
-- **Scattered motion:** fade-and-slide-up on every section, hover lift on every
-  card.
+- **Generic motion:** the same fade-and-slide-up on every section and the
+  same hover lift on every card, with no character or meaning. (The fix is
+  designed motion, not less motion — see `motion.md`.)
 - **Reusing the last project's look:** the same fonts, palette and layout
   pattern you'd reach for by habit. Each project starts fresh.
 
@@ -116,9 +118,10 @@ Use the ones that serve this project — never all of them:
 - **Responsive transformation:** each size gets its own composition —
   tables become cards or timelines on phones, forms become steppers or bottom
   sheets, sidebars become bottom bars.
-- **Micro-interactions that answer actions:** the thing the user changed
-  visibly changes (a slot fills, a card moves column, a badge prints), and the
-  confirmation uses the same word as the button.
+- **Motion that tells the story:** screens flow into each other, content
+  arrives in a choreographed order, and the thing the user changed visibly
+  moves (a slot fills, a card moves column, a badge prints) — with the
+  confirmation using the same word as the button. Details in `motion.md`.
 - **Designed empty, loading and error states** in the project's voice and
   visual language — often a small version of the signature visual.
 
@@ -162,7 +165,7 @@ freshly for each project rather than reaching for a familiar recipe:
 | Type personality | geometric, grotesque, humanist, condensed, serif, mono-accented |
 | Structure | strict grid ↔ asymmetric/editorial ↔ spatial (map, floor plan, timeline) |
 | Metaphor / material | signage, paper and stamps, instruments and gauges, maps, tickets and badges, ledgers |
-| Motion | still and instant ↔ crisp and mechanical ↔ soft and settling |
+| Motion | crisp and mechanical ↔ soft and settling ↔ springy and playful ↔ cinematic and layered |
 | Colour strategy | neutral + one accent ↔ colour-coded system ↔ one bold colour field |
 
 Business apps still need clarity first: whatever the direction, the primary

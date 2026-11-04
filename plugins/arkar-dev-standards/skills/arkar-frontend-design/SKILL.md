@@ -1,6 +1,6 @@
 ---
 name: arkar-frontend-design
-description: Creates a unique, creative, impressive visual identity for each web project — tailored to its purpose, users and tone — and keeps it consistent across the project's screens via a DESIGN.md. Use this when building a new web app, page, screen, dashboard, landing page or kiosk, when restyling or redesigning, or when a UI is described as plain, boring, ugly or outdated — even if the user doesn't ask for design. Small changes to an existing screen (a field, a column, copy, a UI bug) don't need it; arkar-frontend-qa covers those.
+description: Creates a unique, creative, impressive visual identity for each web project — tailored to its purpose, users and tone — and keeps it consistent across the project's screens via a DESIGN.md. Use this when building a new web app, page, screen, dashboard, landing page or kiosk, when restyling or redesigning, when adding animation, transitions or motion, or when a UI is described as plain, boring, static, ugly or outdated — even if the user doesn't ask for design. Includes rich motion (page transitions, entrance, micro-interactions, layout animation, signature moments). Small changes to an existing screen (a field, a column, copy, a UI bug) don't need it; arkar-frontend-qa covers those.
 ---
 
 # Frontend design — a unique identity for every project
@@ -87,8 +87,14 @@ Read `references/creative-process.md`, then:
   (readable text, keyboard and visible focus, labels, reduced motion). Its
   other checks are advisory: break one on purpose when the identity needs it,
   and record it under "Deliberate deviations" in `DESIGN.md`.
-- Motion with the project's character: one orchestrated moment, and feedback
-  that answers the user's actions.
+- **Rich, designed motion — read `references/motion.md` and build it in, not
+  as an afterthought.** Every screen gets page/step transitions, a
+  choreographed first-view entrance, micro-interactions on every control,
+  animated layout changes (items in/out, re-flow, modals from their origin),
+  living loading states, and one signature moment from the project's world.
+  Repeated everyday actions stay quick and never block the user. Motion
+  tokens (durations, easings, stagger) and the library choice go in
+  `DESIGN.md`. A page without motion is not finished.
 
 **Colour:** choose the palette for the concept. Use the CBM red `#AE1A28` as
 primary only when AK asks for CBM branding or the project already uses it.
@@ -103,14 +109,15 @@ look as the design.
 Using the browser screenshots from `arkar-frontend-qa` (375 / 768 / 1440):
 
 - Could this screen belong to a different project? Does it express the
-  `DESIGN.md` concept? Is the signature element obvious at every size? Would
-  AK find it impressive, or merely tidy? If merely tidy, name three concrete
+  `DESIGN.md` concept? Is the signature element obvious at every size? Does
+  it feel alive — moving between screens, opening, saving, filtering — or
+  static? Would AK find it impressive, or merely tidy? If merely tidy, name three concrete
   upgrades, apply them, re-shoot.
 - Then one refinement pass: no new elements — make what's there cohesive and
   crisp, as if a top product designer laboured over it.
 
 ## 5. Final message
 
-Name the concept in one line, the signature element(s), the alternatives you
-considered, and that `DESIGN.md` was created or updated. The QA skill covers
+Name the concept in one line, the signature element(s), the motion (its
+character and the signature moment), the alternatives you considered, and that `DESIGN.md` was created or updated. The QA skill covers
 what to report about testing.

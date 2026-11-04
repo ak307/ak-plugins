@@ -49,6 +49,11 @@ node "<skill folder>/scripts/screenshot.cjs" http://localhost:8000/leave-request
 
 - Custom target screens: add `--sizes=1280x800,1920x1080` (name each by its
   width). Default is 375×812, 768×1024 and 1440×900.
+- Motion: add `--motion`. At the largest size it reports the animations that
+  run on load and while scrolling (and what they animate), saves a frame
+  taken mid-entrance (`*-motion-early.png` — look at it), repeats with
+  reduced motion on, and lists text left invisible. It can't see
+  interactions — trigger those yourself with a browser tool.
 - Run it from the project folder. It uses the project's Playwright if present,
   otherwise a global one.
 - If Playwright is missing, install it once per computer, outside any

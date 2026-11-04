@@ -54,7 +54,17 @@ Languages: <e.g. English only; or English + Burmese (needs tall-script line heig
 - <element>: <what it is, which screen, why it fits the concept>
 
 ## Motion
-<character, durations, the one orchestrated moment; reduced-motion behaviour>
+- Character: <e.g. "crisp and mechanical — things snap into place like
+  instrument needles">
+- Tokens: <instant / quick / moderate / expressive durations, easings, spring,
+  stagger>
+- Navigation: <how pages, tabs and steps transition; shared elements>
+- Entrance: <first-view sequence per main screen>
+- Micro-interactions: <buttons, toggles, inputs, success and error>
+- Layout and waiting: <items in/out, modals and drawers, skeletons>
+- Signature moments: <one per main screen>
+- Tools: <CSS / view transitions / motion / Livewire / flutter_animate …, and why>
+- Reduced motion: <what replaces movement>
 
 ## Voice
 <how labels, empty states and errors sound, with one example each>

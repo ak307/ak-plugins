@@ -1,4 +1,4 @@
-# AK's coding standards (always on) — arkar-dev-standards v2.0.1
+# AK's coding standards (always on) — arkar-dev-standards v2.1.0
 
 If these rules point at a skill that doesn't exist, tell AK: an old copy of
 the plugin is loaded on this computer.
@@ -102,7 +102,7 @@ Whenever you build or change anything users see — browser pages or Flutter /
 Android screens — **load `arkar-frontend-qa`** (with `arkar-change-workflow`):
 run the app (local or test data only, section 0), check the target screen
 sizes and interactions, fix and re-check. **Also load `arkar-frontend-design`** when the change adds
-a new app, page or screen, restyles, or AK says the UI looks plain: each
+a new app, page or screen, restyles, adds motion, or AK says the UI looks plain: each
 project gets its own impressive identity in `DESIGN.md`. Never redesign
 existing screens he didn't ask about — propose it instead.
 

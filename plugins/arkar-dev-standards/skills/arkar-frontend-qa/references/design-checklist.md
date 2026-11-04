@@ -87,10 +87,20 @@ or offer undo straight after. This one is part of the hard floor.
 
 - Every action gets feedback within ~100 ms (state change, spinner, toast).
 - Operations over ~1 s show loading; over ~5 s show progress if measurable.
-- Transitions 150–250 ms, easing out; nothing bounces for the sake of it.
-- Animate opacity and transform, not layout properties (width, top) — smoother.
-- Wrap non-essential motion in `@media (prefers-reduced-motion: reduce)` and
-  turn it off there.
+- Motion is present and designed for this project as recorded in
+  `DESIGN.md` (see `arkar-frontend-design`'s `motion.md`) — not generic, not
+  copied from another project.
+- Beautiful, premium and calm: purposeful, refined, choreographed, still at
+  rest, consistent across screens.
+- Never confusing or annoying: content isn't held back, the user stays in
+  control (no scroll-jacking, focus theft or moving targets), nothing loops
+  for attention, everyday interactions stay quick, first-view motion
+  finishes within about a second and doesn't replay on every visit.
+- Animate opacity and transform, not layout properties (width, top) — smoother;
+  reserve space so nothing shifts.
+- Under `@media (prefers-reduced-motion: reduce)`, replace movement with a
+  quick fade or an instant change — and make sure nothing that starts hidden
+  for an animation stays hidden.
 - No progress bar or skeleton where nothing is actually loading.
 
 ## 7. Responsive behaviour

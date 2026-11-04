@@ -43,7 +43,8 @@ project's design may deliberately override.
 - Everything works with a keyboard, and keyboard focus is always visible
   (its style can match the design).
 - Form fields have labels; errors say what's wrong and how to fix it.
-- Motion respects `prefers-reduced-motion` (a calmer version is fine).
+- Motion respects `prefers-reduced-motion` (a calmer version is fine), and
+  no content is left invisible when an animation doesn't run.
 - Destructive actions (delete, reject, cancel) confirm first, naming what
   will be affected, or offer undo.
 - No horizontal page scroll, clipped content or overlapping text on the
@@ -105,6 +106,15 @@ For each changed screen:
   and actually look at it.
 - **Interact:** click what you changed, submit forms (valid and invalid), open
   menus and dialogs, use Tab and Escape.
+- **Motion:** watch it run — move between screens, load them fresh, use the
+  controls, change and filter things, wait for data. Check it matches the
+  motion recorded in `DESIGN.md`, feels premium and smooth, never delays the
+  user on everyday actions, and calms down with reduced motion. With the
+  screenshot script, add `--motion`; with Claude in Chrome or Playwright MCP,
+  check `document.getAnimations()` while triggering and repeat with reduced
+  motion emulated. A new or restyled screen with no motion is a defect; so is
+  motion that is showy, slow, confusing or still moving once the screen has
+  arrived.
 - **Console and network:** no errors or failed requests.
 - Behind a login: use test credentials from local seed data or
   `.env.example`, or create a test user the way the project does — only in a
@@ -128,7 +138,7 @@ Done only when, as far as the environment allows:
 - the changed screens were inspected in a browser at the project's target
   screen sizes (default 375, 768 and 1440 wide);
 - the hard floor is met;
-- the relevant interactions were tried;
+- the relevant interactions were tried, and the motion was seen running;
 - problems found were fixed and re-checked;
 - the existing automated checks pass;
 - if the app looks plain (default fonts, unstyled pages), your reply ends

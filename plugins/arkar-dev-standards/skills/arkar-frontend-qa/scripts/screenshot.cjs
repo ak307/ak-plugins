@@ -3,7 +3,12 @@
 // browser tool (Claude in Chrome, Playwright MCP) is available.
 //
 // Usage (run from the project folder so its own Playwright is found first):
-//   node <path-to>/screenshot.cjs <url> [output-folder] [--full-page] [--sizes=1280x800,1920x1080]
+//   node <path-to>/screenshot.cjs <url> [output-folder] [--full-page] [--sizes=1280x800,1920x1080] [--motion]
+//
+// --motion also checks animation at the largest size: which animations run on
+// load and while scrolling (with a frame taken mid-entrance), the same page
+// with reduced motion switched on, and text left invisible (e.g. a scroll
+// reveal that never fired).
 //
 // Only local URLs (localhost, 127.0.0.1) are allowed: QA never runs against a
 // production or staging site. --allow-remote overrides this when AK asks.
@@ -72,6 +77,123 @@ function pageSlug(url) {
   return urlPath === "" ? "home" : urlPath.slice(1).replace(/[^a-zA-Z0-9]+/g, "-");
 }
 
+// Runs inside the page from the first moment: records every CSS transition,
+// CSS animation and Web Animations API animation (used by `motion`) it sees.
+function recordAnimations() {
+  const seen = new Map();
+  window.__arkarAnimations = seen;
+  function describe(element) {
+    if (!element || !element.tagName) return "";
+    const classes = element.classList.length > 0 ? "." + [...element.classList].slice(0, 2).join(".") : "";
+    return element.tagName.toLowerCase() + classes;
+  }
+  function collect() {
+    for (const animation of document.getAnimations()) {
+      if (seen.has(animation)) continue;
+      const effect = animation.effect;
+      const timing = effect && effect.getComputedTiming ? effect.getComputedTiming() : {};
+      seen.set(animation, {
+        kind: animation.constructor.name,
+        duration: Number(timing.duration) || 0,
+        infinite: timing.iterations === Infinity,
+        target: describe(effect && effect.target),
+      });
+    }
+  }
+  setInterval(collect, 30);
+}
+
+function summariseAnimations() {
+  const animations = [...window.__arkarAnimations.values()];
+  const kinds = {};
+  for (const animation of animations) kinds[animation.kind] = (kinds[animation.kind] || 0) + 1;
+  const longest = animations.reduce((max, animation) => Math.max(max, animation.duration), 0);
+  const targets = [...new Set(animations.map((animation) => animation.target).filter(Boolean))].slice(0, 8);
+  return { count: animations.length, kinds, longest, infinite: animations.filter((a) => a.infinite).length, targets };
+}
+
+// Text that is still see-through after the page settled and was scrolled
+// through, while not properly hidden (display: none or visibility: hidden also
+// hide it from keyboards and screen readers, so those are left alone). Usually
+// a reveal that never ran; closed menus faded with opacity alone show up too.
+function findInvisibleText() {
+  const found = [];
+  for (const element of document.body.querySelectorAll("*")) {
+    const hasOwnText = [...element.childNodes].some((node) => node.nodeType === 3 && node.textContent.trim() !== "");
+    if (!hasOwnText) continue;
+    let opacity = 1;
+    let hidden = false;
+    for (let node = element; node && node !== document.documentElement; node = node.parentElement) {
+      const style = getComputedStyle(node);
+      if (style.display === "none") { hidden = true; break; }
+      opacity *= Number(style.opacity);
+    }
+    if (!hidden && getComputedStyle(element).visibility !== "hidden" && opacity < 0.1) {
+      found.push(`${element.tagName.toLowerCase()} "${element.textContent.trim().slice(0, 40)}"`);
+    }
+  }
+  return found.slice(0, 6);
+}
+
+async function scrollThrough(page) {
+  const height = await page.evaluate(() => document.documentElement.scrollHeight);
+  const step = Math.round(page.viewportSize().height * 0.8);
+  for (let position = 0; position < height; position += step) {
+    await page.evaluate((top) => window.scrollTo(0, top), position);
+    await page.waitForTimeout(250);
+  }
+  await page.waitForTimeout(800);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(400);
+}
+
+async function checkMotion(browser, url, viewport, outputFolder) {
+  const size = { width: viewport.width, height: viewport.height };
+  const lines = [];
+  let problemCount = 0;
+
+  const page = await browser.newPage({ viewport: size });
+  await page.addInitScript(recordAnimations);
+  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.waitForTimeout(150);
+  const earlyFrame = path.join(outputFolder, `${pageSlug(url)}-motion-early.png`);
+  await page.screenshot({ path: earlyFrame });
+  await page.waitForTimeout(1200);
+  const onLoad = await page.evaluate(summariseAnimations);
+  await scrollThrough(page);
+  const overall = await page.evaluate(summariseAnimations);
+  const stuck = await page.evaluate(findInvisibleText);
+  await page.close();
+
+  lines.push(`motion: ${onLoad.count} animation(s) on load, ${overall.count - onLoad.count} more while scrolling ` +
+    `(${JSON.stringify(overall.kinds)}); longest ${Math.round(overall.longest)} ms; ${overall.infinite} looping`);
+  lines.push(`  animated: ${overall.targets.join(", ") || "nothing"}`);
+  lines.push(`  frame mid-entrance: ${earlyFrame}`);
+  if (overall.count === 0) {
+    lines.push("  - no animation found on load or scroll (interactions are not covered by this check)");
+  }
+  for (const text of stuck) lines.push(`  - text still invisible after scrolling: ${text}`);
+  problemCount += stuck.length;
+
+  const reduced = await browser.newPage({ viewport: size, reducedMotion: "reduce" });
+  await reduced.addInitScript(recordAnimations);
+  await reduced.goto(url, { waitUntil: "load", timeout: 30000 });
+  await reduced.waitForTimeout(1200);
+  await scrollThrough(reduced);
+  const calm = await reduced.evaluate(summariseAnimations);
+  const calmStuck = await reduced.evaluate(findInvisibleText);
+  await reduced.close();
+
+  lines.push(`reduced motion: ${calm.count} animation(s); longest ${Math.round(calm.longest)} ms; ${calm.infinite} looping`);
+  if (calm.longest > 300 || calm.infinite > 0) {
+    lines.push("  - with reduced motion on, long or looping animations still run");
+    problemCount += 1;
+  }
+  for (const text of calmStuck) lines.push(`  - text invisible with reduced motion: ${text}`);
+  problemCount += calmStuck.length;
+  return { lines, problemCount };
+}
+
 function collectProblems(page) {
   const problems = [];
   page.on("console", (message) => {
@@ -88,7 +210,7 @@ function collectProblems(page) {
 async function main() {
   const [url, outputFolder = "qa-screenshots", ...flags] = process.argv.slice(2);
   if (!url) {
-    console.error("Usage: node screenshot.cjs <url> [output-folder] [--full-page] [--sizes=WxH,WxH]");
+    console.error("Usage: node screenshot.cjs <url> [output-folder] [--full-page] [--sizes=WxH,WxH] [--motion]");
     process.exit(1);
   }
   if (!isLocalUrl(url) && !flags.includes("--allow-remote")) {
@@ -125,6 +247,12 @@ async function main() {
     for (const problem of problems) console.log(`  - ${problem}`);
     problemCount += problems.length;
     await page.close();
+  }
+  if (flags.includes("--motion")) {
+    const largest = viewports.reduce((widest, viewport) => (viewport.width > widest.width ? viewport : widest));
+    const motion = await checkMotion(browser, url, largest, outputFolder);
+    for (const line of motion.lines) console.log(line);
+    problemCount += motion.problemCount;
   }
   } finally {
     await browser.close();

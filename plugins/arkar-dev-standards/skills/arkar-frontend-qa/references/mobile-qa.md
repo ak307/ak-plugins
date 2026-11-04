@@ -114,6 +114,10 @@ offline and success:
   reused or complex subtrees; `const` constructors wherever possible.
 - Configuration changes and process death handled by state hoisting, not by
   blocking recreation.
+- **Motion** designed for the project as in `arkar-frontend-design`'s
+  `motion.md` and recorded in `DESIGN.md`; with
+  `MediaQuery.disableAnimationsOf` true, shorten or skip. Run it at 60 fps in profile mode on a real device or
+  emulator when the motion is heavy.
 
 ## 7. Testing and checking
 

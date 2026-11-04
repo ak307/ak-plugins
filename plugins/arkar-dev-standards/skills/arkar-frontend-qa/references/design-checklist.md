@@ -87,19 +87,15 @@ or offer undo straight after. This one is part of the hard floor.
 
 - Every action gets feedback within ~100 ms (state change, spinner, toast).
 - Operations over ~1 s show loading; over ~5 s show progress if measurable.
-- Motion is present and designed (see `arkar-frontend-design`'s `motion.md`):
-  screen transitions, a first-view entrance, micro-interactions on controls,
-  animated layout changes, living loading states, one signature moment.
-- Durations follow the `DESIGN.md` tokens: controls 100–150 ms, menus and
-  list changes 180–250 ms, page transitions and modals 300–450 ms, the
-  entrance and signature moment up to ~900 ms. Repeated everyday actions
-  stay at the quick end; springs well damped, with at most a hint of
-  overshoot.
-- Content is usable while it animates; nothing waits for an intro.
-- Premium and calm: subtle distances (4–16 px), smooth well-damped easing,
-  choreographed order, still at rest. No scroll-jacking, auto-rotating
-  carousels, looping attention-grabbers, bounce/wobble/rotation gimmicks,
-  or entrances replayed on every visit to an everyday screen.
+- Motion is present and designed for this project as recorded in
+  `DESIGN.md` (see `arkar-frontend-design`'s `motion.md`) — not generic, not
+  copied from another project.
+- Beautiful, premium and calm: purposeful, refined, choreographed, still at
+  rest, consistent across screens.
+- Never confusing or annoying: content isn't held back, the user stays in
+  control (no scroll-jacking, focus theft or moving targets), nothing loops
+  for attention, everyday interactions stay quick, first-view motion
+  finishes within about a second and doesn't replay on every visit.
 - Animate opacity and transform, not layout properties (width, top) — smoother;
   reserve space so nothing shifts.
 - Under `@media (prefers-reduced-motion: reduce)`, replace movement with a

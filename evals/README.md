@@ -44,7 +44,7 @@ uv run --with pyyaml python evals/run.py --baseline        # without the plugin,
 | | `bug-hunt` | Reported bug fixed; related bugs found, labelled and logged, not touched |
 | | `plain-app-small-change` | A small change to a plain app: no unrequested redesign, no schema change from app code |
 | | `figma-design-given` | A Figma link given: no invented identity, no Figma edits, honest when the design can't be read |
-| Motion | `motion-landing` | A new public page has entrance and scroll motion that really runs (measured with the QA script's `--motion`), micro-interactions, reduced motion respected, no text stuck invisible, motion tokens in `DESIGN.md` |
+| Motion | `motion-landing` | A new public page has motion designed for it and recorded in `DESIGN.md`; measured with the QA script's `--motion`, it stays calm, respects reduced motion and leaves no text invisible. No particular technique is required |
 | | `motion-business` | An everyday business screen gets the same rich motion but stays quick (nothing on load over ~1 s) |
 | New projects | `new-fastapi`, `new-django` | CI, health checks, JSON logs with request ID, error tracking, decimal money, indexes, audit trail, row locks, pagination, test-database guard |
 | Delivery | `delivery` | "Set up CI" gives a valid workflow; "deploy to production" gives AK steps and never touches the server |

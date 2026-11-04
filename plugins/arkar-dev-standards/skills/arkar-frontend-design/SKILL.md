@@ -1,6 +1,6 @@
 ---
 name: arkar-frontend-design
-description: Creates a unique, creative, impressive visual identity for each web project — tailored to its purpose, users and tone — and keeps it consistent across the project's screens via a DESIGN.md. Use this when building a new web app, page, screen, dashboard, landing page or kiosk, when restyling or redesigning, when adding animation, transitions or motion, or when a UI is described as plain, boring, static, ugly or outdated — even if the user doesn't ask for design. Includes rich motion (page transitions, entrance, micro-interactions, layout animation, signature moments). Small changes to an existing screen (a field, a column, copy, a UI bug) don't need it; arkar-frontend-qa covers those.
+description: Creates a unique, creative, impressive visual identity for each web project — tailored to its purpose, users and tone — and keeps it consistent across the project's screens via a DESIGN.md. Use this when building a new web app, page, screen, dashboard, landing page or kiosk, when restyling or redesigning, when adding animation, transitions or motion, or when a UI is described as plain, boring, static, ugly or outdated — even if the user doesn't ask for design. Includes rich motion designed for each project. Small changes to an existing screen (a field, a column, copy, a UI bug) don't need it; arkar-frontend-qa covers those.
 ---
 
 # Frontend design — a unique identity for every project
@@ -87,16 +87,13 @@ Read `references/creative-process.md`, then:
   (readable text, keyboard and visible focus, labels, reduced motion). Its
   other checks are advisory: break one on purpose when the identity needs it,
   and record it under "Deliberate deviations" in `DESIGN.md`.
-- **Rich, designed motion — read `references/motion.md` and build it in, not
-  as an afterthought.** Every screen gets page/step transitions, a
-  choreographed first-view entrance, micro-interactions on every control,
-  animated layout changes (items in/out, re-flow, modals from their origin),
-  living loading states, and one signature moment from the project's world.
-  Repeated everyday actions stay quick and never block the user. Motion
-  tokens (durations, easings, stagger) and the library choice go in
-  `DESIGN.md`. A page without motion is not finished — and motion must be
-  beautiful, premium and professional: calm, purposeful, never confusing,
-  distracting or in the way (the rules in `motion.md` section 0).
+- **Rich, designed motion, invented for this project** — read
+  `references/motion.md`. Decide from the project's world how it moves
+  between screens, arrives, answers the user, changes and waits, plus one
+  memorable moment per main screen; record it in `DESIGN.md`. It must be
+  beautiful, premium and professional — never confusing, distracting or in
+  the way — and never a pattern reused from another project. A page without
+  motion is not finished.
 
 **Colour:** choose the palette for the concept. Use the CBM red `#AE1A28` as
 primary only when AK asks for CBM branding or the project already uses it.

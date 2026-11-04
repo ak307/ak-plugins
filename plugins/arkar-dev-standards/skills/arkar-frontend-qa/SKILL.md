@@ -106,10 +106,10 @@ For each changed screen:
   and actually look at it.
 - **Interact:** click what you changed, submit forms (valid and invalid), open
   menus and dialogs, use Tab and Escape.
-- **Motion:** watch it run — navigate between screens, trigger the entrance,
-  hover and press controls, add/remove/filter items, open modals. Check it
-  matches the `DESIGN.md` motion tokens, feels smooth, never delays the user
-  on repeated actions, and calms down with reduced motion. With the
+- **Motion:** watch it run — move between screens, load them fresh, use the
+  controls, change and filter things, wait for data. Check it matches the
+  motion recorded in `DESIGN.md`, feels premium and smooth, never delays the
+  user on everyday actions, and calms down with reduced motion. With the
   screenshot script, add `--motion`; with Claude in Chrome or Playwright MCP,
   check `document.getAnimations()` while triggering and repeat with reduced
   motion emulated. A new or restyled screen with no motion is a defect; so is

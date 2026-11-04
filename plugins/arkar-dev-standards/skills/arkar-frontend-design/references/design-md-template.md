@@ -54,16 +54,12 @@ Languages: <e.g. English only; or English + Burmese (needs tall-script line heig
 - <element>: <what it is, which screen, why it fits the concept>
 
 ## Motion
-- Character: <e.g. "crisp and mechanical — things snap into place like
-  instrument needles">
-- Tokens: <instant / quick / moderate / expressive durations, easings, spring,
-  stagger>
-- Navigation: <how pages, tabs and steps transition; shared elements>
-- Entrance: <first-view sequence per main screen>
-- Micro-interactions: <buttons, toggles, inputs, success and error>
-- Layout and waiting: <items in/out, modals and drawers, skeletons>
+- Concept: <one sentence: how this product moves and why, from its world>
+- Tokens: <the durations, easings (and any physics) defined for this project>
+- Moments: <how it handles moving between screens, first arrival, answering
+  the user, things changing, waiting — or why a moment stays still>
 - Signature moments: <one per main screen>
-- Tools: <CSS / view transitions / motion / Livewire / flutter_animate …, and why>
+- Tools: <what's used and why>
 - Reduced motion: <what replaces movement>
 
 ## Voice

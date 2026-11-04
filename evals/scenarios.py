@@ -285,33 +285,30 @@ def measure_motion(site: Path) -> dict:
     }
 
 
-def motion_checks(run, project: Path, scrolling_expected: bool) -> list:
+def motion_checks(run, project: Path) -> list:
+    """Outcomes only: motion exists and is recorded, and it stays within the quality limits.
+
+    The checks never require a particular technique, so each project is free to invent its own motion.
+    """
     measured = measure_motion(project)
     design = next((path.read_text() for path in project.rglob("DESIGN.md")), "")
     code = "".join(path.read_text(errors="ignore") for path in project.rglob("*")
                    if path.is_file() and path.suffix in (".css", ".js", ".html"))
     detail = measured.get("output", measured.get("error", ""))
-    checks = [
+    measured_motion = measured.get("on_load", 0) + measured.get("while_scrolling", 0) > 0
+    written_motion = re.search(r"transition\s*:|animation\s*:|@keyframes|\.animate\(|startViewTransition", code)
+    return [
         check("design skill loaded", run.loaded("design"), str(run.skills)),
-        check("animations run on load", measured.get("on_load", 0) > 0, detail),
-        check("micro-interactions on controls (hover/active/focus transitions)",
-              re.search(r":(hover|active|focus-visible)[^{]*\{[^}]*(transform|transition|animation)", code)
-              or re.search(r"transition\s*:[^;]*(transform|all|background|box-shadow)", code)),
-        check("layout changes animated (items in/out or view transitions)",
-              re.search(r"startViewTransition|view-transition|\.animate\(|@keyframes[\s\S]{0,400}(out|leave|exit|remove)|"
-                        r"FLIP|getBoundingClientRect", code, re.I)),
+        check("motion built in (seen running, or defined for interactions)", measured_motion or written_motion, detail),
+        check("DESIGN.md records the project's motion (concept and timing)",
+              re.search(r"##\s*Motion", design) and re.search(r"\d{2,4}\s*ms", design), design[:200]),
         check("no text left invisible", not measured.get("stuck_text", True), detail),
+        check("reduced motion respected", measured.get("reduced_ok"), detail),
         check("calm: nothing longer than ~1.2 s, at most one looping animation",
-              0 < measured.get("longest", 0) <= 1200 and measured.get("looping", 0) <= 1, detail),
+              measured.get("longest", 0) <= 1200 and measured.get("looping", 0) <= 1, detail),
         check("no scroll-jacking", not re.search(r"scroll-snap-type\s*:\s*y\s+mandatory|addEventListener\(\s*['\"]"
                                                  r"(wheel|mousewheel)['\"]", code)),
-        check("reduced motion respected", measured.get("reduced_ok"), detail),
-        check("DESIGN.md records motion tokens",
-              re.search(r"##\s*Motion", design) and re.search(r"\d{2,4}\s*ms", design), design[:200]),
     ]
-    if scrolling_expected:
-        checks.insert(2, check("scroll-driven reveals", measured.get("while_scrolling", 0) > 0, detail))
-    return checks
 
 
 def motion_landing(root: Path, plugin: Path):
@@ -319,7 +316,7 @@ def motion_landing(root: Path, plugin: Path):
     run = run_claude("build a landing page for 'Harbour Lights', a new app for CBM's car parks where drivers find a "
                      "free space and pay by phone. plain HTML/CSS/JS in folder harbour-lights, index.html, ready to "
                      "open in a browser.", workspace, plugin)
-    return motion_checks(run, workspace / "harbour-lights", scrolling_expected=True)
+    return motion_checks(run, workspace / "harbour-lights")
 
 
 def motion_business(root: Path, plugin: Path):
@@ -328,10 +325,10 @@ def motion_business(root: Path, plugin: Path):
                      "facilities supervisors see work orders in columns (new, assigned, in progress, done), filter by "
                      "site, and move a work order to the next column. they use it all day.", workspace, plugin)
     project = workspace / "workboard"
-    checks = motion_checks(run, project, scrolling_expected=False)
+    checks = motion_checks(run, project)
     measured = measure_motion(project)
     checks.append(check("quick for daily use: nothing longer than ~1 s, nothing looping",
-                        0 < measured.get("longest", 0) <= 1000 and measured.get("looping", 0) == 0,
+                        measured.get("longest", 0) <= 1000 and measured.get("looping", 0) == 0,
                         measured.get("output", "")))
     return checks
 

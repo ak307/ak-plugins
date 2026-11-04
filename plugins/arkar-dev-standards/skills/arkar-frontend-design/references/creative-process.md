@@ -69,9 +69,8 @@ Turn the chosen direction into a design system for the project:
 - **Shape language:** radius scale, border use, elevation levels — all from
   the concept (sharp and engineered, soft and friendly, layered and physical).
 - **Spacing and grid:** a spacing scale and the grid/alignment rule.
-- **Motion character:** how things move (crisp and mechanical, soft and
-  settling, gently springy — always calm and premium), the timing tokens, and the signature moment
-  per main screen — see `motion.md`.
+- **Motion:** the project's own motion concept, drawn from its world — see
+  `motion.md`. Always premium and calm; never a pattern from another project.
 - **Signature elements:** one per main screen, related to each other.
 - **Voice:** how labels, empty states and errors sound.
 
@@ -96,8 +95,8 @@ identity asks for it:
   accent; near-black page with one acid-green accent; newspaper hairlines with
   zero radius.
 - **Generic motion:** the same fade-and-slide-up on every section and the
-  same hover lift on every card, with no character or meaning. (The fix is
-  designed motion, not less motion — see `motion.md`.)
+  same hover lift on every card, or the motion you used last time. (The fix
+  is motion designed for this project, not less motion — see `motion.md`.)
 - **Reusing the last project's look:** the same fonts, palette and layout
   pattern you'd reach for by habit. Each project starts fresh.
 
@@ -118,10 +117,9 @@ Use the ones that serve this project — never all of them:
 - **Responsive transformation:** each size gets its own composition —
   tables become cards or timelines on phones, forms become steppers or bottom
   sheets, sidebars become bottom bars.
-- **Motion that tells the story:** screens flow into each other, content
-  arrives in a choreographed order, and the thing the user changed visibly
-  moves (a slot fills, a card moves column, a badge prints) — with the
-  confirmation using the same word as the button. Details in `motion.md`.
+- **Motion that tells the story:** designed for this project from its
+  world, so users always see where they are and what changed — see
+  `motion.md`.
 - **Designed empty, loading and error states** in the project's voice and
   visual language — often a small version of the signature visual.
 
@@ -165,7 +163,7 @@ freshly for each project rather than reaching for a familiar recipe:
 | Type personality | geometric, grotesque, humanist, condensed, serif, mono-accented |
 | Structure | strict grid ↔ asymmetric/editorial ↔ spatial (map, floor plan, timeline) |
 | Metaphor / material | signage, paper and stamps, instruments and gauges, maps, tickets and badges, ledgers |
-| Motion | crisp and mechanical ↔ soft and settling ↔ gently springy ↔ layered and spatial (always calm and premium) |
+| Motion | its character (pace, weight, rhythm, physicality) and where it lives — invent it from the project's world; always premium and calm |
 | Colour strategy | neutral + one accent ↔ colour-coded system ↔ one bold colour field |
 
 Business apps still need clarity first: whatever the direction, the primary

@@ -27,9 +27,9 @@ catalogue. Write down, one line each:
 - **Primary job:** the one thing the main screen must make effortless.
 - **Tone:** how it should feel (calm and trustworthy, energetic, precise,
   warm and welcoming, authoritative, playful).
-- **Vocabulary:** objects, materials, places, signals and rituals of that
-  world (badges, plates, floor plans, ledgers, shift rosters, checkpoints,
-  receipts, lanyards, signage). Signature ideas come from here.
+- **Vocabulary:** the objects, materials, places, signals and rituals of
+  this project's own world — found fresh each time from its domain, data and
+  users. Signature ideas come from here.
 - **Constraints:** brand assets, an existing design system, accessibility
   needs, devices, offline use, content density.
 
@@ -41,9 +41,8 @@ domain, and state the assumptions in the final message.
 Before committing, sketch two or three directions that would lead to
 noticeably different products — not three shades of the same idea. For each:
 
-- **Name and concept:** two or three words and one sentence ("Reception Desk —
-  the app greets you like a well-run front desk: warm, unhurried, one thing at
-  a time").
+- **Name and concept:** two or three words and one sentence on what the
+  product should feel like and why.
 - **Palette:** 4–6 named colours with roles.
 - **Type:** one or two typefaces and why they suit the concept.
 - **Layout idea:** a sentence (and a tiny ASCII wireframe if it helps).
@@ -105,18 +104,18 @@ identity asks for it:
 Use the ones that serve this project — never all of them:
 
 - **Signature visuals drawn in code:** SVG illustrations, diagrams or
-  patterns from the project's vocabulary (a building whose lit windows are open
-  jobs; a visitor badge that fills in as you type; a route whose checkpoints
-  light up), made with the palette and a consistent stroke — not clip-art.
+  patterns invented from this project's vocabulary, made with the palette and
+  a consistent stroke — not clip-art, and never an idea reused from another
+  project.
 - **Type as a visual element:** in one place per screen, large, well-set type
   carries the design — strong scale contrast, careful spacing, on the grid.
-- **Data as the hero:** the numbers or resources that matter most, shown
-  visually (occupancy, capacity, progress toward a limit) where the eye lands.
-- **Purposeful depth and materiality:** layered surfaces, a darker focus
-  panel, subtle texture or pattern that echoes the subject's material.
-- **Responsive transformation:** each size gets its own composition —
-  tables become cards or timelines on phones, forms become steppers or bottom
-  sheets, sidebars become bottom bars.
+- **Data as the hero:** the numbers or resources that matter most to these
+  users, shown visually where the eye lands.
+- **Purposeful depth and materiality:** surfaces, layering and texture that
+  echo the subject's own material.
+- **Responsive transformation:** each size gets its own composition,
+  designed for how the content is used on that device — not the desktop
+  layout squeezed.
 - **Motion that tells the story:** designed for this project from its
   world, so users always see where they are and what changed — see
   `motion.md`.
@@ -156,13 +155,13 @@ freshly for each project rather than reaching for a familiar recipe:
 | Axis | Range |
 |---|---|
 | Density | airy and spacious ↔ dense and information-rich |
-| Temperature | warm (sand, terracotta, cream) ↔ cool (slate, steel, ice) |
+| Temperature | warm ↔ neutral ↔ cool |
 | Contrast | soft and low-contrast ↔ stark and high-contrast |
-| Light | light surfaces ↔ dark surfaces ↔ mixed (dark panel + light work area) |
+| Light | light surfaces ↔ dark surfaces ↔ mixed |
 | Shape | sharp and engineered ↔ soft and rounded ↔ organic |
 | Type personality | geometric, grotesque, humanist, condensed, serif, mono-accented |
-| Structure | strict grid ↔ asymmetric/editorial ↔ spatial (map, floor plan, timeline) |
-| Metaphor / material | signage, paper and stamps, instruments and gauges, maps, tickets and badges, ledgers |
+| Structure | strict grid ↔ asymmetric/editorial ↔ spatial |
+| Metaphor / material | invented from the project's own world — never a stock metaphor or one used before |
 | Motion | its character (pace, weight, rhythm, physicality) and where it lives — invent it from the project's world; always premium and calm |
 | Colour strategy | neutral + one accent ↔ colour-coded system ↔ one bold colour field |
 

@@ -41,12 +41,12 @@ Languages: <e.g. English only; or English + Burmese (needs tall-script line heig
 ## Type
 - Display: <family, weights> — <why>
 - Text: <family, weights>
-- Scale: <e.g. 13 / 15 / 18 / 24 / 32 / 48>
+- Scale: <this project's type scale>
 - Fonts are bundled in <path> (not linked from Google)
 
 ## Shape, space and depth
 - Radius: <scale and where each is used>
-- Spacing scale: <e.g. 4 / 8 / 12 / 16 / 24 / 32 / 48>
+- Spacing scale: <this project's spacing scale>
 - Elevation: <levels and when>
 - Grid / alignment: <rule>
 

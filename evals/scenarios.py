@@ -600,7 +600,7 @@ def ui_d_native_mobile(root: Path, plugin: Path):
     return [
         loaded_check(run, {"ui", "responsive", "vqa"}),
         check("colours come from the theme (≤2 hard-coded outside theme files)", len(hard_coded) <= 2, str(hard_coded[:6])),
-        check("loading / empty / error states modelled", re.search(r"AsyncValue|\.when\(|sealed class", dart)
+        check("loading / empty / error states modelled", re.search(r"AsyncValue|\.when\(|sealed class|hasError|isLoading|ConnectionState|FutureBuilder|StreamBuilder", dart)
               and re.search(r"empty|no (leave )?requests", dart, re.I) and re.search(r"error", dart, re.I)),
         check("motion between screens or on changes", re.search(r"Hero\(|AnimatedSwitcher|AnimatedList|PageRouteBuilder|"
                                                             r"CustomTransitionPage|\.animate\(|AnimatedContainer|"

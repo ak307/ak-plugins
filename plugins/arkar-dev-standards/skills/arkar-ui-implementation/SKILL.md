@@ -68,6 +68,14 @@ measurement taken.
 - Build succeeds; lint, type checks and tests pass.
 - No layout shift introduced; interactions stay responsive; no unnecessary
   continuous animation, heavy blur or filter.
+- **No raw design values in components.** Before finishing, search the code
+  you wrote for raw colours, sizes and durations outside the token/theme
+  files — e.g. `Color(0x` / `Colors.` / `TextStyle(fontSize:` in Flutter
+  widgets, hex/`rgb(` or px font sizes in component CSS, inline style
+  colours in JSX — and move each into a token. **Status and semantic
+  colours count too** (badges, chips, alerts): they belong in the theme
+  (CSS custom properties; Flutter `ColorScheme` or a `ThemeExtension`), with
+  light and dark values.
 
 ## Dependencies
 

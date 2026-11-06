@@ -66,8 +66,14 @@ breakpoints, and the sizes QA must check.
 - **Nothing becomes unreachable on a phone.** A side panel, sources rail or
   detail column on desktop gets a path on small screens (a tab, sheet or
   drawer with a visible trigger). Sticky bars never cover the hero or
-  content people need to read; labels that would be cut off wrap or move to
-  a second line instead of truncating meaning.
+  content people need to read — or form fields and their buttons (use
+  `scroll-padding` / `scroll-margin` so focused fields scroll clear of fixed
+  bars); labels that would be cut off wrap or move to a second line instead
+  of truncating meaning; a scrolling chip row shows that it scrolls.
+- **Phone-first is not phone-only.** A product built for phones still gets a
+  designed tablet and desktop composition (two panes, a wider calendar, the
+  detail beside the list) or a deliberate framed layout with purpose in the
+  space around it — never a narrow column floating in an empty canvas.
 
 ## Dependencies
 

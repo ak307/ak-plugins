@@ -79,6 +79,9 @@ structure changed.
   column shows something useful (what needs attention, recent items, a
   short guide) or collapses until it has content — never a big empty box
   with one icon.
+- **One meaning, one encoding.** A status shown by colour, icon or bar uses
+  the same thresholds everywhere (a "low stock" item is never shown with a
+  "healthy" green bar).
 - **One number, one source.** A figure shown in more than one place (a
   header count and a legend, a total and its rows) is computed from the same
   data, so they can never disagree.

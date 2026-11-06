@@ -135,6 +135,12 @@ or remove it.
   Add the "ready to animate" state from JS just before animating, so if the
   script fails, loads slowly or the page is printed or captured, everything
   is still there.
+- **Multi-step flows move with direction:** forward slides one way, back the
+  other (or a shared element carries over), so people feel where they came
+  from — no hard cuts between steps.
+- **Interruptions continue from where things are:** a value or bar that
+  changes mid-animation animates from its current position to the new
+  target — never dips or jumps back first.
 - Animate only what changed. Filtering, sorting or refreshing must not blank
   and re-reveal content that stayed the same — that reads as flicker.
 - A filmstrip (`arkar-ui-visual-qa/scripts/film.cjs`) of the first load must

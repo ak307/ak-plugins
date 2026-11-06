@@ -66,6 +66,12 @@ reader test performed").
 - Meets AK's premium standard (`arkar-ui-intelligence/references/premium-standard.md`): nothing basic, generic or unfinished — working is not enough.
 
 - Semantic HTML first; ARIA only where native semantics can't express it.
+- **Focus lands somewhere sensible** after closing a panel, dialog or menu —
+  the control that opened it, or the row that was open — and the focus
+  style is a designed, on-brand ring (never one that reads as an error
+  state, never a ring around a whole table or page region).
+- Automated checks: run `arkar-ui-visual-qa/scripts/audit.cjs` (axe-core,
+  WCAG 2.2 AA) and fix every serious or critical violation.
 - Automated checks clean for the scope (where a tool is available) **and**
   a manual keyboard pass done — automated tools find only part of the
   problems.

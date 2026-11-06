@@ -27,4 +27,4 @@ against all earlier problems.
 | 1051b95 | audit.cjs: axe, errors, overflow, design-system spread | Contrast failures and 18 font sizes invisible to visual review | Objective audit |
 | b053ef8 | No raw design values in components (status colours too) | Flutter status chips with hard-coded colours | Scenario D |
 | 51e9fb2 | Motion never delays primary content; animate only what changed; nothing unreachable on phones; no blank panels; one number one source; styled form controls; fonts must render | Blind scoring of round 12: only 1/6 accepted | Blind score r12 |
-| (next) | Gate sees files written through the shell (`cat >`, `tee`, Python writes, `sed -i`, `cp/mv`); insists up to 3 times per session | Thin-content run wrote everything via Bash heredocs → gate never fired; another replied "didn't get to it" after one block | Edge cases r1 |
+| 044cdcd | Gate sees files written through the shell (`cat >`, `tee`, Python writes, `sed -i`, `cp/mv`); insists up to 3 times per session | Thin-content run wrote everything via Bash heredocs → gate never fired; another replied "didn't get to it" after one block | Edge cases r1 |

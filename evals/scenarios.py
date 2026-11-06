@@ -610,6 +610,131 @@ def ui_f_premium_motion(root: Path, plugin: Path):
 
 
 # ---------------------------------------------------------------------------
+# Variety pool — new products of very different kinds, each judged with the same
+# premium-process checks plus a few checks specific to its interaction type.
+# The briefs are deliberately unlike A–F so the skills are tested on new ground.
+# ---------------------------------------------------------------------------
+
+def new_product_checks(run, project: Path, workspace: Path) -> list:
+    """The checks every new product shares: full process, evidence, layout, motion."""
+    problems = layout_problems(project)
+    return [
+        premium_pass_check(run, 2, workspace),
+        structure_check(project, workspace),
+        compositions_check(project),
+        critique_check(run, workspace),
+        motion_review_check(run, workspace),
+        loaded_check(run, {"ui", "discovery", "art", "ux", "ds", "motion", "responsive", "a11y", "impl", "vqa"}),
+        check("no layout problems at phone, tablet, desktop", not problems, problems),
+    ] + motion_checks(run, project)
+
+
+def has(code: str, pattern: str) -> bool:
+    return bool(re.search(pattern, code, re.I | re.S))
+
+
+def overlay_checks(code: str) -> list:
+    return [
+        check("dialogs are real dialogs (dialog element or role=dialog with aria-modal)",
+              has(code, r"<dialog|showmodal\(|role=[\"']dialog[\"'][^>]*aria-modal|aria-modal[^>]*role=[\"']dialog")),
+        check("Escape closes overlays", has(code, r"['\"]escape['\"]|key\s*===?\s*['\"]esc|cancel['\"]\s*,")),
+        check("focus is returned to the trigger after closing", has(code, r"(return|restore|previous|opener|trigger|last)\w*focus|\.focus\(\)")),
+    ]
+
+
+def ui_g_booking_flow(root: Path, plugin: Path):
+    """G — a multi-step transaction: choose, fill in, review, confirm, success."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build the booking flow for 'Roomly', a new app where office staff book meeting rooms: pick a "
+                     "date and time, see which rooms are free (capacity, equipment, floor), add attendees and a title, "
+                     "review and confirm, then see the booking confirmed. plain HTML/CSS/JS with mock data and a "
+                     "simulated backend, folder roomly, index.html.", workspace, plugin, max_turns=300)
+    project = workspace / "roomly"
+    code = site_code(project)
+    return new_product_checks(run, project, workspace) + [
+        check("steps shown with progress (step indicator / aria-current step)",
+              has(code, r"aria-current=[\"']step|step\s*\d\s*of|progressbar|stepper|class=[\"'][^\"']*step")),
+        check("inline validation with human messages (aria-invalid / aria-describedby)",
+              has(code, r"aria-invalid") and has(code, r"aria-describedby")),
+        check("confirming shows a processing state, then success", has(code, r"aria-busy|processing|confirming|saving")
+              and has(code, r"confirmed|success|booked")),
+        check("a failure path with a way forward (retry / try again)", has(code, r"retry|try again")),
+    ]
+
+
+def ui_h_overlays(root: Path, plugin: Path):
+    """H — overlays: command palette, side drawer, confirmation modal, toasts with undo."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build the task board for 'Tandem', a new project app for small teams: columns of tasks, a "
+                     "command palette (Ctrl/Cmd+K) to jump to or create tasks, a side drawer to edit a task, a "
+                     "confirmation before deleting, and notifications for what just happened with undo. plain "
+                     "HTML/CSS/JS with mock data, folder tandem, index.html.", workspace, plugin, max_turns=300)
+    project = workspace / "tandem"
+    code = site_code(project)
+    return new_product_checks(run, project, workspace) + overlay_checks(code) + [
+        check("command palette opens from the keyboard (Ctrl/Cmd+K)", has(code, r"(metakey|ctrlkey)[^;]{0,80}['\"]k['\"]")),
+        check("undo offered after a destructive action", has(code, r"undo")),
+        check("notifications announced (role=status / aria-live)", has(code, r"aria-live|role=[\"']status")),
+    ]
+
+
+def ui_i_progress(root: Path, plugin: Path):
+    """I — long-running work: upload, validate with progress, generate, cancel, errors, download."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build the 'Export centre' for a payroll system: upload a CSV of timesheets, validate it (show "
+                     "progress and list row errors people can fix), generate payslips for hundreds of staff with "
+                     "progress they can cancel, and download the result. plain HTML/CSS/JS with a simulated backend "
+                     "(realistic delays, occasional failures), folder export-centre, index.html.",
+                     workspace, plugin, max_turns=300)
+    project = workspace / "export-centre"
+    code = site_code(project)
+    return new_product_checks(run, project, workspace) + [
+        check("determinate progress for long work (progress element / aria-valuenow)",
+              has(code, r"<progress|aria-valuenow")),
+        check("long work can be cancelled", has(code, r"cancel")),
+        check("drag-and-drop upload with a keyboard-accessible fallback",
+              has(code, r"dragover|ondrop|['\"]drop['\"]") and has(code, r"type=[\"']file")),
+        check("row-level errors shown and fixable", has(code, r"row\s*\$?\{?\d*|line \d|row \d") and has(code, r"fix|correct")),
+        check("failure path with retry", has(code, r"retry|try again")),
+    ]
+
+
+def ui_j_data_story(root: Path, plugin: Path):
+    """J — data visualisation: an energy dashboard where charts carry the story."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build 'Watt', an energy dashboard for a facilities company that runs 40 buildings: where "
+                     "electricity use is rising, which buildings waste most after hours, and the trend over the last "
+                     "12 months against target. plain HTML/CSS/JS with realistic mock data, folder watt, index.html.",
+                     workspace, plugin, max_turns=300)
+    project = workspace / "watt"
+    code = site_code(project)
+    return new_product_checks(run, project, workspace) + [
+        check("charts drawn (svg / canvas)", has(code, r"<svg|createElementNS|getContext\(")),
+        check("charts have text alternatives (aria-label / figcaption / table)",
+              has(code, r"<figcaption|role=[\"']img[\"'][^>]*aria-label|aria-describedby")),
+        check("hover or focus reveals exact values (tooltip)", has(code, r"tooltip")),
+        check("tabular figures for numbers", has(code, r"tabular-nums")),
+    ]
+
+
+def ui_k_onboarding(root: Path, plugin: Path):
+    """K — onboarding and a consumer-facing, phone-first experience."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build the sign-up and first-run onboarding for 'Freshfold', a laundry pickup service for busy "
+                     "people: create an account, set the pickup address and preferred times, choose wash preferences, "
+                     "and land on a home screen showing the first pickup. phone-first web app, plain HTML/CSS/JS with "
+                     "a simulated backend, folder freshfold, index.html.", workspace, plugin, max_turns=300)
+    project = workspace / "freshfold"
+    code = site_code(project)
+    return new_product_checks(run, project, workspace) + [
+        check("form fields properly labelled with autocomplete", has(code, r"<label") and has(code, r"autocomplete=")),
+        check("touch targets sized for phones (≥44px somewhere in the styles)", has(code, r"(min-)?height\s*:\s*(4[4-9]|[5-9]\d)px|--tap|44px|48px")),
+        check("progress through onboarding is visible", has(code, r"step|progress")),
+        check("a welcome / completion moment", has(code, r"welcome|you'?re all set|all set|first pickup")),
+    ]
+
+
+# ---------------------------------------------------------------------------
 # New projects and delivery
 # ---------------------------------------------------------------------------
 
@@ -748,6 +873,11 @@ SCENARIOS = {
     "ui-d-native-mobile": ("ui", ui_d_native_mobile),
     "ui-e-small-component": ("ui", ui_e_small_component),
     "ui-f-premium-motion": ("ui", ui_f_premium_motion),
+    "ui-g-booking-flow": ("ui variety", ui_g_booking_flow),
+    "ui-h-overlays": ("ui variety", ui_h_overlays),
+    "ui-i-progress": ("ui variety", ui_i_progress),
+    "ui-j-data-story": ("ui variety", ui_j_data_story),
+    "ui-k-onboarding": ("ui variety", ui_k_onboarding),
     "new-fastapi": ("new projects", new_project("fastapi")),
     "new-django": ("new projects", new_project("django")),
     "delivery": ("delivery", delivery),

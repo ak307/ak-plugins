@@ -20,6 +20,10 @@ For smaller changes it's optional.
    that would anchor it to your intentions.
 3. Fix the critic's top findings (at least the five most severe), re-shoot,
    and record the critique and fixes in `qa-screenshots/premium-pass.md`.
+   Don't dismiss a finding by pointing at your own `DESIGN.md` ("that idea
+   was rejected there") — the critic is judging the result, and your
+   earlier reasoning is what it's checking. If the critic says a screen
+   looks like a generic template, redo that screen's composition.
 4. If no subagent tool is available, do a "cold read" yourself: look at each
    screenshot as a stranger seeing the product for the first time, before
    re-reading any code.
@@ -42,7 +46,11 @@ For smaller changes it's optional.
 > 3. Craft: typography (scale, character, rhythm), colour (conviction,
 >    tinted neutrals), spacing and alignment, component polish, state
 >    design, detail.
-> 4. Does it look like a generic template or like *this* product?
+> 4. Does it look like a generic template or like *this* product? Squint
+>    until the text is unreadable: if the remaining shapes match every
+>    other product of this type (e.g. header, a band of numbers, filters, a
+>    full-width list), say so — that is a top finding, ahead of any detail,
+>    and its fix is a different composition, not nicer details.
 >
 > Return the 10 most visible shortfalls across all screens, most severe
 > first, each as: screen · what's wrong · a concrete direction to fix it (not

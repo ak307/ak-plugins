@@ -143,14 +143,18 @@ or folded into another step — and their written output is the proof.
    behaviour; record lasting decisions in `DESIGN.md` (every new product
    gets one).
 3. **Compose (required, before any code)** — add a `## Compositions`
-   section to `DESIGN.md`. For each main screen write:
+   section to `DESIGN.md`. For each main screen — and each section of a
+   long page, not only its hero — write:
    - **The obvious version** — one line on the layout anyone would build for
      this kind of screen (e.g. "hero → three service cards → CTA band";
      "KPI tiles over a table"). This one is **rejected by default**.
    - **Two or three alternatives**, each a few lines or a tiny ASCII
      wireframe, worked out from the content (what is it — a sequence,
      places, quantities, a choice? what must be noticed first?), at least
-     one of them unexpected.
+     one of them unexpected. They must differ in **idea** — each answers a
+     different question the user brings, so each puts something different
+     at the centre — not merely move the same parts around; a straw man
+     that obviously fails doesn't count.
    - **Chosen** — which one and why; its **hero moment** (what the eye lands
      on in the first three seconds) and the **visual** it uses that isn't
      just text and icons.

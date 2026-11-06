@@ -53,12 +53,13 @@ constraints. Note existing brand assets that must be kept
    type, layout idea, shape language and one signature idea for the product
    (shown on the screens where it helps — data-heavy screens may have none)
    from the product's own content, users and domain. Two products in
-   the same direction should still be recognisably different. **Your first
-   idea is the one every other build would have too** (the same hero motif,
-   palette and layout each time), so for the signature and the hero visual
-   list three candidates drawn from different parts of the product's world,
-   drop the first one that came to mind, and record all three in
-   `DESIGN.md`. Then do the composition step in the orchestrator's workflow
+   the same direction should still be recognisably different. For the
+   signature and the hero visual, list three candidates drawn from
+   different parts of the product's world and record all three in
+   `DESIGN.md`. Reject a candidate when it is **generic** — it would fit any
+   product of this type (abstract rings, a gradient blob, a band of
+   numbers) — not just because it came first; then pick the most striking
+   one that belongs only to this product. Then do the composition step in the orchestrator's workflow
    (`## Compositions`: obvious version rejected, alternatives, chosen).
 4. **Aim to impress** — read `references/visual-ambition.md`: every main
    screen passes the three-second "wow" test, has a hero moment, colour with

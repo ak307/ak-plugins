@@ -107,9 +107,13 @@ function summariseAnimations() {
   const animations = [...window.__arkarAnimations.values()];
   const kinds = {};
   for (const animation of animations) kinds[animation.kind] = (kinds[animation.kind] || 0) + 1;
-  const longest = animations.reduce((max, animation) => Math.max(max, animation.duration), 0);
+  // Skeleton shimmer and spinners loop by design while data loads, so they
+  // don't count towards the longest or looping animation.
+  const loading = (animation) => /skeleton|shimmer|spinner|loading|progress/i.test(animation.target || "");
+  const content = animations.filter((animation) => !loading(animation));
+  const longest = content.reduce((max, animation) => Math.max(max, animation.duration), 0);
   const targets = [...new Set(animations.map((animation) => animation.target).filter(Boolean))].slice(0, 8);
-  return { count: animations.length, kinds, longest, infinite: animations.filter((a) => a.infinite).length, targets };
+  return { count: animations.length, kinds, longest, infinite: content.filter((a) => a.infinite).length, targets };
 }
 
 // Text that is still see-through after the page settled and was scrolled
@@ -121,6 +125,8 @@ function findInvisibleText() {
   for (const element of document.body.querySelectorAll("*")) {
     const hasOwnText = [...element.childNodes].some((node) => node.nodeType === 3 && node.textContent.trim() !== "");
     if (!hasOwnText) continue;
+    // Inert or aria-hidden content is out of reach for keyboards and screen readers too.
+    if (element.closest("[inert], [aria-hidden='true']")) continue;
     let opacity = 1;
     let hidden = false;
     for (let node = element; node && node !== document.documentElement; node = node.parentElement) {

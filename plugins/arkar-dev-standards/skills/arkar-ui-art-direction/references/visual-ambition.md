@@ -86,7 +86,28 @@ job easy. Work each section out from these questions:
 - **What would make someone stop and look** here, without slowing the job?
 
 At least one sketch must be an unexpected option, not the layout this kind
-of page usually has. Let the nature of the content decide its form: a sequence can be a
+of page usually has.
+
+**Alternatives must differ in idea, not in arrangement.** "Filters on the
+left vs on top", "table vs cards", or a straw man that obviously fails
+(kanban for hundreds of records) are the same composition — the choice
+then always lands on the obvious version with nicer details. Make each
+alternative answer a *different question the user brings to this screen*,
+so each puts a different thing at the centre. For a data-heavy or
+all-day work tool, for example: *what needs my attention right now?*
+(exceptions and risk lead; the routine rest recedes) · *where is it
+happening?* (the product's physical or logical world — sites, doors,
+floors, routes, systems — as the frame) · *what changed, and when?* (time
+as the frame) · *what is this thing?* (the object itself — a card, a
+claim, a vehicle, a contract — rendered as an object, not a row of
+labels). The table or list stays fully efficient inside whichever is
+chosen; what changes is what the screen is *about* and what the eye meets
+first.
+
+**The test of a composition:** blur the screenshot until you can't read
+the text. If what's left looks like every other product of this type
+(header, a band of numbers, filters, a full-width list), the composition
+hasn't been done — whatever the colours and details. Let the nature of the content decide its form: a sequence can be a
 journey, a comparison a split, places a plan or map, numbers a data visual,
 a set of services something users can explore. Vary section treatments down
 a page so it reads as a designed story, not stacked boxes. Note the chosen

@@ -85,7 +85,12 @@ scope. Walk every page, button, tab, dropdown, menu, form, loading,
 processing, download, success and error state you built or changed — on
 each target size — and for each ask: *does this feel premium, polished,
 beautiful, intuitive and impressive, or boring, basic, generic or
-unfinished?* Write down each thing that feels ordinary (e.g. "save gives no
+unfinished?* For web UIs, run `scripts/interaction-probe.cjs` on each
+changed page first: it hovers, focuses and clicks every safe control and
+reports which give no hover/focus/press feedback, have no transition, are
+too small, or do nothing visible when clicked — and saves a frame mid-click
+and after each click for you to look at. Then write down each thing that
+feels ordinary (e.g. "save gives no
 feedback", "dropdown pops in with no transition", "empty state is a grey
 sentence", "phone layout is the desktop squeezed"), refine it, re-shoot and
 ask again. Repeat until nothing in scope feels ordinary. **Working is not

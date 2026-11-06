@@ -42,6 +42,24 @@ node "<skill folder>/scripts/screenshot.cjs" http://localhost:8000/claims qa-scr
 - Pages behind login: a short Playwright script that logs in with local test
   credentials, then visits each size.
 
+**The interaction probe** — `scripts/interaction-probe.cjs` in this skill,
+for the premium pass:
+
+```
+node "<skill folder>/scripts/interaction-probe.cjs" http://localhost:8000/claims qa-screenshots/probe --size=1440x900
+```
+
+- Lists every interactive element and reports those with **no hover
+  feedback**, **no visible keyboard focus**, **no transition**, **no pointer
+  cursor**, or **smaller than 24×24**.
+- Clicks safe, same-page controls (never anything that looks destructive or
+  sends data, never other pages) and saves a frame ~60 ms after the click
+  and one after it settles, noting animations, loading UI, dialogs and live
+  messages — so you can judge whether each click feels responsive and
+  polished.
+- Run it again at a phone size (`--size=375x812`). Look at the frames; the
+  numbers only point at where to look.
+
 ## 2. Starting the app per stack
 
 Only after confirming it points at local/test data. Start servers in the

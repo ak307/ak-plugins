@@ -130,7 +130,7 @@ phone, and logs the statement (not the results) to
   live system, or you can't tell, stop and ask AK.
 - Prefer automated tests with the project's test database or fixtures. For a
   UI workflow, also walk it in a browser against the local app (see
-  `arkar-frontend-qa`).
+  `arkar-ui-visual-qa`).
 - No destructive actions: no dropping or truncating tables, no mass updates
   or deletes, no real emails, SMS or push notifications, no payments. Use the
   framework's fakes (`Mail::fake()`, Django `locmem` email, mocks).

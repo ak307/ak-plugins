@@ -204,8 +204,9 @@ and tell AK instead of pushing on.
 
 If the change alters anything users see — a page, screen, form, field,
 column or message, in a browser (including HTML built in Python/PHP code or
-templates) or in a Flutter/Android app — load `arkar-frontend-qa` now and
-follow it as well.
+templates) or in a Flutter/Android app — load `arkar-ui-intelligence` now and
+follow it as well (it picks the UI specialists and ends with
+`arkar-ui-visual-qa`).
 
 - Put it where it belongs per `ARCHITECTURE.md` and `arkar-project-structure`,
   reusing what exists rather than adding parallel code.
@@ -293,7 +294,7 @@ materially — then say why you're raising it again.
   where full values aren't needed, never in logs, behind authorisation.
 - **LLM / agent features:** tools take user identity from the run context,
   tool and document text is untrusted, write actions need permission checks.
-- **UI work:** also follow `arkar-frontend-qa`; for new screens, restyling
-  or a redesign AK asked for, `arkar-frontend-design` too. A redesign of
-  existing screens he didn't ask about goes in the approval list as 🟠.
+- **UI work:** also follow `arkar-ui-intelligence` and the specialists it
+  names. A redesign of existing screens he didn't ask about goes in the
+  approval list as 🟠.
   **New projects:** `arkar-project-structure` first.

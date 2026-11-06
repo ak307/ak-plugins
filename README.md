@@ -48,17 +48,23 @@ Tests for the guard and the read-only tool:
   Templates in `plugins/arkar-dev-standards/skills/arkar-project-structure/references/`:
   FastAPI, Django, Django agentic (LangChain / LangGraph / LangSmith),
   Laravel (Inertia + React starter kit) and Flutter.
-- **`arkar-frontend-design` skill** — gives every web project its own
-  creative, impressive visual identity: explores 2–3 directions, picks one,
-  records it in the project's `DESIGN.md` so later screens stay consistent,
-  and critiques screenshots for uniqueness. Not a house style — each project
-  is different on purpose.
-- **`arkar-frontend-qa` skill** — the fixed quality floor for browser UI:
-  run the app and inspect it at 375 / 768 / 1440 px, test interactions,
-  accessibility and states, fix and re-check, report honestly. Includes a
-  Playwright screenshot script (`scripts/screenshot.cjs`) for when no browser
-  tool is connected. For the richest checks, start Claude Code with
-  `claude --chrome` (or enable Chrome by default in `/chrome`).
+- **Adaptive UI Intelligence — ten `arkar-ui-*` skills** for all UI work
+  (web, mobile, desktop). `arkar-ui-intelligence` is the orchestrator: the
+  always-on rules load it for any UI task; it classifies the scope and mode
+  (A preserve & improve · B modernize & transform · C create & innovate) and
+  loads only the specialists the task needs:
+  - `arkar-ui-discovery` — audits an existing product or gathers a new one's requirements;
+  - `arkar-ui-art-direction` — picks the design direction, preserves brand, writes `DESIGN.md`;
+  - `arkar-ui-ux-engineering` — IA, layout, flows, forms, states, tables, dashboards, AI conversations;
+  - `arkar-ui-design-system` — tokens, type and colour systems, components, themes;
+  - `arkar-ui-motion-design` — Apple-inspired motion: skeletons, spatial transitions, springs, micro-interactions, AI activity states, five motion levels;
+  - `arkar-ui-responsive-design` — per-size layouts and native platform conventions;
+  - `arkar-ui-accessibility` — WCAG 2.2 AA and inclusive design;
+  - `arkar-ui-implementation` — per-stack frontend engineering and performance;
+  - `arkar-ui-visual-qa` — runs the app on local/test data only, inspects the
+    real UI (Claude in Chrome, Playwright, or `scripts/screenshot.cjs` with
+    `--motion`), quality gates, honest reporting. For the richest checks,
+    start Claude Code with `claude --chrome`.
 
 - **`arkar-delivery` skill** — CI pipelines per stack (GitHub Actions:
   lint, types, tests on a CI database, dependency audit, secret scan,

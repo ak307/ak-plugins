@@ -63,6 +63,11 @@ breakpoints, and the sizes QA must check.
 - Navigation, tables and forms are re-composed, not shrunk, on small
   screens.
 - Native apps respect safe areas, platform navigation and gestures.
+- **Nothing becomes unreachable on a phone.** A side panel, sources rail or
+  detail column on desktop gets a path on small screens (a tab, sheet or
+  drawer with a visible trigger). Sticky bars never cover the hero or
+  content people need to read; labels that would be cut off wrap or move to
+  a second line instead of truncating meaning.
 
 ## Dependencies
 

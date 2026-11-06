@@ -10,7 +10,7 @@
 // - horizontal overflow; interactive targets smaller than 24×24 px;
 // and once, at the largest size, the design-system spread actually rendered:
 // distinct corner radii, shadows, font sizes, font families, text colours,
-// surface colours and spacing values. A wide spread means no real system
+// surface colours and spacing values — and fonts that failed to load. A wide spread means no real system
 // (tokens not used, values made up per element).
 //
 // Needs Playwright (see screenshot.cjs) and axe-core. If axe-core is missing:
@@ -64,8 +64,14 @@ function measureSystem() {
     }
   }
   const palette = [...area.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([colour]) => colour);
+  // A font that didn't load renders exactly like the generic fallbacks; compare text widths.
+  const generic = /^(serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-\w+|-apple-system|inherit|initial)$/i;
+  const canvas = document.createElement("canvas").getContext("2d");
+  const width = (font) => { canvas.font = `32px ${font}`; return canvas.measureText("Hamburgefonstiv 0123 WMQ").width; };
+  const fellBack = [...sets.fontFamily].filter((family) => family && !generic.test(family))
+    .filter((family) => ["monospace", "serif", "sans-serif"].every((base) => width(`"${family}", ${base}`) === width(base)));
   const counts = Object.fromEntries(Object.entries(sets).map(([name, set]) => [name, set.size]));
-  return { counts, fonts: [...sets.fontFamily].slice(0, 6), palette };
+  return { counts, fonts: [...sets.fontFamily].slice(0, 6), palette, fellBack };
 }
 
 // Runs in the page: interactive elements smaller than 24×24 (WCAG 2.5.8 minimum).
@@ -141,6 +147,7 @@ async function main() {
     const c = report.system.counts;
     console.log(`design system rendered: radii ${c.radius} · shadows ${c.shadow} · font sizes ${c.fontSize} · font families ${c.fontFamily} (${report.system.fonts.join(", ")}) · text colours ${c.textColour} · surfaces ${c.surface} · spacing values ${c.spacing}`);
     console.log(`main surfaces: ${report.system.palette.join(" · ")}`);
+    if (report.system.fellBack.length) console.log(`FONTS NOT LOADED (rendering in a fallback): ${report.system.fellBack.join(", ")}`);
   }
   if (!axePath) console.log("axe-core not found — install once: npm install --prefix ~/.arkar/axe axe-core");
 }

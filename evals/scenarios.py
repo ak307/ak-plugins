@@ -456,6 +456,8 @@ def audit_checks(project: Path) -> list:
         check("no console or page errors", not errors, str(errors[:3])),
         check("no broken images or failed requests", not broken, str(broken[:3])),
         check("no horizontal overflow at 1440 / 768 / 375 / 320", not overflow, str(overflow)),
+        check("chosen fonts actually load (no fallback to browser defaults)",
+              not report.get("system", {}).get("fellBack"), str(report.get("system", {}).get("fellBack"))),
         check("a real design system (≤6 radii, ≤14 font sizes, ≤5 shadows rendered)",
               system.get("radius", 99) <= 6 and system.get("fontSize", 99) <= 14 and system.get("shadow", 99) <= 5,
               str(system)),

@@ -69,6 +69,14 @@ short note of what was unified.
 - No duplicate components doing the same job; no abstraction that only one
   place uses.
 - An existing effective system is extended, not replaced.
+- **Form controls belong to the system:** selects, date pickers, checkboxes
+  and file inputs are styled to match (custom-styled native controls keep
+  their accessibility); an unstyled OS dropdown next to crafted components
+  is a premium failure.
+- **The chosen fonts actually render.** Bundle or load them reliably and
+  check the result (`arkar-ui-visual-qa/scripts/audit.cjs` reports fonts
+  that fell back); a fallback to the browser default (Times, Arial) is a
+  defect.
 
 ## Dependencies
 

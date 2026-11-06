@@ -75,6 +75,15 @@ structure changed.
 - Forms never lose the user's input and say exactly how to fix errors.
 - Users don't have to re-enter information they've already given (WCAG
   3.3.7 Redundant Entry).
+- **No large blank areas waiting for input.** An empty detail panel or side
+  column shows something useful (what needs attention, recent items, a
+  short guide) or collapses until it has content — never a big empty box
+  with one icon.
+- **One number, one source.** A figure shown in more than one place (a
+  header count and a legend, a total and its rows) is computed from the same
+  data, so they can never disagree.
+- Every page ends deliberately: a closing action or next step, not an
+  abrupt stop after the last section.
 
 ## Dependencies
 

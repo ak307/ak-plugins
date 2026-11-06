@@ -121,6 +121,19 @@ change it or remove it.
 If it would feel slow, distracting or unclear, shorten it, lower its level
 or remove it.
 
+**Never hide what matters behind motion:**
+- The primary content — headline, the main action, the key number or answer —
+  is readable in the first frames (≤ ~100 ms after content is ready). An
+  entrance may enhance it (a short rise or fade that starts visible enough
+  to read) but never delays it; secondary elements may follow, the whole
+  sequence done within ~600 ms.
+- No count-up animation on a figure people came to read; show the real
+  value at once (animate *changes* to it later if that helps).
+- Animate only what changed. Filtering, sorting or refreshing must not blank
+  and re-reveal content that stayed the same — that reads as flicker.
+- A filmstrip (`arkar-ui-visual-qa/scripts/film.cjs`) of the first load must
+  show the headline and primary action by its second frame.
+
 ## Expected output
 
 The motion language in `DESIGN.md`, motion tokens in the design system,

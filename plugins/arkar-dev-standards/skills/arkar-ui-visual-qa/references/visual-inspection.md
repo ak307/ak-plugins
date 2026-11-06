@@ -56,10 +56,18 @@ node "<skill folder>/scripts/interaction-probe.cjs" http://localhost:8000/claims
   feedback**, **no visible keyboard focus**, **no transition**, **no pointer
   cursor**, or **smaller than 24×24**.
 - Clicks safe, same-page controls (never anything that looks destructive or
-  sends data, never other pages) and saves a frame ~60 ms after the click
-  and one after it settles, noting animations, loading UI, dialogs and live
-  messages — so you can judge whether each click feels responsive and
-  polished.
+  sends data, never other pages) and saves a slowed-down filmstrip of the
+  first load and of each click (`*-film.png`, frames labelled with real
+  times), noting animations, loading UI, dialogs and live messages — so you
+  can judge whether each click feels responsive and polished.
+
+**Flow filmstrips** — `scripts/film.cjs` films the flows you name, step by
+step (see `motion-testing.md`):
+
+```
+node "<skill folder>/scripts/film.cjs" http://localhost:8000/ qa-screenshots/flows "click=text=Aisha Berg" press=Escape
+node "<skill folder>/scripts/film.cjs" http://localhost:8000/ qa-screenshots/flows --span=3000 "type=#ask=Which claims broke policy?" press=Enter
+```
 - Run it again at a phone size (`--size=375x812`). Look at the frames; the
   numbers only point at where to look.
 

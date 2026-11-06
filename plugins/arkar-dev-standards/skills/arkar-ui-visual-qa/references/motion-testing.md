@@ -9,6 +9,14 @@ Don't claim an animation works without seeing it run.
   uses), saves a mid-entrance frame to look at, re-runs with
   `reducedMotion: "reduce"`, and lists text left invisible (a reveal that
   never fired). It doesn't see interactions.
+- **Filmstrips (look at the motion):** `scripts/interaction-probe.cjs`
+  films the first load and every safe click; `scripts/film.cjs` films the
+  flows you name (`click=`, `hover=`, `press=`, `type=`, `wait=` steps,
+  `--span=3000` for longer sequences, `--reduced` with reduced motion).
+  Animations **and** page timers are slowed 5× while filming, so each frame
+  is labelled with its real time. Open every strip and judge it against the
+  table below — the counts alone never tell you whether motion feels
+  premium.
 - **Interactions:** with Claude in Chrome or Playwright, trigger the motion
   (open the dialog, move the card, filter the list) and check
   `document.getAnimations()` while it runs; take a screenshot mid-transition

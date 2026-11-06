@@ -26,6 +26,7 @@ Premium pass
 - Round 2: <…> → felt ordinary: <list or "nothing"> → refined: <list>
 - Interaction probe (scripts/interaction-probe.cjs, before → after):
   no hover <a→b>, no focus <a→b>, no transition <a→b>, under 24px <a→b>
+- Motion (filmstrips: load + <flows filmed>): <what moved well · what felt abrupt, slow, decorative or confusing → fixed> · reduced motion filmed: <yes/no>
 - Loading / processing / success / error states seen: <which>
 - First-time-user walkthrough: <flows walked> → hesitations found and fixed: <list>
 - Three-second test per main screen: <screen → what catches the eye first → wow / fine>
@@ -116,15 +117,19 @@ structures** (equal-card rows, tiles over a long table, repeating uniform
 sections, mostly empty sections), hovers, focuses and clicks every safe
 control, and reports which give no hover/focus/press feedback, have no
 transition, are too small, or do nothing visible when clicked — saving a
-frame mid-click and after each click. Every template-structure flag must be
+slowed-down **filmstrip** of the first load and of each click. Then film
+each main flow with `scripts/film.cjs` (open the detail, filter, ask the AI
+and watch the answer arrive, confirm a destructive action, open and close a
+menu; `--span=3000` for longer sequences, `--reduced` once with reduced
+motion) and **look at every strip**: motion is judged by eye, like layout. Every template-structure flag must be
 redesigned from the content (see
 `arkar-ui-art-direction/references/visual-ambition.md`) or justified in the
 record as a deliberate, designed choice. Judge the **full page section by
 section** — the three-second test applies to every section, not only the
 first screen. For new products, page sets and redesigns, also get an
 **independent critique** (`references/design-critic.md`): a fresh subagent
-that sees only the screenshots names the ten most visible shortfalls; fix at
-least the top five and re-shoot. Then write down each thing that
+that sees only the screenshots and filmstrips names the ten most visible
+shortfalls in look **and motion**; fix at least the top five and re-shoot. Then write down each thing that
 feels ordinary (e.g. "save gives no
 feedback", "dropdown pops in with no transition", "empty state is a grey
 sentence", "phone layout is the desktop squeezed"), refine it, re-shoot and

@@ -13,9 +13,11 @@ For smaller changes it's optional.
 ## How
 
 1. Take full-page screenshots of each main screen at desktop and phone size
-   (plus key states: a dialog open, loading, an AI answer, an empty state).
+   (plus key states: a dialog open, loading, an AI answer, an empty state),
+   and the filmstrips of the first load and the main flows
+   (`scripts/interaction-probe.cjs`, `scripts/film.cjs`).
 2. Start a fresh subagent with the Agent tool. Give it **only**: the
-   screenshot paths, one line on what the product is and who uses it, and
+   screenshot and filmstrip paths, one line on what the product is and who uses it, and
    the brief below. Never give it the code, `DESIGN.md`, or your reasoning —
    that would anchor it to your intentions.
 3. Fix the critic's top findings (at least the five most severe), re-shoot,
@@ -53,6 +55,13 @@ For smaller changes it's optional.
 >    other product of this type (e.g. header, a band of numbers, filters, a
 >    full-width list), say so — that is a top finding, ahead of any detail,
 >    and its fix is a different composition, not nicer details.
+>
+> 5. Motion (the filmstrips — slowed down, times are real): does each
+>    change explain itself (where things came from and went), feel natural
+>    and premium (eased, no pop-in, no abrupt jump, no layout jolt), and
+>    stay quick (nothing to wait for; frequent actions ~100–200 ms)? Is
+>    anything decorative, slow, confusing or missing motion where a change
+>    would be hard to follow? Is there one moment of motion worth remembering?
 >
 > Return the 10 most visible shortfalls across all screens, most severe
 > first, each as: screen · what's wrong · a concrete direction to fix it (not

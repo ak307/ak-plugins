@@ -403,6 +403,15 @@ def critique_check(run, workspace: Path) -> dict:
                  bool(recorded) and used_agent, f"agent used: {used_agent}; recorded: {bool(recorded)}")
 
 
+def motion_review_check(run, workspace: Path) -> dict:
+    """Main flows were filmed (film.cjs) and the motion was judged in the premium-pass record."""
+    flows = [path for path in workspace.rglob("*.png") if re.match(r"\d{2}-(click|press|hover)-", path.name)]
+    record = "".join(path.read_text(errors="ignore") for path in workspace.rglob("premium-pass.md"))
+    reviewed = re.search(r"motion\s*\(filmstrips|filmstrip", record, re.I)
+    return check("main flows filmed and motion judged (film.cjs + record)", bool(flows) and bool(reviewed),
+                 f"flow strips: {len(flows)}; motion line in record: {bool(reviewed)}")
+
+
 def loaded_check(run, required: set, forbidden: set = frozenset()) -> dict:
     loaded = {key for key in ("ui",) + UI_SPECIALISTS if run.loaded(key)}
     ok = required <= loaded and not (forbidden & loaded)
@@ -440,6 +449,7 @@ def ui_a_existing_corporate(root: Path, plugin: Path):
         structure_check(workspace, workspace),
         compositions_check(workspace),
         critique_check(run, workspace),
+        motion_review_check(run, workspace),
         loaded_check(run, {"ui", "discovery", "vqa"}),
         check("all three pages kept, nav links intact",
               all(page.exists() for page in pages) and all(f'href="{p.name}"' in html for p in pages)),
@@ -477,6 +487,7 @@ def ui_b_new_ai_saas(root: Path, plugin: Path):
         structure_check(project, workspace),
         compositions_check(project),
         critique_check(run, workspace),
+        motion_review_check(run, workspace),
         loaded_check(run, {"ui", "art", "ds", "motion", "vqa"}),
         check("a design direction chosen and recorded", re.search(DIRECTIONS, design), design[:300]),
         check("AI activity states designed (≥5 of 6)", len(ai_states) >= 5, str(ai_states)),
@@ -505,6 +516,7 @@ def ui_c_enterprise_admin(root: Path, plugin: Path):
         structure_check(project, workspace),
         compositions_check(project),
         critique_check(run, workspace),
+        motion_review_check(run, workspace),
         loaded_check(run, {"ui", "ux", "vqa"}),
         check("a design direction chosen and recorded", re.search(DIRECTIONS, design_doc(project).lower())),
         check("data table semantics (table with header cells, or grid role)",

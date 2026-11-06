@@ -3,7 +3,8 @@
 // sections, mostly empty sections); then it reports how every interactive
 // element responds: hover, keyboard focus and press feedback, transitions,
 // and what happens when it's clicked (loading, dialogs, toasts, layout jumps).
-// Saves frames for each click so the premium pass can be judged by eye.
+// Saves a slowed-down filmstrip of the first load and of each click, so the
+// motion can be judged by eye (and shown to the independent critic).
 //
 // Usage (from the project folder):
 //   node <path-to>/interaction-probe.cjs <url> [output-folder] [--size=1440x900] [--max-clicks=12]
@@ -13,28 +14,11 @@
 // and stays on the page (links to other pages are inspected, not followed).
 
 const fs = require("node:fs");
+const { prepareFilming, captureFilm, saveFilm, loadPlaywright, isLocalUrl } = require("./film-lib.cjs");
 const path = require("node:path");
 
-function loadPlaywright() {
-  const candidates = [path.join(process.cwd(), "node_modules", "playwright"), "playwright",
-    path.join(require("node:os").homedir(), ".arkar", "playwright", "node_modules", "playwright")];
-  for (const candidate of candidates) {
-    try {
-      return require(candidate);
-    } catch {
-      // try the next location
-    }
-  }
-  console.error("Playwright not found. Install once: npm install --prefix ~/.arkar/playwright playwright && npx --prefix ~/.arkar/playwright playwright install chromium");
-  process.exit(1);
-}
-
-function isLocalUrl(url) {
-  const host = new URL(url).hostname;
-  return host === "localhost" || host === "127.0.0.1" || host === "[::1]" || host.endsWith(".test") || host.endsWith(".localhost");
-}
-
 const RISKY = /delete|remove|deactivate|disable|reject|revoke|submit|send|pay|purchase|log ?out|sign ?out|archive|reset|clear all/i;
+
 
 // Runs in the page: list the interactive elements with a stable id and their resting look.
 function listInteractive() {
@@ -173,10 +157,14 @@ async function main() {
   const lines = [];
   try {
     const page = await browser.newPage({ viewport: { width, height } });
+    await prepareFilming(page);
+    const session = await page.context().newCDPSession(page);
     const errors = [];
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
     page.on("pageerror", (error) => errors.push(error.message));
-    await page.goto(url, { waitUntil: "load", timeout: 30000 });
+    const loadFilm = await captureFilm(page, session, () => page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 }), false);
+    await saveFilm(browser, loadFilm, "First load (slowed; times are real)", path.join(outputFolder, "00-load-film.png"), width, height);
+    await page.waitForLoadState("load");
     await page.waitForTimeout(1500);
     await page.screenshot({ path: path.join(outputFolder, "00-settled.png") });
 
@@ -228,16 +216,17 @@ async function main() {
       if (!(await locator.isVisible().catch(() => false))) continue;
       clicks += 1;
       const before = await page.evaluate(() => ({ scroll: window.scrollY, height: document.body.scrollHeight }));
-      await locator.click({ timeout: 3000 }).catch(() => {});
-      await page.waitForTimeout(60);
       const slug = `${String(clicks).padStart(2, "0")}-${item.label.replace(/[^a-z0-9]+/gi, "-").slice(0, 30)}`;
-      await page.screenshot({ path: path.join(outputFolder, `${slug}-a-mid.png`) });
-      const during = await page.evaluate(() => ({
+      let during = { animations: 0, busy: 0 };
+      const frames = await captureFilm(page, session, async () => {
+        await locator.click({ timeout: 3000 }).catch(() => {});
+        during = await page.evaluate(() => ({
         animations: document.getAnimations().length,
-        busy: document.querySelectorAll("[aria-busy=true], .skeleton, [class*=skeleton], [class*=spinner], progress, [role=progressbar]").length,
-      }));
-      await page.waitForTimeout(700);
-      await page.screenshot({ path: path.join(outputFolder, `${slug}-b-after.png`) });
+          busy: document.querySelectorAll("[aria-busy=true], .skeleton, [class*=skeleton], [class*=spinner], progress, [role=progressbar]").length,
+        }));
+      });
+      await saveFilm(browser, frames, `Click "${item.label}" (slowed; times are real)`, path.join(outputFolder, `${slug}-film.png`), width, height);
+      await page.waitForTimeout(300);
       const after = await page.evaluate(() => ({
         dialogs: [...document.querySelectorAll("dialog[open], [role=dialog], [role=alertdialog]")].filter((d) => d.getBoundingClientRect().height > 0).length,
         toasts: [...document.querySelectorAll("[role=status], [role=alert], [aria-live]")].filter((t) => t.innerText.trim()).length,
@@ -245,7 +234,7 @@ async function main() {
       }));
       lines.push(`click "${item.label}": ${during.animations} animation(s) right after, loading UI ${during.busy ? "shown" : "none"}, ` +
         `${after.dialogs} dialog(s), ${after.toasts} live message(s)` + (after.scroll !== before.scroll ? ", page scrolled" : "") +
-        ` → ${slug}-*.png`);
+        ` → ${slug}-film.png`);
       await page.keyboard.press("Escape");
       await page.waitForTimeout(250);
       if (after.url !== url) {
@@ -259,7 +248,7 @@ async function main() {
     await browser.close();
   }
   for (const line of lines) console.log(line);
-  console.log(`frames saved in ${outputFolder} — look at them: does every click feel premium?`);
+  console.log(`frames saved in ${outputFolder} — look at the *-film.png strips: does every load and click move in a premium way?`);
 }
 
 main().catch((error) => {

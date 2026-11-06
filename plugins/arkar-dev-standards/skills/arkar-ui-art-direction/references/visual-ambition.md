@@ -28,6 +28,15 @@ relates to the product.
   visual or crafted colour field.
 - One column of identical rows or identical cards from top to bottom.
 - Large plain empty areas with nothing designed in them.
+- A strong hero followed by sections that are only text — headings,
+  paragraphs and icon rows — so the page goes flat after the first screen.
+  Every section below the hero needs its own visual idea from the content
+  (a diagram, a data visual, an illustration, the product itself, a change
+  of surface), unless it is long-form reading text.
+- With thin content (a few services, an address, a phone number): padding
+  it out into more sections of text. Use fewer sections and make each one a
+  designed moment built from what exists; never invent facts, photos or
+  figures to fill space.
 - A safe default direction chosen because the product is "business".
 
 ## 3. Levers for visual energy (choose and combine per product)

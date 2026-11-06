@@ -132,10 +132,16 @@ Beyond the minimum, don't load specialists "just in case".
 
 ## 4. Work through it
 
-Steps 3 and 6 are **required for every new product, new page set and
-redesign** (Modes B and C, and new screens in Mode A). They are where
-"polished but boring" is prevented, so they are never skipped, shortened
-or folded into another step — and their written output is the proof.
+Steps 3 and 6, and filming the main flows in step 5, are **required for
+every new product, new page set and redesign** (Modes B and C, and new
+screens in Mode A) — **whatever its size**: a three-page site or a single
+screen gets them too, because small products are where the template look
+creeps in. They are where "polished but boring" is prevented, so they are
+never skipped, shortened, folded into another step or left for "if AK
+wants". Their written output is the proof: `## Compositions` in
+`DESIGN.md`, and the motion and `## Independent critique` sections in
+`qa-screenshots/premium-pass.md`. If you're running short of time, do fewer
+polish iterations — never drop these.
 
 1. **Understand** — the product, its users, primary journeys, existing
    identity, stack and constraints (discovery, scaled to the task).

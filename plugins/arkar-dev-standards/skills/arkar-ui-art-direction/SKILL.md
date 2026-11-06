@@ -54,23 +54,31 @@ constraints. Note existing brand assets that must be kept
    (shown on the screens where it helps — data-heavy screens may have none)
    from the product's own content, users and domain. Two products in
    the same direction should still be recognisably different.
-4. **Apply the anti-generic rules** (below) and the quality inspirations in
-   `references/visual-reference-library.md` — learn principles, never copy
-   interfaces or identities.
+4. **Execute with premium craft** — read `references/premium-craft.md` and
+   apply its techniques (type with finesse, tinted neutrals and layered
+   surfaces, crafted depth and light, real imagery or product visuals
+   instead of empty space, expensive-feeling components, detail polish).
+   Apply the anti-generic rules (below) and learn from the quality
+   inspirations in `references/visual-reference-library.md` — principles,
+   never copied interfaces or identities.
 5. **Record the identity** in `DESIGN.md` using
    `references/design-md-template.md`: direction and why, alternatives
    considered, users and target screens, palette, type, shape, signature
    elements, voice. The design-system and motion specialists add their
    sections.
-6. **Critique and refine** once screens exist (with visual-qa's
-   screenshots): does it express the direction? could it belong to another
-   product? does the signature idea read clearly where it's used? would it impress, or is
-   it merely tidy? Then one refinement pass — no new elements, everything
-   made cohesive and crisp.
+6. **Refine until premium — at least two rounds** for new products and
+   redesigns. Screenshot every main screen (visual-qa's tools), then judge
+   it against AK's premium standard: would it sit comfortably beside the
+   best product in its category? Name the ten most visible shortfalls (type,
+   depth, imagery, empty space, components, states, motion, spacing,
+   detail) and fix them; re-shoot and repeat. "Clean but plain" is a
+   failure, not a finish. Stop only when nothing feels ordinary.
 
 ## Anti-generic rules
 
-Never use automatically: purple gradients · glassmorphism · glowing borders ·
+These ban *lazy defaults*, not craft. Crafted depth, light, gradients and
+translucency done with intent (`references/premium-craft.md`) are welcome;
+the stock versions are not. Never use automatically: purple gradients · glassmorphism · glowing borders ·
 excessive rounded cards · oversized typography · decorative background
 shapes · excessive shadows · repetitive dashboard cards · unnecessary
 gradients · generic AI-generated layouts · decorative animation without
@@ -81,7 +89,7 @@ whitespace, visual balance, contrast and information hierarchy.
 Also avoid the "basic form" look (system font, white page, grey inputs, bare
 table, one blue button) — it is not an acceptable result even when it works.
 
-**Restrained is not generic.** Enterprise, data-centric and minimal
+**Restrained is not plain, and restrained is not generic.** Enterprise, data-centric and minimal
 directions still need to be recognisably *this* product: a deliberately
 chosen typeface (not the default sans), a palette with character in its
 surfaces and semantic colours, a considered header and brand moment, and the
@@ -98,6 +106,8 @@ is shown). "Clean default UI" is not a direction.
 
 - Meets AK's premium standard (`arkar-ui-intelligence/references/premium-standard.md`): nothing basic, generic or unfinished — working is not enough.
 
+- It looks premium — rich, layered, crafted and alive — not merely clean.
+  Large empty areas carry a visual (product render, illustration, data).
 - The direction is justified by the product, not by habit or trend.
 - Brand assets AK has are respected; CBM red only when he asks for CBM
   branding (kept in Mode A if the product already uses it).

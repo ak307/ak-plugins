@@ -2,6 +2,11 @@
 
 ## Roles before values
 
+Neutrals are **tinted** toward the brand hue (cool slate, warm stone…) —
+pure greys look default. Hairlines are translucent tints of the text colour.
+See `arkar-ui-art-direction/references/premium-craft.md`.
+
+
 Define the roles the product needs, then choose values for the direction:
 
 - **Surfaces:** background, surface levels (raised panels, overlays).

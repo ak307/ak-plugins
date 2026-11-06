@@ -22,7 +22,7 @@ needs tuning beyond the semantic set.
 | Spacing | a scale (often a 4 px base) + named gaps for stacks, insets, sections |
 | Sizing | control heights, icon sizes, touch targets, content max-widths |
 | Radius | control, card/container, pill, none — by role |
-| Shadow / elevation | 2–3 levels (flat, raised, overlay); higher = more temporary/important |
+| Shadow / elevation | 2–3 levels (flat, raised, overlay), each a layered, hue-tinted shadow (contact + ambient), not one grey blur; higher = more temporary/important |
 | Border | widths and colours by role |
 | Layering | z-index scale: base, sticky, dropdown, overlay, modal, toast |
 | Motion | durations, easings, springs (from `arkar-ui-motion-design`) |

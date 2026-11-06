@@ -29,8 +29,11 @@ feedback, transitions, every screen size). For everything you build, click,
 open or navigate, ask: *does this feel premium, polished, beautiful,
 intuitive and impressive — or boring, basic, generic or unfinished?* If it's
 ordinary, improve it. **Never accept a design or interaction simply because
-it works.** Read `references/premium-standard.md` at the start of every UI
-task; every specialist works to it, and visual-qa's premium pass enforces it.
+it works**, and never accept "clean but plain" — premium is rich, layered and
+crafted (`arkar-ui-art-direction/references/premium-craft.md`). Read
+`references/premium-standard.md` at the start of every UI task; every
+specialist works to it, and visual-qa's premium pass enforces it in at least
+two refinement rounds for new products and redesigns.
 
 ## 1. Fixed rules that apply to every UI task
 

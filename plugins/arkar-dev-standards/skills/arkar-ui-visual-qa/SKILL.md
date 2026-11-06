@@ -93,8 +93,13 @@ and after each click for you to look at. Then write down each thing that
 feels ordinary (e.g. "save gives no
 feedback", "dropdown pops in with no transition", "empty state is a grey
 sentence", "phone layout is the desktop squeezed"), refine it, re-shoot and
-ask again. Repeat until nothing in scope feels ordinary. **Working is not
-done; exceptional is done.**
+ask again. Repeat until nothing in scope feels ordinary. Also judge each
+main screen as a whole: would it sit comfortably beside the best product in
+its category? "Clean but plain", large empty areas, default type, flat grey
+surfaces and unstyled states are premium failures — fix them using
+`arkar-ui-art-direction/references/premium-craft.md`. New products and
+redesigns get at least two full refinement rounds. **Working is not done;
+exceptional is done.**
 
 ## 4. Gate, fix, re-check
 

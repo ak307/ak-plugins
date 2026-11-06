@@ -361,7 +361,7 @@ def motion_landing(root: Path, plugin: Path):
     workspace = workspace_from(None, root / "workspace")
     run = run_claude("build a landing page for 'Harbour Lights', a new app for CBM's car parks where drivers find a "
                      "free space and pay by phone. plain HTML/CSS/JS in folder harbour-lights, index.html, ready to "
-                     "open in a browser.", workspace, plugin)
+                     "open in a browser.", workspace, plugin, max_turns=250)
     project = workspace / "harbour-lights"
     return [loaded_check(run, {"ui", "art", "motion", "vqa"})] + motion_checks(run, project) + [
         check("no layout problems at phone, tablet, desktop", not layout_problems(project), layout_problems(project)),
@@ -377,7 +377,7 @@ def ui_a_existing_corporate(root: Path, plugin: Path):
     workspace = workspace_from("corporate-site", root / "workspace")
     logo_before = (workspace / "images" / "logo.svg").read_text()
     run = run_claude("our company website (this folder) looks dated and doesn't work well on phones. please improve it.",
-                     workspace, plugin)
+                     workspace, plugin, max_turns=250)
     pages = [workspace / name for name in ("index.html", "services.html", "contact.html")]
     html = "".join(page.read_text() for page in pages if page.exists())
     code = site_code(workspace)
@@ -405,7 +405,7 @@ def ui_b_new_ai_saas(root: Path, plugin: Path):
     run = run_claude("build the main screen of 'Ledgerly', a new AI assistant for finance teams that answers questions "
                      "about company expense claims: a conversation with streamed answers that shows when it's searching "
                      "claims or reading policy documents, plus a sidebar of past conversations. plain HTML/CSS/JS with "
-                     "mock data and a simulated backend, folder ledgerly, index.html.", workspace, plugin)
+                     "mock data and a simulated backend, folder ledgerly, index.html.", workspace, plugin, max_turns=250)
     project = workspace / "ledgerly"
     code = site_code(project).lower()
     design = design_doc(project).lower()
@@ -434,7 +434,7 @@ def ui_c_enterprise_admin(root: Path, plugin: Path):
     run = run_claude("build an admin panel for our security team to manage staff access cards: a searchable, "
                      "filterable list of cards (holder, department, card number, status, last used), a detail panel, "
                      "and deactivating one or many cards. plain HTML/CSS/JS with mock data, folder access-admin, "
-                     "index.html. they use it all day.", workspace, plugin)
+                     "index.html. they use it all day.", workspace, plugin, max_turns=250)
     project = workspace / "access-admin"
     code = site_code(project).lower()
     measured = measure_motion(project)
@@ -461,7 +461,7 @@ def ui_d_native_mobile(root: Path, plugin: Path):
     """D — a Flutter feature: platform conventions, theme tokens, states, semantics, reduced motion, honesty."""
     workspace = workspace_from("flutter-app", root / "workspace")
     run = run_claude("add a leave request feature to this flutter app: a list of my requests, a form to request "
-                     "leave, and a request detail screen.", workspace, plugin)
+                     "leave, and a request detail screen.", workspace, plugin, max_turns=250)
     dart = "".join(path.read_text(errors="ignore") for path in (workspace / "lib").rglob("*.dart"))
     # Colour values belong in the theme files; elsewhere they're hard-coded.
     outside_theme = "".join(path.read_text(errors="ignore") for path in (workspace / "lib").rglob("*.dart")
@@ -510,7 +510,7 @@ def ui_f_premium_motion(root: Path, plugin: Path):
     """F — Apple-inspired motion on an existing dashboard: purposeful, accessible, functionality intact."""
     workspace = workspace_from("work-orders", root / "workspace")
     ids_before = set(re.findall(r'id="([^"]+)"', (workspace / "index.html").read_text()))
-    run = run_claude("add Apple-like premium animations and transitions to this dashboard.", workspace, plugin)
+    run = run_claude("add Apple-like premium animations and transitions to this dashboard.", workspace, plugin, max_turns=250)
     ids_after = set(re.findall(r'id="([^"]+)"', (workspace / "index.html").read_text()))
     problems = layout_problems(workspace)
     return [

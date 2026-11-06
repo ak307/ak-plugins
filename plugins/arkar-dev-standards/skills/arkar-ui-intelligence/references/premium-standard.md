@@ -59,8 +59,15 @@ opportunity to deliver that.
   you report it done. Ordinary-feeling screens or interactions you notice
   outside the request go to AK as labelled premium-upgrade proposals (what
   feels basic, what you'd do) — the approval rule still applies.
-- **Restraint is part of premium.** More effects, gradients or animation do
-  not make something premium; precision, consistency, clarity and care do.
-  The anti-generic rules and the motion acceptance criteria still apply.
+- **Premium is rich, not plain.** Restraint means precision, never
+  emptiness: crafted type, layered surfaces and depth, real imagery or
+  product visuals, polished components in every state, motion on every
+  state change (`arkar-ui-art-direction/references/premium-craft.md`). Lazy
+  effects (stock gradients, glows, random shadows) are still out; crafted
+  ones are in.
+- **Refine in rounds.** First build → screenshots → judge against the
+  standard and the best product in the category → list the visible
+  shortfalls → fix → repeat. New products and redesigns get at least two
+  rounds; stop only when nothing feels ordinary.
 - **Honesty:** in the final message, say what the premium pass covered and
   what you refined; never claim polish you didn't verify.

@@ -54,7 +54,8 @@ work complete.
 
 ## Anti-generic rules
 
-Owned by `arkar-ui-art-direction` (its SKILL.md lists them): no purple
-gradients, glassmorphism, glowing borders, excessive cards, shadows or
-gradients, or generic AI-looking layouts by default — distinctive
-composition, typography, whitespace, balance, contrast and hierarchy first.
+Owned by `arkar-ui-art-direction` (its SKILL.md lists them): no *lazy*
+defaults — stock purple gradients, glassmorphism, glowing borders, piles of
+identical cards, random shadows, generic AI-looking layouts. Crafted depth,
+light and texture are welcome (`premium-craft.md` there). Plain is as much a
+failure as gaudy.

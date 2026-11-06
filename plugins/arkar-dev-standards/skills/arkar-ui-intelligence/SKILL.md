@@ -65,7 +65,7 @@ Make ordinary design and implementation decisions yourself. Ask AK only when
 an important decision can't be responsibly inferred (and when he's present);
 otherwise state the assumption and continue.
 
-## 3. Load only the specialists the task needs
+## 3. Load the specialists the task needs
 
 Each specialist is a separate skill in this plugin. Load the ones the task
 needs **with the Skill tool**, by name (listed as
@@ -86,35 +86,42 @@ verification.
 | `arkar-ui-implementation` | writing or restructuring UI code, choosing techniques, performance or bundle problems |
 | `arkar-ui-visual-qa` | **every task that changes what users see** — always last |
 
-Typical sets (`references/orchestration-guide.md` has the full matrix and
-hand-offs):
+**Required minimum sets** — load at least these, in this order, then add
+any other specialist the task clearly touches
+(`references/orchestration-guide.md` has the full matrix and hand-offs):
 
-- **Small component change:** ux-engineering → implementation → visual-qa.
-- **Existing site improvement (A):** discovery → art-direction (to preserve
-  and refine the identity) → ux-engineering → implementation → visual-qa.
-- **Modernization (B):** discovery → art-direction → ux-engineering →
-  design-system → motion → responsive → accessibility → implementation →
-  visual-qa.
-- **New product (C):** all of them, in that order.
-- **Motion enhancement:** motion → implementation → visual-qa.
-- **Responsive correction:** responsive → implementation → visual-qa.
-- **Native mobile:** add responsive (platform conventions) and implementation
-  (the stack's patterns) to whichever set applies.
+| Task | Load at least |
+|---|---|
+| Small component change | ux-engineering → implementation → visual-qa |
+| New screens or a feature in an existing product (web or mobile) | ux-engineering → motion → responsive → accessibility → implementation → visual-qa (+ discovery if the product is unfamiliar) |
+| Existing site or page improvement (A) | discovery → art-direction → ux-engineering → implementation → visual-qa (+ motion / responsive / accessibility for what you change) |
+| Modernization or redesign (B) | all nine |
+| New product (C) — any new app, site, dashboard or admin panel | all nine: discovery → art-direction → ux-engineering → design-system → motion → responsive → accessibility → implementation → visual-qa |
+| Motion enhancement | motion → implementation → visual-qa |
+| Responsive correction | responsive → implementation → visual-qa |
+| Accessibility audit or fix | accessibility → implementation → visual-qa |
+| Native mobile (Flutter, React Native) | the set above for the scope, always including responsive (platform conventions) and motion |
 
-Don't activate specialists "just in case" — each one costs time and context.
+**`arkar-ui-visual-qa` is loaded with the Skill tool on every task that
+changes what users see — even a one-line style change — before you report
+back.** Its honesty rules and quality gates are part of finishing; doing
+the checks without it isn't enough.
+
+Beyond the minimum, don't load specialists "just in case".
 
 ## 4. Work through it
 
 1. **Understand** — the product, its users, primary journeys, existing
    identity, stack and constraints (discovery, scaled to the task).
 2. **Decide** — direction, structure, tokens, motion language, responsive
-   behaviour; record lasting decisions in `DESIGN.md`.
+   behaviour; record lasting decisions in `DESIGN.md` (every new product
+   gets one).
 3. **Build** — follow the project's architecture and conventions, reuse its
    components and dependencies, keep functionality intact
    (implementation; the change workflow's steps for existing code).
-4. **Verify** — run it on local/test data, look at the real rendered UI at
-   the target sizes, try the interactions and motion, fix and re-check
-   (visual-qa). Use the quality gates in
+4. **Verify** — load `arkar-ui-visual-qa` now (Skill tool) and follow it:
+   run on local/test data, look at the real rendered UI at the target sizes,
+   try the interactions and motion, fix and re-check. Use the quality gates in
    `references/quality-standards.md` as a diagnostic, with hard blockers
    fixed before you call it done.
 

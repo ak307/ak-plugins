@@ -13,6 +13,14 @@
 Never fake percentages, never show progress where nothing is happening, and
 don't block the whole page when only part of it is loading.
 
+## Mock data and prototypes
+
+When data is mocked or the backend is simulated, still design and show the
+loading states: simulate realistic latency (a few hundred milliseconds to a
+couple of seconds) for initial loads, history, search and results, and show
+the skeletons and progress the real product will need. Instant mock data
+hides the states users will actually see.
+
 ## Content-aware skeletons
 
 - Mirror the real layout: same grid, same component dimensions, the same

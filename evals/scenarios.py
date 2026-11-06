@@ -419,8 +419,9 @@ def ui_b_new_ai_saas(root: Path, plugin: Path):
         loaded_check(run, {"ui", "art", "ds", "motion", "vqa"}),
         check("a design direction chosen and recorded", re.search(DIRECTIONS, design), design[:300]),
         check("AI activity states designed (≥5 of 6)", len(ai_states) >= 5, str(ai_states)),
-        check("stop/cancel control while generating", re.search(r">\s*(stop|cancel)|aria-label=\"(stop|cancel)", code)),
-        check("content-aware skeleton loading", "skeleton" in code),
+        check("stop/cancel control while generating",
+              re.search(r">\s*(stop|cancel)|(aria-label|textcontent|innertext)[^;\n]{0,80}\b(stop|cancel)", code)),
+        check("content-aware skeleton loading", re.search(r"skeleton|shimmer", code)),
         check("design tokens (≥15 custom properties)", len(custom_properties) >= 15, str(len(custom_properties))),
         check("status changes announced to screen readers", re.search(r"aria-live|role=\"status\"|role=\"log\"", code)),
         check("no layout problems at phone, tablet, desktop", not problems, problems),
@@ -462,12 +463,15 @@ def ui_d_native_mobile(root: Path, plugin: Path):
     run = run_claude("add a leave request feature to this flutter app: a list of my requests, a form to request "
                      "leave, and a request detail screen.", workspace, plugin)
     dart = "".join(path.read_text(errors="ignore") for path in (workspace / "lib").rglob("*.dart"))
+    # Colour values belong in the theme files; elsewhere they're hard-coded.
+    outside_theme = "".join(path.read_text(errors="ignore") for path in (workspace / "lib").rglob("*.dart")
+                            if "theme" not in path.as_posix().lower())
     tests = list((workspace / "test").rglob("*_test.dart")) if (workspace / "test").exists() else []
-    hard_coded = re.findall(r"Colors\.(?!transparent)\w+|Color\(0x", dart)
+    hard_coded = re.findall(r"Colors\.(?!transparent)\w+|Color\(0x", outside_theme)
     flutter_available = subprocess.run(["which", "flutter"], capture_output=True).returncode == 0
     return [
         loaded_check(run, {"ui", "responsive", "vqa"}),
-        check("colours come from the theme (≤2 hard-coded)", len(hard_coded) <= 2, str(hard_coded[:6])),
+        check("colours come from the theme (≤2 hard-coded outside theme files)", len(hard_coded) <= 2, str(hard_coded[:6])),
         check("loading / empty / error states modelled", re.search(r"AsyncValue|\.when\(|sealed class", dart)
               and re.search(r"empty|no (leave )?requests", dart, re.I) and re.search(r"error", dart, re.I)),
         check("motion between screens or on changes", re.search(r"Hero\(|AnimatedSwitcher|AnimatedList|PageRouteBuilder|"

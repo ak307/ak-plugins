@@ -44,6 +44,7 @@
 | Responsive correction | | | ○ | | | ● | ○ | ● | ● |
 | Accessibility audit or fix | | | ○ | | | | ● | ● | ● |
 | Design tokens / theming / dark mode | ○ | ○ | | ● | | | ○ | ● | ● |
+| New screens / feature in an existing product | ○ | | ● | ○ | ● | ● | ● | ● | ● |
 | Native mobile app (Flutter, React Native) | ● | ● | ● | ● | ● | ● | ● | ● | ● |
 
 ● load · ○ load only if the task actually touches it.

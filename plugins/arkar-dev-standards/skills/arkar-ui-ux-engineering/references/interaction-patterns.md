@@ -25,7 +25,8 @@ Every data-bearing screen and component handles:
 | Disabled / no permission | why, and what would enable it |
 
 Model states explicitly in code (a status enum or union), not by guessing
-from `data && !error`.
+from `data && !error`. With mock data or a simulated backend, simulate
+latency and errors so these states are built and visible, not skipped.
 
 ## 2. Feedback
 

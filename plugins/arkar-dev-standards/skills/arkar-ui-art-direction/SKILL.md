@@ -81,6 +81,13 @@ whitespace, visual balance, contrast and information hierarchy.
 Also avoid the "basic form" look (system font, white page, grey inputs, bare
 table, one blue button) — it is not an acceptable result even when it works.
 
+**Restrained is not generic.** Enterprise, data-centric and minimal
+directions still need to be recognisably *this* product: a deliberately
+chosen typeface (not the default sans), a palette with character in its
+surfaces and semantic colours, a considered header and brand moment, and the
+product's signature idea expressed in its data (how status, risk or progress
+is shown). "Clean default UI" is not a direction.
+
 ## Expected output
 
 - The direction (and blend), why it fits, alternatives considered.

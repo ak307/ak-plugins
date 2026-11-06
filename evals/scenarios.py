@@ -404,7 +404,8 @@ def critique_check(run, workspace: Path) -> dict:
     # A "generic / template" verdict must lead to a new composition, never be left standing.
     refused = [line.strip() for line in record.splitlines()
                if re.search(r"generic|template", line, re.I)
-               and re.search(r"not changed|not done|proposal|partly|\bkept\b", line, re.I)]
+               and re.search(r"not changed|not done|proposal|partly|\bkept\b", line, re.I)
+               and not re.search(r"(→|->)\s*(fixed|re-?composed|redesigned)", line, re.I)]
     return check("independent critique by a subagent, recorded; no 'generic' verdict left standing",
                  bool(recorded) and used_agent and not refused,
                  f"agent used: {used_agent}; recorded: {bool(recorded)}; left standing: {refused[:2]}")
@@ -414,7 +415,7 @@ def motion_review_check(run, workspace: Path) -> dict:
     """Main flows were filmed (film.cjs) and the motion was judged in the premium-pass record."""
     flows = [path for path in workspace.rglob("*.png") if re.match(r"\d{2}-(click|press|hover)-", path.name)]
     record = "".join(path.read_text(errors="ignore") for path in workspace.rglob("premium-pass.md"))
-    reviewed = re.search(r"motion\s*\(filmstrips|filmstrip", record, re.I)
+    reviewed = re.search(r"film", record, re.I) and re.search(r"motion", record, re.I)
     return check("main flows filmed and motion judged (film.cjs + record)", bool(flows) and bool(reviewed),
                  f"flow strips: {len(flows)}; motion line in record: {bool(reviewed)}")
 

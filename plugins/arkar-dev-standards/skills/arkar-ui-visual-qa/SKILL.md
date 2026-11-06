@@ -24,6 +24,8 @@ your final message (it may be shortened, never dropped):
 Premium pass
 - Round 1: <screens × sizes looked at> → felt ordinary: <list> → refined: <list>
 - Round 2: <…> → felt ordinary: <list or "nothing"> → refined: <list>
+- Audit (scripts/audit.cjs, before → after): axe serious/critical <a→b>, console errors <a→b>,
+  overflow <sizes>, targets <24px <a→b>, rendered system: radii <n> · shadows <n> · font sizes <n> · spacing values <n>
 - Interaction probe (scripts/interaction-probe.cjs, before → after):
   no hover <a→b>, no focus <a→b>, no transition <a→b>, under 24px <a→b>
 - Motion (filmstrips: load + <flows filmed>): <what moved well · what felt abrupt, slow, decorative or confusing → fixed> · reduced motion filmed: <yes/no>
@@ -116,7 +118,13 @@ scope. Walk every page, button, tab, dropdown, menu, form, loading,
 processing, download, success and error state you built or changed — on
 each target size — and for each ask: *does this feel premium, polished,
 beautiful, intuitive and impressive, or boring, basic, generic or
-unfinished?* For web UIs, run `scripts/interaction-probe.cjs` on each
+unfinished?* For web UIs, first run `scripts/audit.cjs` on each changed page:
+it measures what the eye misses — accessibility violations (axe-core, WCAG
+2.2 AA), console errors, broken assets, overflow at 1440/768/375/320, small
+targets — and the design system as actually rendered (how many distinct
+radii, shadows, font sizes, spacing values and colours). Fix every serious or
+critical violation, error and overflow; a wide spread of values means tokens
+aren't being used — consolidate. Then run `scripts/interaction-probe.cjs` on each
 changed page first: it takes a full-page screenshot, flags **template
 structures** (equal-card rows, tiles over a long table, repeating uniform
 sections, mostly empty sections), hovers, focuses and clicks every safe

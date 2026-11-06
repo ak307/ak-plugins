@@ -420,6 +420,48 @@ def motion_review_check(run, workspace: Path) -> dict:
                  f"flow strips: {len(flows)}; motion line in record: {bool(reviewed)}")
 
 
+AUDIT_SCRIPT = SCREENSHOT_SCRIPT.parent / "audit.cjs"
+
+
+def audit(project: Path) -> dict:
+    """Objective measurements of the built page (audit.cjs --json); saved beside the run for consistency reports."""
+    index = find_index(project)
+    if index is None:
+        return {}
+    with serve(project) as base:
+        output = subprocess.run(["node", str(AUDIT_SCRIPT), f"{base}/{index.relative_to(project).as_posix()}", "--json"],
+                                capture_output=True, text=True, timeout=400).stdout
+    try:
+        report = json.loads(output.strip().splitlines()[-1])
+    except (ValueError, IndexError):
+        return {}
+    (project.parent / "audit.json").write_text(json.dumps(report, indent=1))
+    return report
+
+
+def audit_checks(project: Path) -> list:
+    """Hard technical floor: accessibility, errors, assets, overflow — measured, not judged."""
+    report = audit(project)
+    if not report:
+        return [check("objective audit ran", False, "audit.cjs produced no report")]
+    sizes = report.get("sizes", [])
+    serious = sorted({v["id"] for size in sizes for v in size.get("axe", []) if v["impact"] in ("serious", "critical")})
+    errors = sorted({e for size in sizes for e in size.get("consoleErrors", [])})
+    broken = sorted({b for size in sizes for b in size.get("brokenImages", []) + size.get("failedRequests", [])
+                     if "favicon" not in b})
+    overflow = [size["size"] for size in sizes if size.get("overflow")]
+    system = report.get("system", {}).get("counts", {})
+    return [
+        check("no serious/critical accessibility violations (axe, WCAG 2.2 AA) at any size", not serious, str(serious)),
+        check("no console or page errors", not errors, str(errors[:3])),
+        check("no broken images or failed requests", not broken, str(broken[:3])),
+        check("no horizontal overflow at 1440 / 768 / 375 / 320", not overflow, str(overflow)),
+        check("a real design system (≤6 radii, ≤14 font sizes, ≤5 shadows rendered)",
+              system.get("radius", 99) <= 6 and system.get("fontSize", 99) <= 14 and system.get("shadow", 99) <= 5,
+              str(system)),
+    ]
+
+
 def loaded_check(run, required: set, forbidden: set = frozenset()) -> dict:
     loaded = {key for key in ("ui",) + UI_SPECIALISTS if run.loaded(key)}
     ok = required <= loaded and not (forbidden & loaded)
@@ -458,6 +500,7 @@ def ui_a_existing_corporate(root: Path, plugin: Path):
         compositions_check(workspace),
         critique_check(run, workspace),
         motion_review_check(run, workspace),
+        *audit_checks(workspace),
         loaded_check(run, {"ui", "discovery", "vqa"}),
         check("all three pages kept, nav links intact",
               all(page.exists() for page in pages) and all(f'href="{p.name}"' in html for p in pages)),
@@ -505,7 +548,7 @@ def ui_b_new_ai_saas(root: Path, plugin: Path):
         check("design tokens (≥15 custom properties)", len(custom_properties) >= 15, str(len(custom_properties))),
         check("status changes announced to screen readers", re.search(r"aria-live|role=\"status\"|role=\"log\"", code)),
         check("no layout problems at phone, tablet, desktop", not problems, problems),
-    ] + motion_checks(run, project)
+    ] + motion_checks(run, project) + audit_checks(project)
 
 
 def ui_c_enterprise_admin(root: Path, plugin: Path):
@@ -539,7 +582,7 @@ def ui_c_enterprise_admin(root: Path, plugin: Path):
         check("reduced motion respected", measured.get("reduced_ok"), measured.get("output", "")),
         check("no text left invisible", not measured.get("stuck_text", True), measured.get("output", "")),
         check("no layout problems at phone, tablet, desktop", not problems, problems),
-    ]
+    ] + audit_checks(project)
 
 
 def ui_d_native_mobile(root: Path, plugin: Path):
@@ -626,7 +669,7 @@ def new_product_checks(run, project: Path, workspace: Path) -> list:
         motion_review_check(run, workspace),
         loaded_check(run, {"ui", "discovery", "art", "ux", "ds", "motion", "responsive", "a11y", "impl", "vqa"}),
         check("no layout problems at phone, tablet, desktop", not problems, problems),
-    ] + motion_checks(run, project)
+    ] + motion_checks(run, project) + audit_checks(project)
 
 
 def has(code: str, pattern: str) -> bool:

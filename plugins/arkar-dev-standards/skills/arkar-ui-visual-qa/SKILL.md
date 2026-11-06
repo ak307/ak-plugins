@@ -26,6 +26,7 @@ Premium pass
   no hover <a→b>, no focus <a→b>, no transition <a→b>, under 24px <a→b>
 - Loading / processing / success / error states seen: <which>
 - First-time-user walkthrough: <flows walked> → hesitations found and fixed: <list>
+- Three-second test per main screen: <screen → what catches the eye first → wow / fine>
 - Still not premium (if any) and why: <…>
 ```
 
@@ -117,8 +118,13 @@ ask again. Repeat until nothing in scope feels ordinary. Then do a
 **first-time-user walkthrough** of each main flow: with no prior knowledge
 and a real goal, go step by step and note every moment of hesitation,
 confusion, missing feedback, unclear wording or dead end — and fix it. Also
-judge each main screen as a whole: would it sit comfortably beside the best product in
-its category? "Clean but plain", large empty areas, default type, flat grey
+judge each main screen as a whole: the **three-second test** — does it make
+you think "wow, this looks premium and exciting", or just "fine"? Check it
+against the boring signals in
+`arkar-ui-art-direction/references/visual-ambition.md` (muted or monochrome
+palette, no hero moment, flat, low contrast range, rows-only layout, empty
+areas) — each is a premium failure. Would it sit comfortably beside the best
+product in its category? "Clean but plain", large empty areas, default type, flat grey
 surfaces and unstyled states are premium failures — fix them using
 `arkar-ui-art-direction/references/premium-craft.md`. New products and
 redesigns get at least two full refinement rounds. **Working is not done;

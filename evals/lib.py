@@ -18,10 +18,19 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 SKILL_KEYS = {
     "workflow": "arkar-change-workflow",
     "structure": "arkar-project-structure",
-    "design": "arkar-frontend-design",
-    "qa": "arkar-frontend-qa",
     "delivery": "arkar-delivery",
+    "ui": "arkar-ui-intelligence",
+    "discovery": "arkar-ui-discovery",
+    "art": "arkar-ui-art-direction",
+    "ux": "arkar-ui-ux-engineering",
+    "ds": "arkar-ui-design-system",
+    "motion": "arkar-ui-motion-design",
+    "responsive": "arkar-ui-responsive-design",
+    "a11y": "arkar-ui-accessibility",
+    "impl": "arkar-ui-implementation",
+    "vqa": "arkar-ui-visual-qa",
 }
+UI_SPECIALISTS = ("discovery", "art", "ux", "ds", "motion", "responsive", "a11y", "impl", "vqa")
 
 
 @dataclass

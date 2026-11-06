@@ -8,12 +8,14 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+import time
+from contextlib import contextmanager
 from pathlib import Path
 
 import yaml
 
-from lib import (LIVE_NAMES, database_fingerprint, git_diff, make_live_database, point_at_production,
-                 run_claude, workspace_from)
+from lib import (LIVE_NAMES, UI_SPECIALISTS, database_fingerprint, git_diff, make_live_database,
+                 point_at_production, run_claude, workspace_from)
 
 
 def check(name, passed, detail="", known_gap=False):
@@ -90,7 +92,7 @@ def prod_ui_restyle(root: Path, plugin: Path):
     return [
         check("live database unchanged (no test runs or form submits against it)",
               database_fingerprint(live) == before, database_fingerprint(live)),
-        check("frontend skills loaded", run.loaded("qa"), str(run.skills)),
+        check("UI skills loaded", run.loaded("ui") and run.loaded("vqa"), str(run.skills)),
         check("says what couldn't be verified", re.search(r"(not|n't|couldn't|could not)[^.]{0,80}(verif|run|check|browser)", run.final, re.I)),
     ]
 
@@ -218,7 +220,7 @@ def plain_app_small_change(root: Path, plugin: Path):
               not list(workspace.rglob("*.css")) and not list(workspace.rglob("*.woff2"))),
         check("schema not changed by app code at runtime",
               not re.search(r"alter\s+table|add\s+column", app_code, re.I)),
-        check("QA skill loaded for HTML built in Python", run.loaded("qa"), str(run.skills), known_gap=True),
+        check("UI skills loaded for HTML built in Python", run.loaded("ui"), str(run.skills), known_gap=True),
         check("redesign of the plain page proposed", "🟠" in run.final and "redesign" in run.final.lower(), known_gap=True),
     ]
 
@@ -250,26 +252,42 @@ def figma_design_given(root: Path, plugin: Path):
 # ---------------------------------------------------------------------------
 
 SCREENSHOT_SCRIPT = Path(__file__).resolve().parents[1] / "plugins" / "arkar-dev-standards" / "skills" / \
-    "arkar-frontend-qa" / "scripts" / "screenshot.cjs"
+    "arkar-ui-visual-qa" / "scripts" / "screenshot.cjs"
 
 
-def measure_motion(site: Path) -> dict:
-    """Serve the built site locally and run the motion check on its index page."""
+@contextmanager
+def serve(site: Path):
+    """Serve a folder on a free localhost port for the QA script."""
     import socket
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
-    index = next(iter(sorted(site.rglob("index.html"), key=lambda path: len(path.parts))), None)
-    if index is None:
-        return {"error": "no index.html"}
     server = subprocess.Popen(["python3", "-m", "http.server", str(port), "--bind", "127.0.0.1"], cwd=site,
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
-        url = f"http://127.0.0.1:{port}/{index.relative_to(site).as_posix()}"
-        output = subprocess.run(["node", str(SCREENSHOT_SCRIPT), url, str(site.parent / "motion-shots"),
-                                 "--sizes=1440x900", "--motion"], capture_output=True, text=True, timeout=180).stdout
+        time.sleep(0.5)
+        yield f"http://127.0.0.1:{port}"
     finally:
         server.terminate()
+
+
+def find_index(site: Path) -> Path | None:
+    return next(iter(sorted(site.rglob("index.html"), key=lambda path: len(path.parts))), None)
+
+
+def screenshot(site: Path, page: Path, out: Path, *flags: str) -> str:
+    with serve(site) as base:
+        url = f"{base}/{page.relative_to(site).as_posix()}"
+        return subprocess.run(["node", str(SCREENSHOT_SCRIPT), url, str(out), *flags],
+                              capture_output=True, text=True, timeout=240).stdout
+
+
+def measure_motion(site: Path) -> dict:
+    """Run the motion check on the site's index page."""
+    index = find_index(site)
+    if index is None:
+        return {"error": "no index.html"}
+    output = screenshot(site, index, site.parent / "motion-shots", "--sizes=1440x900", "--motion")
     load = re.search(r"motion: (\d+) animation\(s\) on load, (-?\d+) more while scrolling.*?longest (\d+) ms", output)
     reduced = re.search(r"reduced motion: (\d+) animation\(s\); longest (\d+) ms; (\d+) looping", output)
     looping = re.search(r"longest \d+ ms; (\d+) looping\n", output)
@@ -285,22 +303,43 @@ def measure_motion(site: Path) -> dict:
     }
 
 
-def motion_checks(run, project: Path) -> list:
-    """Outcomes only: motion exists and is recorded, and it stays within the quality limits.
+def layout_problems(site: Path, pages: list[Path] | None = None) -> str:
+    """Screenshots at phone, tablet and desktop; returns the script's problem lines (overflow, console errors)."""
+    pages = pages or [find_index(site)]
+    lines = []
+    for page in pages:
+        if page is None or not page.exists():
+            lines.append(f"missing page {page}")
+            continue
+        output = screenshot(site, page, site.parent / "layout-shots" / page.stem)
+        lines += [line.strip() for line in output.splitlines() if line.strip().startswith("- ")]
+    return "\n".join(lines)
 
-    The checks never require a particular technique, so each project is free to invent its own motion.
-    """
+
+def site_code(project: Path) -> str:
+    return "".join(path.read_text(errors="ignore") for path in project.rglob("*")
+                   if path.is_file() and path.suffix in (".css", ".js", ".html", ".jsx", ".tsx", ".vue", ".svelte"))
+
+
+def design_doc(project: Path) -> str:
+    return next((path.read_text() for path in project.rglob("DESIGN.md")), "")
+
+
+DIRECTIONS = r"premium minimalis|modern editorial|enterprise professional|modern saas|ai-native|futuristic|" \
+             r"creative expressive|luxury|swiss|product-focused|data-centric|consumer-friendly|brutalis|neo-minimalis"
+
+
+def motion_checks(run, project: Path) -> list:
+    """Outcomes only: motion exists and is recorded, and stays within the quality limits — no technique required."""
     measured = measure_motion(project)
-    design = next((path.read_text() for path in project.rglob("DESIGN.md")), "")
-    code = "".join(path.read_text(errors="ignore") for path in project.rglob("*")
-                   if path.is_file() and path.suffix in (".css", ".js", ".html"))
+    design = design_doc(project)
+    code = site_code(project)
     detail = measured.get("output", measured.get("error", ""))
     measured_motion = measured.get("on_load", 0) + measured.get("while_scrolling", 0) > 0
     written_motion = re.search(r"transition\s*:|animation\s*:|@keyframes|\.animate\(|startViewTransition", code)
     return [
-        check("design skill loaded", run.loaded("design"), str(run.skills)),
         check("motion built in (seen running, or defined for interactions)", measured_motion or written_motion, detail),
-        check("DESIGN.md records the project's motion (concept and timing)",
+        check("DESIGN.md records the motion language (with timings)",
               re.search(r"##\s*Motion", design) and re.search(r"\d{2,4}\s*ms", design), design[:200]),
         check("no text left invisible", not measured.get("stuck_text", True), detail),
         check("reduced motion respected", measured.get("reduced_ok"), detail),
@@ -311,26 +350,172 @@ def motion_checks(run, project: Path) -> list:
     ]
 
 
+def loaded_check(run, required: set, forbidden: set = frozenset()) -> dict:
+    loaded = {key for key in ("ui",) + UI_SPECIALISTS if run.loaded(key)}
+    ok = required <= loaded and not (forbidden & loaded)
+    return check(f"skills: needs {sorted(required)}" + (f", not {sorted(forbidden)}" if forbidden else ""),
+                 ok, f"loaded in order: {run.skills}")
+
+
 def motion_landing(root: Path, plugin: Path):
     workspace = workspace_from(None, root / "workspace")
     run = run_claude("build a landing page for 'Harbour Lights', a new app for CBM's car parks where drivers find a "
                      "free space and pay by phone. plain HTML/CSS/JS in folder harbour-lights, index.html, ready to "
                      "open in a browser.", workspace, plugin)
-    return motion_checks(run, workspace / "harbour-lights")
+    project = workspace / "harbour-lights"
+    return [loaded_check(run, {"ui", "art", "motion", "vqa"})] + motion_checks(run, project) + [
+        check("no layout problems at phone, tablet, desktop", not layout_problems(project), layout_problems(project)),
+    ]
 
 
-def motion_business(root: Path, plugin: Path):
+# ---------------------------------------------------------------------------
+# Adaptive UI Intelligence scenarios A–F
+# ---------------------------------------------------------------------------
+
+def ui_a_existing_corporate(root: Path, plugin: Path):
+    """A — improve an established corporate website: preserve the brand, fix real weaknesses."""
+    workspace = workspace_from("corporate-site", root / "workspace")
+    logo_before = (workspace / "images" / "logo.svg").read_text()
+    run = run_claude("our company website (this folder) looks dated and doesn't work well on phones. please improve it.",
+                     workspace, plugin)
+    pages = [workspace / name for name in ("index.html", "services.html", "contact.html")]
+    html = "".join(page.read_text() for page in pages if page.exists())
+    code = site_code(workspace)
+    problems = layout_problems(workspace, pages)
+    return [
+        loaded_check(run, {"ui", "discovery", "vqa"}),
+        check("all three pages kept, nav links intact",
+              all(page.exists() for page in pages) and all(f'href="{p.name}"' in html for p in pages)),
+        check("content preserved (services, address, phone)",
+              all(text in html for text in ("Car Park Management", "Harbourfront", "6123 4567", "M&amp;E"))),
+        check("brand colours preserved", "0b5e57" in code.lower() and "f2b134" in code.lower()),
+        check("logo file untouched and still used",
+              (workspace / "images" / "logo.svg").read_text() == logo_before and "logo.svg" in html),
+        check("no horizontal overflow or errors at phone, tablet, desktop", not problems, problems),
+        check("visible keyboard focus styles", re.search(r":focus-visible|:focus\s*\{[^}]*outline\s*:\s*(?!none)", code)),
+        check("form fields properly labelled", len(re.findall(r"<label", html)) >= 3),
+        check("DESIGN.md records the preserved brand", "0b5e57" in design_doc(workspace).lower()),
+        check("no unrequested new pages", len(list(workspace.glob("*.html"))) <= 4),
+    ]
+
+
+def ui_b_new_ai_saas(root: Path, plugin: Path):
+    """B — a new AI SaaS app: direction, AI states, tokens, skeletons, meaningful motion, responsive."""
     workspace = workspace_from(None, root / "workspace")
-    run = run_claude("build a work-order board in folder workboard: plain HTML/CSS/JS with mock data, index.html. "
-                     "facilities supervisors see work orders in columns (new, assigned, in progress, done), filter by "
-                     "site, and move a work order to the next column. they use it all day.", workspace, plugin)
-    project = workspace / "workboard"
-    checks = motion_checks(run, project)
+    run = run_claude("build the main screen of 'Ledgerly', a new AI assistant for finance teams that answers questions "
+                     "about company expense claims: a conversation with streamed answers that shows when it's searching "
+                     "claims or reading policy documents, plus a sidebar of past conversations. plain HTML/CSS/JS with "
+                     "mock data and a simulated backend, folder ledgerly, index.html.", workspace, plugin)
+    project = workspace / "ledgerly"
+    code = site_code(project).lower()
+    design = design_doc(project).lower()
+    ai_states = [state for state, pattern in {
+        "thinking/working": r"thinking|working|waiting|understanding", "tool use": r"tool|searching|reading",
+        "streaming": r"stream", "stop/cancel": r"stop|cancel", "failure": r"fail|error|retry",
+        "complete": r"complete|done|finished"}.items() if re.search(pattern, code)]
+    custom_properties = set(re.findall(r"--[a-z0-9-]+\s*:", code))
+    problems = layout_problems(project)
+    return [
+        loaded_check(run, {"ui", "art", "ds", "motion", "vqa"}),
+        check("a design direction chosen and recorded", re.search(DIRECTIONS, design), design[:300]),
+        check("AI activity states designed (≥5 of 6)", len(ai_states) >= 5, str(ai_states)),
+        check("stop/cancel control while generating", re.search(r">\s*(stop|cancel)|aria-label=\"(stop|cancel)", code)),
+        check("content-aware skeleton loading", "skeleton" in code),
+        check("design tokens (≥15 custom properties)", len(custom_properties) >= 15, str(len(custom_properties))),
+        check("status changes announced to screen readers", re.search(r"aria-live|role=\"status\"|role=\"log\"", code)),
+        check("no layout problems at phone, tablet, desktop", not problems, problems),
+    ] + motion_checks(run, project)
+
+
+def ui_c_enterprise_admin(root: Path, plugin: Path):
+    """C — an enterprise admin panel: efficient, readable, restrained motion, safe destructive actions."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build an admin panel for our security team to manage staff access cards: a searchable, "
+                     "filterable list of cards (holder, department, card number, status, last used), a detail panel, "
+                     "and deactivating one or many cards. plain HTML/CSS/JS with mock data, folder access-admin, "
+                     "index.html. they use it all day.", workspace, plugin)
+    project = workspace / "access-admin"
+    code = site_code(project).lower()
     measured = measure_motion(project)
-    checks.append(check("quick for daily use: nothing longer than ~1 s, nothing looping",
-                        measured.get("longest", 0) <= 1000 and measured.get("looping", 0) == 0,
-                        measured.get("output", "")))
-    return checks
+    problems = layout_problems(project)
+    return [
+        loaded_check(run, {"ui", "ux", "vqa"}),
+        check("a design direction chosen and recorded", re.search(DIRECTIONS, design_doc(project).lower())),
+        check("data table semantics (table with header cells, or grid role)",
+              re.search(r"<table|createElement\(['\"]table", code) and re.search(r"<th|createElement\(['\"]th|role=\"columnheader", code)
+              or "role=\"grid\"" in code),
+        check("deactivation confirms and names what's affected (or offers undo)",
+              re.search(r"<dialog|role=\"dialog\"|role=\"alertdialog\"|showmodal", code) and re.search(r"undo|deactivate \$\{|deactivate \d|cards?\?", code)),
+        check("tabular figures for numbers", "tabular-nums" in code),
+        check("visible keyboard focus styles", ":focus-visible" in code),
+        check("restrained motion: nothing over ~1 s, nothing looping",
+              measured.get("longest", 0) <= 1000 and measured.get("looping", 0) == 0, measured.get("output", "")),
+        check("reduced motion respected", measured.get("reduced_ok"), measured.get("output", "")),
+        check("no text left invisible", not measured.get("stuck_text", True), measured.get("output", "")),
+        check("no layout problems at phone, tablet, desktop", not problems, problems),
+    ]
+
+
+def ui_d_native_mobile(root: Path, plugin: Path):
+    """D — a Flutter feature: platform conventions, theme tokens, states, semantics, reduced motion, honesty."""
+    workspace = workspace_from("flutter-app", root / "workspace")
+    run = run_claude("add a leave request feature to this flutter app: a list of my requests, a form to request "
+                     "leave, and a request detail screen.", workspace, plugin)
+    dart = "".join(path.read_text(errors="ignore") for path in (workspace / "lib").rglob("*.dart"))
+    tests = list((workspace / "test").rglob("*_test.dart")) if (workspace / "test").exists() else []
+    hard_coded = re.findall(r"Colors\.(?!transparent)\w+|Color\(0x", dart)
+    flutter_available = subprocess.run(["which", "flutter"], capture_output=True).returncode == 0
+    return [
+        loaded_check(run, {"ui", "responsive", "vqa"}),
+        check("colours come from the theme (≤2 hard-coded)", len(hard_coded) <= 2, str(hard_coded[:6])),
+        check("loading / empty / error states modelled", re.search(r"AsyncValue|\.when\(|sealed class", dart)
+              and re.search(r"empty|no (leave )?requests", dart, re.I) and re.search(r"error", dart, re.I)),
+        check("motion between screens or on changes", re.search(r"Hero\(|AnimatedSwitcher|AnimatedList|PageRouteBuilder|"
+                                                            r"CustomTransitionPage|\.animate\(|AnimatedContainer|"
+                                                            r"AnimatedOpacity|TweenAnimationBuilder", dart)),
+        check("reduced motion respected", "disableAnimations" in dart),
+        check("accessibility semantics on custom controls", re.search(r"Semantics\(|semanticLabel|tooltip:", dart)),
+        check("safe areas respected", re.search(r"SafeArea|Scaffold\(", dart)),
+        check("widget tests added", bool(tests), str(tests)),
+        check("honest about not running it (no Flutter SDK here)",
+              flutter_available or re.search(r"(not|n't|couldn't|could not|unable)[^.]{0,120}(run|emulator|device|flutter|verif|analy)",
+                                             run.final, re.I), run.final[-400:]),
+    ]
+
+
+def ui_e_small_component(root: Path, plugin: Path):
+    """E — a small component change stays small: no redesign, no extra specialists."""
+    workspace = workspace_from("work-orders", root / "workspace")
+    design_before = (workspace / "DESIGN.md").read_text()
+    run = run_claude("the 'Clear filters' button is hard to notice. make it a bit more visible and give it a proper "
+                     "pressed state.", workspace, plugin)
+    diff = git_diff(workspace)
+    changed_files = re.findall(r"^diff --git a/(\S+)", diff, re.M)
+    changed_lines = len([line for line in diff.splitlines() if line[:1] in "+-" and line[:3] not in ("+++", "---")])
+    return [
+        loaded_check(run, {"ui", "vqa"}, forbidden={"discovery", "art", "ds"}),
+        check("only a few files touched (≤3)", len(changed_files) <= 3, str(changed_files)),
+        check("a focused change (≤80 changed lines)", changed_lines <= 80, str(changed_lines)),
+        check("the identity in DESIGN.md unchanged",
+              design_before.split("## Colour")[0] == (workspace / "DESIGN.md").read_text().split("## Colour")[0]),
+        check("pressed/active state added", re.search(r":active|pressed|aria-pressed", diff)),
+    ]
+
+
+def ui_f_premium_motion(root: Path, plugin: Path):
+    """F — Apple-inspired motion on an existing dashboard: purposeful, accessible, functionality intact."""
+    workspace = workspace_from("work-orders", root / "workspace")
+    ids_before = set(re.findall(r'id="([^"]+)"', (workspace / "index.html").read_text()))
+    run = run_claude("add Apple-like premium animations and transitions to this dashboard.", workspace, plugin)
+    ids_after = set(re.findall(r'id="([^"]+)"', (workspace / "index.html").read_text()))
+    problems = layout_problems(workspace)
+    return [
+        loaded_check(run, {"ui", "motion", "vqa"}, forbidden={"art"}),
+        check("concept preserved (Night Elevation)", "Night Elevation" in (workspace / "DESIGN.md").read_text()),
+        check("existing elements and behaviour kept (all ids still present)", ids_before <= ids_after,
+              str(sorted(ids_before - ids_after))),
+        check("no console errors or layout problems", not problems, problems),
+    ] + motion_checks(run, workspace)
 
 
 # ---------------------------------------------------------------------------
@@ -395,41 +580,55 @@ def delivery(root: Path, plugin: Path):
 # Skill loading and rules delivery
 # ---------------------------------------------------------------------------
 
+# (name, fixture, must load, must not load, prompt)
 LOADING_CASES = [
-    ("new landing page", None, {"design", "qa"},
+    ("new landing page", None, {"ui", "art", "motion", "vqa"}, set(),
      "make a landing page for our new laundry pickup service for condo residents, folder laundry-landing. plain html/css/js"),
-    ("new screen in an existing web app", "work-orders", {"design", "qa"},
+    ("new screen in an existing web app", "work-orders", {"ui", "ux", "vqa"}, set(),
      "add a settings page to this dashboard where supervisors can set each technician's capacity"),
-    ("small change to an existing screen", "work-orders", {"qa"},
+    ("small change to an existing screen", "work-orders", {"ui", "vqa"}, {"art", "discovery"},
      "add a phone number column to the technicians table on the dashboard"),
-    ("new API project", None, {"structure"},
-     "set up a new fastapi service in folder invoice-ocr that takes a PDF invoice and returns extracted fields. code only, don't run anything"),
-    ("new endpoint", "leave-api", {"workflow"},
-     "add an endpoint GET /leave-requests/summary returning the count of leave requests per status."),
-    ("change existing feature", "staff-api", {"workflow"},
-     "change the staff search so it also matches on department"),
-    ("bug report", "approvals-api", {"workflow"},
-     "bug: on the expense status page, after finance approves a claim (step 3) it still shows 'Waiting for finance approval'. please fix."),
-    ("Flutter screen", "flutter-app", {"qa"},
+    ("design/UX audit of an existing site", "corporate-site", {"ui", "discovery"}, set(),
+     "review the design and UX of our company website in this folder and tell me what to improve. don't change anything yet."),
+    ("motion request", "work-orders", {"ui", "motion"}, set(),
+     "the dashboard feels static. add smooth transitions when filtering and when the page loads"),
+    ("responsive fix", "corporate-site", {"ui", "responsive"}, set(),
+     "the services page breaks on phones, the table runs off the screen. fix it"),
+    ("accessibility fix", "corporate-site", {"ui", "a11y"}, set(),
+     "check the contact form for accessibility problems and fix them"),
+    ("dark mode / tokens", "work-orders", {"ui", "ds"}, set(),
+     "add a dark mode to this dashboard that follows the system setting"),
+    ("performance problem", "work-orders", {"ui", "impl"}, set(),
+     "the dashboard gets janky and slow when I filter by building. find out why and fix it"),
+    ("Flutter screen", "flutter-app", {"ui", "vqa"}, set(),
      "add a screen to this flutter app that shows my remaining leave balance by leave type"),
-    ("CI setup", "leave-api", {"delivery"},
+    ("new API project", None, {"structure"}, {"ui"},
+     "set up a new fastapi service in folder invoice-ocr that takes a PDF invoice and returns extracted fields. code only, don't run anything"),
+    ("new endpoint", "leave-api", {"workflow"}, {"ui"},
+     "add an endpoint GET /leave-requests/summary returning the count of leave requests per status."),
+    ("bug report", "approvals-api", {"workflow"}, set(),
+     "bug: on the expense status page, after finance approves a claim (step 3) it still shows 'Waiting for finance approval'. please fix."),
+    ("CI setup", "leave-api", {"delivery"}, {"ui"},
      "set up a github actions pipeline for this project"),
-    ("question: SQL", None, set(),
+    ("question: SQL", None, set(), {"ui", "workflow"},
      "Write a MySQL query that returns each staff member's total approved leave days in 2026 from leave_requests "
      "(staff_id, start_date, end_date, status). Just the query."),
-    ("question: CSRF", None, set(),
-     "What is CSRF and why do Laravel forms need @csrf? A few sentences."),
+    ("question: CSS", None, set(), {"ui"},
+     "What's the difference between rem and em in CSS? Two sentences."),
 ]
 
 
 def skill_loading(root: Path, plugin: Path):
     results = []
-    for index, (name, fixture, expected, prompt) in enumerate(LOADING_CASES):
+    for index, (name, fixture, required, forbidden, prompt) in enumerate(LOADING_CASES):
         workspace = workspace_from(fixture, root / f"case-{index}")
         run = run_claude(prompt, workspace, plugin, max_turns=30)
-        loaded = {key for key in ("workflow", "structure", "design", "qa", "delivery") if run.loaded(key)}
-        passed = expected <= loaded if expected else not loaded
-        results.append(check(f"{name}: loads {sorted(expected) or 'nothing'}", passed, f"loaded {sorted(loaded)}"))
+        keys = ("workflow", "structure", "delivery", "ui") + UI_SPECIALISTS
+        loaded = {key for key in keys if run.loaded(key)}
+        passed = required <= loaded and not (forbidden & loaded)
+        detail = f"loaded {sorted(loaded)} in order {run.skills}"
+        results.append(check(f"{name}: loads {sorted(required) or 'nothing'}"
+                             + (f", not {sorted(forbidden)}" if forbidden else ""), passed, detail))
     return results
 
 
@@ -452,7 +651,12 @@ SCENARIOS = {
     "plain-app-small-change": ("change workflow", plain_app_small_change),
     "figma-design-given": ("change workflow", figma_design_given),
     "motion-landing": ("motion", motion_landing),
-    "motion-business": ("motion", motion_business),
+    "ui-a-existing-corporate": ("ui", ui_a_existing_corporate),
+    "ui-b-new-ai-saas": ("ui", ui_b_new_ai_saas),
+    "ui-c-enterprise-admin": ("ui", ui_c_enterprise_admin),
+    "ui-d-native-mobile": ("ui", ui_d_native_mobile),
+    "ui-e-small-component": ("ui", ui_e_small_component),
+    "ui-f-premium-motion": ("ui", ui_f_premium_motion),
     "new-fastapi": ("new projects", new_project("fastapi")),
     "new-django": ("new projects", new_project("django")),
     "delivery": ("delivery", delivery),

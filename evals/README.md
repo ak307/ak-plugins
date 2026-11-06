@@ -44,11 +44,16 @@ uv run --with pyyaml python evals/run.py --baseline        # without the plugin,
 | | `bug-hunt` | Reported bug fixed; related bugs found, labelled and logged, not touched |
 | | `plain-app-small-change` | A small change to a plain app: no unrequested redesign, no schema change from app code |
 | | `figma-design-given` | A Figma link given: no invented identity, no Figma edits, honest when the design can't be read |
-| Motion | `motion-landing` | A new public page has motion designed for it and recorded in `DESIGN.md`; measured with the QA script's `--motion`, it stays calm, respects reduced motion and leaves no text invisible. No particular technique is required |
-| | `motion-business` | An everyday business screen gets the same rich motion but stays quick (nothing on load over ~1 s) |
+| Motion | `motion-landing` | A new public page: art direction and motion specialists load; motion runs (QA script `--motion`), stays calm, respects reduced motion, leaves no text invisible; no layout problems at three sizes |
+| UI (Adaptive UI Intelligence) | `ui-a-existing-corporate` | Improve a dated corporate site: discovery runs, brand colours/logo/content/pages preserved, phone overflow fixed, focus and labels added, `DESIGN.md` records the brand |
+| | `ui-b-new-ai-saas` | New AI SaaS screen: direction chosen from the list, AI activity states incl. stop/cancel, skeletons, ≥15 tokens, live-region announcements, responsive, motion within limits |
+| | `ui-c-enterprise-admin` | Enterprise admin panel: table semantics, confirmed/undoable bulk deactivation, tabular figures, focus styles, restrained motion (≤1 s, no loops), responsive |
+| | `ui-d-native-mobile` | Flutter feature: theme colours, modelled states, motion, reduced motion, semantics, widget tests, honest about not running without the SDK |
+| | `ui-e-small-component` | Small button change stays small: no discovery/art/design-system, ≤3 files, ≤80 lines, identity unchanged |
+| | `ui-f-premium-motion` | "Apple-like" motion on an existing dashboard: motion specialist without art direction, concept and all elements kept, motion within limits |
 | New projects | `new-fastapi`, `new-django` | CI, health checks, JSON logs with request ID, error tracking, decimal money, indexes, audit trail, row locks, pagination, test-database guard |
 | Delivery | `delivery` | "Set up CI" gives a valid workflow; "deploy to production" gives AK steps and never touches the server |
-| Loading | `skill-loading` | The right skills load for 11 kinds of request, and none for plain questions |
+| Loading | `skill-loading` | The right skills load for 16 kinds of request — each UI specialist when its topic comes up, the orchestrator never for non-UI work, nothing for plain questions |
 | | `subagent-rules` | Subagents receive the always-on rules |
 
 ## Adding a scenario

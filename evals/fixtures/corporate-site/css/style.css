@@ -1,0 +1,20 @@
+body { font-family: "Times New Roman", serif; margin: 0; background: #eeeeee; color: #333; }
+#wrapper { width: 960px; margin: 0 auto; background: white; }
+#header { background: #0B5E57; padding: 10px 20px; height: 60px; }
+#header img { background: white; padding: 4px; }
+#nav { background: #084540; padding: 8px 20px; }
+#nav a { color: #F2B134; margin-right: 22px; text-decoration: none; font-size: 13px; }
+#nav a:focus { outline: none; }
+.hero { padding: 40px 20px; background: #dfe9e8; }
+.hero h1 { font-size: 30px; color: #0B5E57; margin: 0 0 12px 0; }
+.hero p { font-size: 14px; color: #777; }
+.button { background: #F2B134; color: #333; padding: 7px 13px; border: 1px solid #c58d1c; font-size: 12px; text-decoration: none; }
+.columns { padding: 25px 20px; overflow: hidden; }
+.col { float: left; width: 290px; margin-right: 18px; }
+.col h3 { color: #0B5E57; font-size: 17px; margin-bottom: 6px; }
+.col p { font-size: 13px; color: #888; line-height: 1.3; }
+table.services { width: 920px; border-collapse: collapse; margin: 20px; font-size: 13px; }
+table.services td { border: 1px solid #ccc; padding: 6px; }
+form.contact { padding: 20px; }
+form.contact input, form.contact textarea { width: 400px; margin-bottom: 9px; display: block; }
+#footer { background: #333; color: #999; font-size: 11px; padding: 14px 20px; }

@@ -49,8 +49,10 @@ def make_pack(run_folder: Path, pack: Path) -> None:
                        capture_output=True, text=True, timeout=900)
     for leftover in (pack / "films").glob("00-full-page.png"):
         leftover.unlink()
-    own_films = sorted(path for path in (run_folder / "workspace").rglob("[0-9][0-9]-*.png")
-                       if path.stem.split("-")[1] in ("click", "press", "hover"))[:4]
+    # The newest flow films show the final design; earlier ones may be from a first iteration.
+    own_films = sorted((path for path in (run_folder / "workspace").rglob("[0-9][0-9]-*.png")
+                        if path.stem.split("-")[1] in ("click", "press", "hover")),
+                       key=lambda path: path.stat().st_mtime, reverse=True)[:4]
     for number, film in enumerate(own_films, 1):
         shutil.copy(film, pack / f"flow-{number}.png")
     for ignore in pack.rglob(".gitignore"):

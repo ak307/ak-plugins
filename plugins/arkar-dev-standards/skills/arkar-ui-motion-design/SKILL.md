@@ -127,6 +127,10 @@ or remove it.
   entrance may enhance it (a short rise or fade that starts visible enough
   to read) but never delays it; secondary elements may follow, the whole
   sequence done within ~600 ms.
+- No splash or intro screen on the web, and no blank or greyed-out page
+  while waiting: after an action, show progress at once; when data
+  refreshes, keep the previous content visible (dimmed slightly at most)
+  until the new content replaces it in place.
 - No count-up animation on a figure people came to read; show the real
   value at once (animate *changes* to it later if that helps).
 - **Content is visible by default.** Scroll reveals and entrances are an

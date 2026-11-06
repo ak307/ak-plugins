@@ -19,8 +19,10 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
+import subprocess
 import sys
 import tempfile
+import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -31,17 +33,22 @@ from lib import PLUGIN, empty_plugin_dir  # noqa: E402
 from scenarios import SCENARIOS  # noqa: E402
 
 RESULTS = Path(__file__).resolve().parent / "results"
+# Which version of the skills a run used, so results can be compared across changes.
+SKILLS_COMMIT = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True,
+                               cwd=Path(__file__).resolve().parent).stdout.strip() or "unknown"
 
 
 def run_one(name: str, attempt: int, out: Path, plugin: Path) -> dict:
     area, scenario = SCENARIOS[name]
     # Outside the repo, so the sessions under test only see their own project.
     root = Path(tempfile.mkdtemp(prefix=f"arkar-eval-{name}-{attempt}-"))
+    started = time.time()
     try:
         checks = scenario(root, plugin)
     except Exception:
         checks = [{"check": "scenario ran", "passed": False, "detail": traceback.format_exc()[-800:], "known_gap": False}]
-    return {"scenario": name, "area": area, "attempt": attempt, "workspace": str(root), "checks": checks}
+    return {"scenario": name, "area": area, "attempt": attempt, "workspace": str(root), "checks": checks,
+            "minutes": round((time.time() - started) / 60, 1), "skills_commit": SKILLS_COMMIT}
 
 
 def write_summary(results: list, out: Path, label: str) -> bool:

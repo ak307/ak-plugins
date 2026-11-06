@@ -15,8 +15,10 @@ and reports with evidence.
 
 ## Definition of done — the premium pass is required
 
-UI work is **not done** until you have run the premium pass (section 3) and
-your final message contains this block, filled in with real results:
+UI work is **not done** until you have run the premium pass (section 3),
+written its record to `qa-screenshots/premium-pass.md` (the evidence — the
+folder is git-ignored), and put this block, filled in with real results, in
+your final message (it may be shortened, never dropped):
 
 ```
 Premium pass
@@ -27,6 +29,7 @@ Premium pass
 - Loading / processing / success / error states seen: <which>
 - First-time-user walkthrough: <flows walked> → hesitations found and fixed: <list>
 - Three-second test per main screen: <screen → what catches the eye first → wow / fine>
+- Composition: <template structures found and replaced, or "none">
 - Still not premium (if any) and why: <…>
 ```
 

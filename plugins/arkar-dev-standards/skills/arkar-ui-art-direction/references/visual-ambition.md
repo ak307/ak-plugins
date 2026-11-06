@@ -60,14 +60,35 @@ relates to the product.
 - **Motion as part of the impression** — the first view arrives with a
   purposeful entrance; key visuals respond to the pointer or to data.
 
-## 4. Ambition and usability together
+## 4. Compose from the content, not from templates
+
+The most common reason a polished page still feels boring is a **template
+structure**: the layout every page of that type has. These count as boring
+signals:
+
+- hero → three equal feature cards → call-to-action band → footer;
+- a row of identical KPI tiles above one long full-width table;
+- a centred headline over a logo strip, then alternating image/text rows;
+- numbered "01 / 02 / 03" blocks for content that isn't a sequence;
+- a sidebar plus an identical list on every screen.
+
+Instead, for each main screen **sketch two or three genuinely different
+compositions** (a few lines or a tiny ASCII wireframe each) before
+building, and choose the one that is most striking while keeping the user's
+job easy. Let the nature of the content decide its form: a sequence can be a
+journey, a comparison a split, places a plan or map, numbers a data visual,
+a set of services something users can explore. Vary section treatments down
+a page so it reads as a designed story, not stacked boxes. Note the chosen
+composition and the rejected ones in `DESIGN.md`.
+
+## 5. Ambition and usability together
 
 Visual energy goes into the hero moments, the brand surfaces, the key data
 and the signature — while the working areas (forms, tables, reading text)
 stay clear, legible and efficient. Contrast and accessibility rules still
 apply; a bold colour field still meets contrast for its text.
 
-## 5. Varying across projects
+## 6. Varying across projects
 
 Each project's palette, hero moment, imagery and composition come from its
 own world, users and direction, so two products never look alike. Don't

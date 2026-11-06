@@ -60,7 +60,7 @@
 
 - Automated: axe (e.g. `@axe-core/playwright` or the browser extension),
   Lighthouse accessibility, framework lints (`eslint-plugin-jsx-a11y`,
-  `vue-a11y`), Flutter guideline tests.
+  `eslint-plugin-vuejs-accessibility`), Flutter guideline tests.
 - Manual: a full keyboard pass of the flows in scope; zoom to 200%; reduced
   motion on; a screen reader spot-check (VoiceOver/NVDA/TalkBack) when
   available.

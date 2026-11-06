@@ -31,8 +31,10 @@ from `data && !error`.
 
 - Every action responds within ~100 ms (pressed state, inline change,
   indicator).
-- Operations over ~1 s show loading; when real progress is known, show
-  determinate progress; never fake percentages.
+- Loading indicators appear after ~300 ms (not instantly, to avoid
+  flashes); content areas get skeletons; measurable work gets determinate
+  progress; never fake percentages — thresholds and patterns in
+  `arkar-ui-motion-design/references/skeleton-loading.md`.
 - Show what changed: the updated row highlights briefly, a count updates, the
   moved item moves (motion skill).
 - Toasts for confirmations that don't need action; inline messages for

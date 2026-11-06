@@ -4,7 +4,9 @@
 
 - One or two families; a third only for code or tabular data.
 - Chosen for the direction and the languages used; system fonts are not a
-  design decision.
+  design decision. Don't default to the fonts you reach for by habit (Inter,
+  Roboto, Geist, the same pair as the last project) — choose what expresses
+  this product, and vary across projects.
 - Bundled with the app (`@fontsource/<family>` with a build tool, or `.woff2`
   files in the project with `@font-face`), `font-display: swap`, preload the
   one or two files used above the fold. Not linked from Google — internal

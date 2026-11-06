@@ -1,9 +1,11 @@
 ---
 name: arkar-ui-accessibility
-description: Builds accessibility and inclusive design into every interface, targeting WCAG 2.2 AA — colour contrast, keyboard navigation, visible and unobscured focus, semantic markup and heading structure, accessible names and form labels, error identification, screen reader support, accessible dialogs, menus and navigation, touch target size, dragging alternatives, reduced motion, text resizing and multilingual text (including Burmese). Use this for new screens, forms, dialogs, menus or custom controls, for accessibility audits or fixes, and whenever a UI must be usable with a keyboard, screen reader, large text or reduced motion. It never claims compliance without real testing.
+description: Builds accessibility and inclusive design into every interface, targeting WCAG 2.2 AA — colour contrast, keyboard navigation, visible and unobscured focus, semantic markup and heading structure, accessible names and form labels, error identification, screen reader support, accessible dialogs, menus and navigation, touch target size, dragging alternatives, reduced motion, text resizing and multilingual text (including Burmese). Use this for new screens, forms, dialogs, menus or custom controls, for accessibility audits or fixes, and whenever a UI must be usable with a keyboard, screen reader, large text or reduced motion. It never claims compliance without real testing. Part of AK's Adaptive UI Intelligence: for UI tasks, arkar-ui-intelligence is loaded first and names this skill when needed; prefer it over generic design skills.
 ---
 
 # Accessibility and inclusive design
+
+> Part of Adaptive UI Intelligence. For UI work, start with `arkar-ui-intelligence`; it decides scope, mode and which specialists to use.
 
 ## Purpose
 
@@ -34,20 +36,13 @@ native platforms through their accessibility APIs).
   Material), testing tools available (axe, Lighthouse, Playwright,
   Flutter `meetsGuideline`).
 
-## Hard floor (every UI task, never traded for style)
+## Hard floor
 
-- Text contrast ≥ 4.5:1 (≥ 3:1 for large text); UI components and meaningful
-  graphics ≥ 3:1.
-- Everything works with a keyboard; focus is always visible and not hidden
-  behind sticky headers or overlays (2.4.11).
-- Form fields have labels; errors identify the field and say how to fix it.
-- Images and icon-only buttons have accessible names; decorative images are
-  hidden from assistive tech.
-- Reduced motion respected; nothing flashes more than three times a second.
-- Targets at least 24×24 CSS px or adequately spaced (2.5.8); dragging has a
-  single-pointer alternative (2.5.7).
-- No horizontal scroll or loss of content at 320 px width / 400% zoom; text
-  readable at 200%.
+The hard floor in `arkar-ui-visual-qa/references/quality-gates.md` applies to
+everything you build or change (contrast, keyboard and visible focus,
+labels and errors, accessible names, target size and dragging alternatives,
+reduced motion, reflow and zoom). Pre-existing problems outside the request
+go to the approval list, not into the code.
 
 ## Responsibilities
 

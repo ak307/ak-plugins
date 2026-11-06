@@ -7,8 +7,9 @@
   all.
 - Load a specialist with the Skill tool (`arkar-dev-standards:<name>`), then
   follow it. Read its references only when the task touches that topic.
-- If a specialist can't be loaded, read `skills/<name>/SKILL.md` in this
-  plugin, or apply its procedure from what you know — and say in the final
+- If a specialist can't be loaded, find and read its `SKILL.md` (search
+  `~/.claude/plugins` for `skills/<name>/SKILL.md`), or apply its procedure
+  from what you know — and say in the final
   message that it was done without the skill.
 - One owner per decision (below). A specialist that needs something another
   owns uses that decision instead of re-deriving it, so analysis and

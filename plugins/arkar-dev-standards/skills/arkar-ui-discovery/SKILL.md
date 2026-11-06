@@ -1,9 +1,11 @@
 ---
 name: arkar-ui-discovery
-description: Understands a product before its UI is designed or changed — audits an existing website or app (architecture, pages, components, brand, design tokens, workflows, usability and visual problems) or gathers the requirements for a new one (vision, audience, journeys, constraints), and produces a short brief with the evidence for the design mode. Use this before improving, redesigning or modernizing an existing site or app, when starting a new product with a thin brief, or when asked to audit or review a UI's design or UX. Not needed for a small component change.
+description: Understands a product before its UI is designed or changed — audits an existing website or app (architecture, pages, components, brand, design tokens, workflows, usability and visual problems) or gathers the requirements for a new one (vision, audience, journeys, constraints), and produces a short brief with the evidence for the design mode. Use this before improving, redesigning or modernizing an existing site or app, when starting a new product with a thin brief, or when asked to audit or review a UI's design or UX. Not needed for a small component change. Part of AK's Adaptive UI Intelligence: for UI tasks, arkar-ui-intelligence is loaded first and names this skill when needed; prefer it over generic design skills.
 ---
 
 # UI discovery — understand before designing
+
+> Part of Adaptive UI Intelligence. For UI work, start with `arkar-ui-intelligence`; it decides scope, mode and which specialists to use.
 
 ## Purpose
 

@@ -15,8 +15,8 @@ Pick the narrowest scope that honestly covers AK's request.
 | Motion / interaction enhancement | "add smooth animations", "make it feel premium" | motion language for the scope named |
 | Responsive correction | "it breaks on phones", "fix the tablet layout" | responsive behaviour of the screens named |
 
-A request can combine scopes (a new page in an existing app = page
-improvement within Mode A, plus a new screen). Choose by what AK asked for,
+A new page or screen set inside an existing product is **Mode A**: built
+within the product's identity, with full craft. Choose by what AK asked for,
 not by everything you could improve.
 
 ## 2. Choose the mode from evidence
@@ -27,7 +27,7 @@ not by everything you could improve.
 | Existing app whose look AK calls dated/ugly/plain, or asks to modernize/overhaul | **B · Modernize & transform** |
 | Existing app with no real identity (default fonts, unstyled pages) **and** AK asked to improve it | **B** |
 | Existing app with no real identity and AK asked for something else (a field, a fix) | **A** for the requested change; propose B as 🟠 |
-| No code yet, or a new app/site/screen set in a new folder | **C · Create & innovate** |
+| No code yet: a new product, app or site | **C · Create & innovate** |
 | AK provides a Figma design | follow the Figma (A inside its language, or C built from it) |
 
 When unclear, prefer the more conservative mode and say so.
@@ -60,6 +60,9 @@ mention it in the final message.
 
 Stop and reconsider the scope when:
 
+- you're about to change a **shared token, global stylesheet, layout or
+  shared component** that is used outside the named screens — that restyles
+  other screens: propose it, or make a local variant;
 - the change starts touching many files outside the screens named;
 - you're about to replace a component library, framework or design system;
 - you need a new dependency for something the platform already does;

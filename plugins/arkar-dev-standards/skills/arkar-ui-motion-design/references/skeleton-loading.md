@@ -25,8 +25,18 @@ don't block the whole page when only part of it is loading.
   block, avatar, table row, card, chart), using surface tokens so they work
   in every theme.
 
-Coverage to plan for: page, dashboard, card, table, image, avatar, chart, AI
-response, profile, mobile screen.
+| Type | Shape it after |
+|---|---|
+| Page | header + the main region's real blocks; navigation stays real (not skeleton) |
+| Dashboard | the KPI row, chart frames with axes, the table header + a few rows |
+| Card | the card's real media ratio, title line, two text lines, action area |
+| Table | real column headers (text, not skeleton), rows with column-width bars; numeric columns right-aligned |
+| Image | a block at the image's `aspect-ratio`, optionally the dominant colour/blur-up |
+| Avatar | a circle at the real size, with name lines beside it |
+| Chart | the axes and gridlines drawn, the plot area empty or a faint baseline — never a fake chart line |
+| AI response | a short "waiting" line until the first tokens, then real streamed text (see `ai-interaction-motion.md`) |
+| Profile | avatar, name, role lines, the real section headings |
+| Mobile screen | the app bar and tab bar real; list rows at the platform's row height |
 
 ## Shimmer
 

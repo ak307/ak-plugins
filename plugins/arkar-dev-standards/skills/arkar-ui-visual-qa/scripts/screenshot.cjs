@@ -214,12 +214,15 @@ async function main() {
     process.exit(1);
   }
   if (!isLocalUrl(url) && !flags.includes("--allow-remote")) {
-    console.error(`Refusing ${withoutQuery(url)}: QA screenshots are taken of a local app only (localhost / 127.0.0.1).`);
+    console.error(`Refusing ${withoutQuery(url)}: QA screenshots are taken of a local app only (localhost / 127.0.0.1 / *.test).`);
     process.exit(1);
   }
   const fullPage = flags.includes("--full-page");
   const viewports = viewportsFrom(flags);
   fs.mkdirSync(outputFolder, { recursive: true });
+  // Screenshots must never be committed: ignore everything in this folder.
+  const ignoreFile = path.join(outputFolder, ".gitignore");
+  if (!fs.existsSync(ignoreFile)) fs.writeFileSync(ignoreFile, "*\n");
 
   const { chromium } = loadPlaywright();
   const browser = await chromium.launch();

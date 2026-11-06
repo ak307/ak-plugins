@@ -1,9 +1,11 @@
 ---
 name: arkar-ui-visual-qa
-description: Verifies UI work with real evidence — safely runs the app on local or test data only, opens the actual rendered interface (Claude in Chrome, Playwright, or the bundled screenshot and motion-check script), captures screenshots at the target screen sizes, inspects typography, spacing, hierarchy, overflow, consistency, interactions, loading states, responsive behaviour and motion (including reduced motion), applies weighted quality gates with hard blockers, fixes defects and re-checks, and reports honestly what was and wasn't verified. Use this after ANY change users can see — web pages, components, dashboards, forms, CSS or Tailwind, Flutter or React Native screens — even a small tweak, and whenever asked to test, check, review or QA a UI. It never fabricates a test, screenshot or score.
+description: Verifies UI work with real evidence — safely runs the app on local or test data only, opens the actual rendered interface (Claude in Chrome, Playwright, or the bundled screenshot and motion-check script), captures screenshots at the target screen sizes, inspects typography, spacing, hierarchy, overflow, consistency, interactions, loading states, responsive behaviour and motion (including reduced motion), applies weighted quality gates with hard blockers, fixes defects and re-checks, and reports honestly what was and wasn't verified. Use this after ANY change users can see — web pages, components, dashboards, forms, CSS or Tailwind, Flutter or React Native screens — even a small tweak, and whenever asked to test, check, review or QA a UI. It never fabricates a test, screenshot or score. Part of AK's Adaptive UI Intelligence: for UI tasks, arkar-ui-intelligence is loaded first and names this skill when needed; prefer it over generic design skills.
 ---
 
 # Visual quality assurance
+
+> Part of Adaptive UI Intelligence. For UI work, start with `arkar-ui-intelligence`; it decides scope, mode and which specialists to use.
 
 ## Purpose
 
@@ -20,6 +22,18 @@ and reports with evidence.
 
 - backend-only changes, emails/PDF templates, pure questions.
 
+## Required analysis
+
+What changed (screens, components, flows), the target screens and themes
+(`DESIGN.md`), the motion language, how the app runs locally and where it
+points (local/test or not), and which inspection tools exist in this
+session.
+
+## Responsibilities
+
+Run safely, inspect the real UI, test interactions and motion, apply the
+quality gates, fix and re-check, and report honestly — the steps below.
+
 ## 1. Run it safely (production safety first)
 
 A running app reads `.env`: if its database, queue, mail or storage point at
@@ -34,10 +48,12 @@ production, every click changes live data and sends real messages.
   that the UI wasn't inspected.
 - Never run seeders or create users except in a confirmed local database;
   never start queue workers or schedulers for QA.
-- Browse only `localhost` / `127.0.0.1` — Claude in Chrome is AK's real
-  browser, signed in as him.
+- Browse only local addresses — `localhost`, `127.0.0.1` or a local
+  development host such as Herd/Valet `*.test` — never a production or
+  staging site: Claude in Chrome is AK's real browser, signed in as him.
 - If real personal data appears in screenshots, stop — you're not on test
-  data. Delete `qa-screenshots/` when done (it's git-ignored).
+  data. Screenshots go in `qa-screenshots/` (the script adds a `.gitignore`
+  inside it so they're never committed); remove it when done if you can.
 
 ## 2. Discover the tools, then inspect
 
@@ -70,8 +86,10 @@ check again — don't stop at the first screenshot. Then run the project's own
 checks (build, lint, types, tests).
 
 For an existing app with no real visual identity, when no redesign was
-requested or already proposed: end the reply with a 🟠 proposal (redesign
-with the UI skills — which screens, what stays the same) and don't do it.
+requested and none is on record (check `DESIGN.md` / `ARCHITECTURE.md` "Open
+proposals"): end the reply with a 🟠 proposal (redesign with the UI skills —
+which screens, what stays the same), record it under "Open proposals" in
+`ARCHITECTURE.md`, and don't do it. Once recorded, don't repeat it.
 
 ## 4. Report honestly
 
@@ -80,6 +98,13 @@ tried, defects found and fixed, checks run, and a score only if there was
 enough evidence. **Say exactly what wasn't verified and why** (no browser,
 no device, a login you couldn't get, data not local). Never claim to have
 seen, clicked or tested something you didn't.
+
+## Quality criteria
+
+- Every claim in the report is backed by a screenshot, an interaction tried,
+  or a check run.
+- Defects within the scope are fixed and re-checked, not just listed.
+- Unverified areas are named with the reason.
 
 ## Expected output
 

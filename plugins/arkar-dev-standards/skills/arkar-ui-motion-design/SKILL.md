@@ -1,9 +1,11 @@
 ---
 name: arkar-ui-motion-design
-description: Premium, Apple-inspired motion and interaction craftsmanship as a first-class part of the design system — content-aware skeleton loading, spatial and shared-element transitions, natural spring physics, micro-interactions for every control, dynamic content transitions (counters, charts, lists, live data), restrained motion graphics, and clear AI activity states (thinking, tool use, streaming, cancelled), with motion tokens, a five-level motion hierarchy, reduced-motion alternatives and performance. Use this whenever adding or improving animation, transitions, loading states, skeletons, hover/press feedback, page or modal transitions, AI chat or agent status, or when a UI should feel smoother, more polished, premium, alive or "like Apple" — and for any new product.
+description: Premium, Apple-inspired motion and interaction craftsmanship as a first-class part of the design system — content-aware skeleton loading, spatial and shared-element transitions, natural spring physics, micro-interactions for every control, dynamic content transitions (counters, charts, lists, live data), restrained motion graphics, and clear AI activity states (thinking, tool use, streaming, cancelled), with motion tokens, a five-level motion hierarchy, reduced-motion alternatives and performance. Use this whenever adding or improving animation, transitions, loading states, skeletons, hover/press feedback, page or modal transitions, AI chat or agent status, or when a UI should feel smoother, more polished, premium, alive or "like Apple" — and for any new product. Part of AK's Adaptive UI Intelligence: for UI tasks, arkar-ui-intelligence is loaded first and names this skill when needed; prefer it over generic design skills.
 ---
 
 # Motion design — craftsmanship, not decoration
+
+> Part of Adaptive UI Intelligence. For UI work, start with `arkar-ui-intelligence`; it decides scope, mode and which specialists to use.
 
 ## Purpose
 
@@ -49,9 +51,11 @@ interfaces or force iOS behaviour onto other platforms.
 | 4 · Ambient motion | atmosphere | subtle gradients, lighting, background movement |
 | 5 · Signature motion | storytelling and complex visuals | AI visualisations, product storytelling, hero moments |
 
-Daily-use and enterprise screens live mostly in levels 1–3. Levels 4–5 are
-for marketing pages, signature moments and AI products — sparingly, and
-never to compensate for weak design.
+Every screen you build or redesign gets motion from the product's motion
+language at levels 1–3 where it serves the user (feedback, component
+changes, spatial transitions) — a new or redesigned screen with no motion is
+not finished. Restraint applies to levels 4–5: marketing pages, signature
+moments and AI products, sparingly, and never to compensate for weak design.
 
 ## Responsibilities
 

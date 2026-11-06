@@ -63,8 +63,10 @@ docs before relying on an API.
 - **Reanimated 4**: CSS-style animations and transitions, layout animations
   (`entering`/`exiting` with `.springify()`), shared values on the UI
   thread; `ReduceMotion.System` respects the OS setting by default.
-- **Gesture Handler v3** (hook API: `usePanGesture`, `useTapGesture`) for
-  gesture-following motion.
+- **Gesture Handler** (v3 introduced a hook API — `usePanGesture`,
+  `useTapGesture`; older projects use `Gesture.Pan()`) for gesture-following
+  motion. Reanimated 4 needs React Native's New Architecture; on older
+  projects use the installed Reanimated version's API.
 - Native stack transitions for navigation; don't re-implement platform
   transitions in JS.
 

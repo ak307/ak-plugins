@@ -17,7 +17,7 @@ Define the roles the product needs, then choose values for the direction:
 
 ## Contrast (WCAG 2.2 AA)
 
-- Text: ≥ 4.5:1; large text (24 px+, or 19 px+ bold) ≥ 3:1.
+- Text: ≥ 4.5:1; large text (24 px+, or ~18.7 px+ bold) ≥ 3:1.
 - UI components and meaningful graphics (borders of inputs, icons, focus
   indicators, chart lines): ≥ 3:1 against adjacent colours.
 - Check every theme; check text on tinted fills and on images.
@@ -28,8 +28,8 @@ Define the roles the product needs, then choose values for the direction:
 - Keep existing brand colours (Mode A/B); if one fails contrast as text,
   use it for fills and large elements and derive an accessible variant for
   text and focus.
-- CBM red `#AE1A28` only when AK asks for CBM branding or the product already
-  uses it.
+- CBM red `#AE1A28` only when AK asks for CBM branding (kept in Mode A when a
+  product already uses it; a decision for AK in Mode B).
 
 ## Restraint
 

@@ -118,6 +118,10 @@ you couldn't run, and propose a local test database.
   place where this kind of logic lives? Would this be a second or third copy
   of something? Does the layout follow `arkar-project-structure` for this
   stack? Note where the feature *should* go if the code were clean.
+- **UI work** (anything users see — web pages, components, Flutter / React
+  Native / desktop screens): load `arkar-ui-intelligence` now, so its
+  classification and discovery happen here and any UI improvements beyond
+  the request join the single approval list in step 3.
 
 ### 2. Protect existing behaviour (baseline)
 
@@ -204,9 +208,9 @@ and tell AK instead of pushing on.
 
 If the change alters anything users see — a page, screen, form, field,
 column or message, in a browser (including HTML built in Python/PHP code or
-templates) or in a Flutter/Android app — load `arkar-ui-intelligence` now and
-follow it as well (it picks the UI specialists and ends with
-`arkar-ui-visual-qa`).
+templates) or in a Flutter / React Native / desktop app — follow
+`arkar-ui-intelligence` (loaded in step 1) and the specialists it names; it
+ends with `arkar-ui-visual-qa`.
 
 - Put it where it belongs per `ARCHITECTURE.md` and `arkar-project-structure`,
   reusing what exists rather than adding parallel code.

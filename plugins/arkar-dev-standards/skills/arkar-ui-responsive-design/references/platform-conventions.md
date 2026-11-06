@@ -29,7 +29,7 @@ Respect each platform; don't force one platform's behaviour onto another.
   `MediaQuery.sizeOf` for adaptive layouts (phone, tablet, desktop/web).
 - Never override `MediaQuery.textScaler` to stop users enlarging text; no
   fixed heights around text.
-- `Semantics` for custom widgets; 48×48 minimum tap areas.
+- `Semantics` for custom widgets; tap areas at the platform's size: 48×48 dp on Android, 44×44 pt on iOS.
 - `MediaQuery.disableAnimationsOf(context)` for reduced motion.
 
 ## React Native

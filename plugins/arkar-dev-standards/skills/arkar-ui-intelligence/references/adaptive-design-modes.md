@@ -27,8 +27,9 @@ library, or restyle screens outside the scope without justification — and
 justification goes to AK as a proposal.
 
 **Output:** targeted improvements that look like the same product at its
-best, with `DESIGN.md` updated (or written from the existing look if
-missing).
+best. Update `DESIGN.md` when it exists; create it from the existing look
+only for page-level scope and above (for smaller changes, offer it as a 🟢
+proposal).
 
 ## Mode B — Modernize & transform
 
@@ -71,6 +72,6 @@ designed.
 
 | | Small change | Page | Redesign | Whole app | New product |
 |---|---|---|---|---|---|
-| A | fit the look | refine the page | refine within identity | consistent upgrade | — |
-| B | fit the look, propose B | modernize the page | new direction for named screens | phased modernization | — |
-| C | — | new page with full craft | — | — | full process |
+| A | fit the look | refine the page, or a new page within the identity | refine within identity | consistent upgrade | — |
+| B | — (a small change in a dated app is Mode A + a 🟠 proposal) | modernize the page | new direction for named screens | phased modernization | — |
+| C | — | — | — | — | full process |

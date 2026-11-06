@@ -9,12 +9,13 @@
 ## 1. Tools — use the first that works
 
 **Claude in Chrome** (`mcp__claude-in-chrome__*`): AK's own Chrome. Open a
-new tab; only `localhost`/`127.0.0.1`; read the console with a filter
+new tab; only local addresses (`localhost`, `127.0.0.1`, `*.test`); read the console with a filter
 pattern; resize the window if offered (otherwise use the script for exact
 sizes); never trigger `alert`/`confirm` dialogs.
 
 **Playwright MCP** (`mcp__playwright__*`), if configured
-(`claude mcp add --scope user playwright -- npx @playwright/mcp@0.0.83`):
+(`claude mcp add --scope user playwright -- npx @playwright/mcp@latest`;
+pin a version if the team prefers):
 navigate, click, type, resize, screenshot, console.
 
 **The bundled script** — `scripts/screenshot.cjs` in this skill:
@@ -35,8 +36,9 @@ node "<skill folder>/scripts/screenshot.cjs" http://localhost:8000/claims qa-scr
   one). If Playwright is missing, install it once outside any project:
   `npm install --prefix ~/.arkar/playwright playwright` then
   `npx --prefix ~/.arkar/playwright playwright install chromium`.
-- Save to `qa-screenshots/` (git-ignored); **look at each PNG** — the script
-  only finds machine-detectable problems.
+- Saves to `qa-screenshots/` and writes a `.gitignore` there so screenshots
+  are never committed; **look at each PNG** — the script only finds
+  machine-detectable problems.
 - Pages behind login: a short Playwright script that logs in with local test
   credentials, then visits each size.
 
@@ -76,8 +78,8 @@ background and stop them when done.
 - Focus ring missing; contrast too low; emoji used as icons; mixed icon
   styles; random shadows.
 - Text clipped at 200% zoom; tall scripts (Burmese) clipped.
-- Does it express the direction in `DESIGN.md`? Is the signature element
-  obvious at every size?
+- Does it express the direction in `DESIGN.md`? Does the signature idea read
+  clearly where it's used, at every size?
 
 ## 4. When nothing works
 

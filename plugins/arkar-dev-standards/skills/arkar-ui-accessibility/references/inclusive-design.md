@@ -9,9 +9,10 @@
   `AppLocalizations`); no sentences built by joining strings; layouts
   tolerate text 30–50% longer than English; dates, numbers and plurals
   through locale formatting; correct `lang` attributes.
-- **Tall scripts** (Myanmar/Burmese, Thai, Tamil, Devanagari): line height
-  ≥ 1.6 for body text, no fixed-height single-line boxes, fonts that cover
-  the script (Noto Sans Myanmar, Padauk), tested with real text.
+- **Tall scripts** (Myanmar/Burmese, Thai, Tamil, Devanagari): follow
+  `arkar-ui-design-system/references/typography-system.md` (line height,
+  no fixed-height boxes, fonts that cover the script) and test with real
+  text.
 - RTL-ready with logical properties (`margin-inline-start`) and
   `EdgeInsetsDirectional`.
 

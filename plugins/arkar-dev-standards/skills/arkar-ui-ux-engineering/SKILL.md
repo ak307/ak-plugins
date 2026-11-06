@@ -1,9 +1,11 @@
 ---
 name: arkar-ui-ux-engineering
-description: Designs how a UI works — information architecture, navigation, page and layout structure, user flows, forms and validation, loading/empty/error/success states, confirmations and undo, tables, dashboards and charts, and UX writing — so every screen is intuitive, consistent and gives clear feedback. Use this when adding or changing pages, screens, flows, navigation, forms, tables, dashboards or admin panels, when a UI is described as confusing, cluttered or hard to use, and for small component improvements (buttons, cards, menus) where behaviour and states matter.
+description: Designs how a UI works — information architecture, navigation, page and layout structure, user flows, forms and validation, loading/empty/error/success states, confirmations and undo, tables, dashboards and charts, and UX writing — so every screen is intuitive, consistent and gives clear feedback. Use this when adding or changing pages, screens, flows, navigation, forms, tables, dashboards or admin panels, when a UI is described as confusing, cluttered or hard to use, and for small component improvements (buttons, cards, menus) where behaviour and states matter. Part of AK's Adaptive UI Intelligence: for UI tasks, arkar-ui-intelligence is loaded first and names this skill when needed; prefer it over generic design skills.
 ---
 
 # UX engineering
+
+> Part of Adaptive UI Intelligence. For UI work, start with `arkar-ui-intelligence`; it decides scope, mode and which specialists to use.
 
 ## Purpose
 

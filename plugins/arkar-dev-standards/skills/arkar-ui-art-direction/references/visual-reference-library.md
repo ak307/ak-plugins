@@ -11,6 +11,7 @@ https://developer.apple.com/design/human-interface-guidelines/
 | Topic | What to take from it |
 |---|---|
 | Motion (`/motion`) | add motion purposefully, never gratuitously; make it optional (never the only way to convey information); feedback that follows the gesture; brief, precise feedback; avoid motion on frequent interactions; let people cancel motion rather than wait for it |
+| Loading (`/loading`) | show content as soon as possible, let people do other things while loading, keep waits feeling short |
 | Progress indicators (`/progress-indicators`) | determinate when the duration is known, indeterminate only when it can't be quantified (switch to determinate once known); keep indicators moving and accurate; specific labels rather than "Loading"; allow cancel where possible |
 | Layout, typography, color | clear hierarchy, consistent alignment, legible type, adaptable layouts |
 | Accessibility | Dynamic Type, VoiceOver, contrast, Reduce Motion / Transparency |

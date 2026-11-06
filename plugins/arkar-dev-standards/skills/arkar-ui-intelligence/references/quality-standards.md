@@ -52,13 +52,7 @@ work complete.
 
 ## Anti-generic rules
 
-Never reach for these automatically — use them only when they serve the
-product's direction and say why:
-
-purple gradients · glassmorphism · glowing borders · excessive rounded cards ·
-oversized typography · decorative background shapes · excessive shadows ·
-repetitive dashboard cards · unnecessary gradients · generic AI-generated
-layouts · decorative animation without purpose.
-
-Prioritise distinctive composition, typography, whitespace, visual balance,
-contrast and information hierarchy.
+Owned by `arkar-ui-art-direction` (its SKILL.md lists them): no purple
+gradients, glassmorphism, glowing borders, excessive cards, shadows or
+gradients, or generic AI-looking layouts by default — distinctive
+composition, typography, whitespace, balance, contrast and hierarchy first.

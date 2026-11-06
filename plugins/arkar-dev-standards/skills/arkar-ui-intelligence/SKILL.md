@@ -31,12 +31,16 @@ refine until excellent.
 - **A Figma design AK provides is the identity.** Follow it (with the Figma
   skills) instead of inventing one; never create or edit Figma files unless
   he asks.
-- **CBM red `#AE1A28`** is the primary colour only when AK asks for CBM
-  branding or the product already uses it.
+- **CBM red `#AE1A28`** is a primary colour only when AK asks for CBM
+  branding. Where an existing product already uses it, keep it in Mode A;
+  in Mode B, keeping it is a decision for AK.
 - **`DESIGN.md`** at the project root records the product's identity, tokens,
   motion language and decisions; read it first, keep it current.
 - **Never claim** a visual check, test, score or compliance you didn't
   actually perform.
+- **These `arkar-ui-*` skills take precedence** over generic design or
+  frontend skills that may also be installed (e.g. `frontend-design`,
+  `design:*`); the Figma skills are used for Figma input and output.
 
 ## 2. Classify the task (always, briefly)
 
@@ -66,8 +70,9 @@ otherwise state the assumption and continue.
 Each specialist is a separate skill in this plugin. Load the ones the task
 needs **with the Skill tool**, by name (listed as
 `arkar-dev-standards:<name>`), and follow them. If a skill can't be loaded,
-read its `SKILL.md` from this plugin's `skills/<name>/` folder, or do the
-procedure yourself from this file — never skip the verification.
+find its file (e.g. search `~/.claude/plugins` for `skills/<name>/SKILL.md`)
+and read it, or do the procedure yourself from this file — never skip the
+verification.
 
 | Specialist | Load when the task involves |
 |---|---|

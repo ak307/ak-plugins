@@ -11,9 +11,10 @@
    record the change.
 3. **The product's existing look** — a logo, a component library, consistent
    colours and type: write it into `DESIGN.md` and design within it.
-4. **Company brand assets** — CBM red `#AE1A28` is the primary colour only
-   when AK asks for CBM branding or the product already uses it; otherwise
-   the best design for the product wins.
+4. **Company brand assets** — CBM red `#AE1A28` is a primary colour only
+   when AK asks for CBM branding; where an existing product already uses
+   it, keep it in Mode A and ask AK in Mode B. Otherwise the best design for
+   the product wins.
 5. **A new identity** — chosen with `visual-design-directions.md`.
 
 ## Preserving an existing brand while improving it
@@ -36,9 +37,5 @@
 
 ## Fonts
 
-- Choose deliberately; system fonts are not a design decision.
-- Bundle fonts with the app (`@fontsource/<family>` with a build tool, or
-  copy the `.woff2` files into the project and write `@font-face`), not
-  linked from Google — internal networks often block it.
-- Cover the languages used: Burmese needs a font such as Noto Sans Myanmar
-  or Padauk and generous line height.
+Choosing, bundling and language coverage: `arkar-ui-design-system/references/typography-system.md`.
+Keep a brand's existing typefaces (or a close modern equivalent) in Mode A.

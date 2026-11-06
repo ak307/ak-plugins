@@ -41,8 +41,8 @@ Within the direction, derive from the product's own world:
   used; a deliberate scale.
 - **Layout idea** — how the primary job is composed on the main screen.
 - **Shape language** — radii, borders, depth.
-- **Signature element** — one memorable thing per main screen drawn from the
-  product's content or domain.
+- **Signature idea** — one memorable idea for the product, drawn from its
+  content or domain, shown on the screens where it helps.
 - **Voice** — how it speaks.
 
 Business apps still need clarity first: whatever the direction, the primary

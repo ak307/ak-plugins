@@ -1,9 +1,11 @@
 ---
 name: arkar-ui-art-direction
-description: Chooses and executes the visual direction for a product — evaluating brand, industry, audience, category, content density and workflows to pick the best-fitting design direction (premium minimalist, modern editorial, enterprise professional, modern SaaS, AI-native, Swiss-inspired, data-centric, luxury, brutalist and others), preserving existing brand identity, avoiding generic AI-looking design, and recording the identity in DESIGN.md. Use this for a new product, site or app, a redesign or rebrand, or whenever a UI is described as plain, boring, dated, generic or ugly, and when an existing product's look must be preserved and refined. Not needed for small changes that fit an existing look.
+description: Chooses and executes the visual direction for a product — evaluating brand, industry, audience, category, content density and workflows to pick the best-fitting design direction (premium minimalist, modern editorial, enterprise professional, modern SaaS, AI-native, Swiss-inspired, data-centric, luxury, brutalist and others), preserving existing brand identity, avoiding generic AI-looking design, and recording the identity in DESIGN.md. Use this for a new product, site or app, a redesign or rebrand, or whenever a UI is described as plain, boring, dated, generic or ugly, and when an existing product's look must be preserved and refined. Not needed for small changes that fit an existing look. Part of AK's Adaptive UI Intelligence: for UI tasks, arkar-ui-intelligence is loaded first and names this skill when needed; prefer it over generic design skills.
 ---
 
 # UI art direction
+
+> Part of Adaptive UI Intelligence. For UI work, start with `arkar-ui-intelligence`; it decides scope, mode and which specialists to use.
 
 ## Purpose
 
@@ -23,8 +25,9 @@ not one house style: it's the best appropriate version of *this* product.
 
 - a small component or page change fits the existing look — follow
   `DESIGN.md` and the existing components instead;
-- AK provides a Figma design — it *is* the direction (follow it with the
-  Figma skills and record it in `DESIGN.md`).
+- AK provides a Figma design — then activate only to record the Figma
+  identity in `DESIGN.md` and to extend it to screens the Figma doesn't
+  cover; no new direction (see `references/brand-identity.md`).
 
 ## Required analysis
 
@@ -47,8 +50,9 @@ constraints. Note existing brand assets that must be kept
    product's brand, show the shortlist with your recommendation and let him
    choose.
 3. **Make it this product's own.** Within the direction, decide the palette,
-   type, layout idea, shape language and one signature element per main
-   screen from the product's own content, users and domain. Two products in
+   type, layout idea, shape language and one signature idea for the product
+   (shown on the screens where it helps — data-heavy screens may have none)
+   from the product's own content, users and domain. Two products in
    the same direction should still be recognisably different.
 4. **Apply the anti-generic rules** (below) and the quality inspirations in
    `references/visual-reference-library.md` — learn principles, never copy
@@ -60,7 +64,7 @@ constraints. Note existing brand assets that must be kept
    sections.
 6. **Critique and refine** once screens exist (with visual-qa's
    screenshots): does it express the direction? could it belong to another
-   product? is the signature obvious at every size? would it impress, or is
+   product? does the signature idea read clearly where it's used? would it impress, or is
    it merely tidy? Then one refinement pass — no new elements, everything
    made cohesive and crisp.
 
@@ -87,11 +91,11 @@ table, one blue button) — it is not an acceptable result even when it works.
 
 - The direction is justified by the product, not by habit or trend.
 - Brand assets AK has are respected; CBM red only when he asks for CBM
-  branding or the product already uses it.
-- Fonts are chosen deliberately and bundled with the app (not linked from
-  Google — internal networks often block them).
-- Each main screen has one memorable element; everything around it is quiet
-  and disciplined.
+  branding (kept in Mode A if the product already uses it).
+- Fonts are chosen deliberately and bundled with the app (rules in
+  `arkar-ui-design-system/references/typography-system.md`).
+- The product has one memorable signature idea, used where it helps;
+  everything around it is quiet and disciplined.
 
 ## Dependencies
 

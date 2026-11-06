@@ -600,7 +600,8 @@ def ui_d_native_mobile(root: Path, plugin: Path):
     return [
         loaded_check(run, {"ui", "responsive", "vqa"}),
         check("colours come from the theme (≤2 hard-coded outside theme files)", len(hard_coded) <= 2, str(hard_coded[:6])),
-        check("loading / empty / error states modelled", re.search(r"AsyncValue|\.when\(|sealed class|hasError|isLoading|ConnectionState|FutureBuilder|StreamBuilder", dart)
+        check("loading / empty / error states modelled", re.search(r"AsyncValue|\.when\(|sealed class|hasError|isLoading|"
+                                                             r"ConnectionState|FutureBuilder|StreamBuilder", dart)
               and re.search(r"empty|no (leave )?requests", dart, re.I) and re.search(r"error", dart, re.I)),
         check("motion between screens or on changes", re.search(r"Hero\(|AnimatedSwitcher|AnimatedList|PageRouteBuilder|"
                                                             r"CustomTransitionPage|\.animate\(|AnimatedContainer|"
@@ -778,6 +779,92 @@ def ui_k_onboarding(root: Path, plugin: Path):
 
 
 # ---------------------------------------------------------------------------
+# Edge cases — briefs that force hard decisions: vague, contradictory, huge
+# data with long labels, thin content with missing assets, a tiny phone.
+# A good skill makes sensible choices, states them, and still ships premium work.
+# ---------------------------------------------------------------------------
+
+def stated_assumptions(run) -> dict:
+    return check("assumptions or decisions stated in the reply", re.search(r"assum|I chose|I went with|decid|interpret",
+                                                                            run.final, re.I), run.final[-300:])
+
+
+def ui_l_vague_brief(root: Path, plugin: Path):
+    """L — a one-line brief: the skill has to infer users, content and direction."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("make a nice website for my bakery. folder bakery, index.html.", workspace, plugin, max_turns=300)
+    project = workspace / "bakery"
+    return new_product_checks(run, project, workspace) + [stated_assumptions(run)]
+
+
+def ui_m_contradictory_brief(root: Path, plugin: Path):
+    """M — contradictory instructions: minimal and calm, yet everything on one screen."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build the home screen for 'Pulse', an operations app for a facilities company. it must be "
+                     "very minimal and calm with lots of white space, and it must show everything on one screen: "
+                     "all 12 KPIs, open work orders, staff on shift, alerts, a map of sites, and the weather. plain "
+                     "HTML/CSS/JS with mock data, folder pulse, index.html.", workspace, plugin, max_turns=300)
+    project = workspace / "pulse"
+    return new_product_checks(run, project, workspace) + [
+        check("the conflict is named and how it was resolved is explained",
+              re.search(r"(conflict|tension|trade-?off|contradict|both)[^.]{0,200}(minimal|white space|calm|everything|one screen)",
+                        run.final, re.I), run.final[-400:]),
+    ]
+
+
+def ui_n_big_data(root: Path, plugin: Path):
+    """N — 5,000 rows with very long labels: performance, truncation, density."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build the inventory browser for a spare-parts warehouse: 5,000 parts (generate realistic mock "
+                     "data — many part names are very long, e.g. 'Stainless steel hex socket head cap screw M8 x 45 "
+                     "DIN 912 A2-70, box of 100'), search, filter by category and stock level, sort, and a part detail "
+                     "view. it must stay fast. plain HTML/CSS/JS, folder parts, index.html.", workspace, plugin, max_turns=300)
+    project = workspace / "parts"
+    code = site_code(project)
+    return new_product_checks(run, project, workspace) + [
+        check("doesn't render 5,000 rows at once (virtualisation / pagination / windowing)",
+              has(code, r"virtual|pagina|page size|pagesize|window|slice\(|intersectionobserver|load more")),
+        check("long labels handled (ellipsis / line clamp with the full text available)",
+              has(code, r"text-overflow\s*:\s*ellipsis|line-clamp") and has(code, r"title=|aria-label|tooltip|detail")),
+        check("search is debounced or otherwise kept responsive", has(code, r"debounce|requestidlecallback|settimeout")),
+    ]
+
+
+def ui_o_thin_content(root: Path, plugin: Path):
+    """O — almost no content and a missing logo file: no invented facts, still a designed page."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build a one-page site for 'Kopi Corner', a small coffee stall at Tampines hawker centre. "
+                     "all I have: open 7am–2pm, closed Mondays, kopi and toast sets, phone 9123 4567. the logo is "
+                     "supposed to be at images/logo.png. folder kopi, index.html.", workspace, plugin, max_turns=300)
+    project = workspace / "kopi"
+    html = site_code(project)
+    return new_product_checks(run, project, workspace) + [
+        check("all the given facts present", all(fact in html for fact in ("9123 4567", "7", "Monday"))),
+        check("no invented prices, reviews or awards", not has(html, r"\$\s?\d|★|award|rated \d|testimonial")),
+        check("missing logo handled (not a broken image)", not has(html, r"src=[\"']images/logo\.png") or
+              (project / "images" / "logo.png").exists()),
+        stated_assumptions(run),
+    ]
+
+
+def ui_p_tiny_phone(root: Path, plugin: Path):
+    """P — a dense task on a 320px phone: a shift-swap request with a calendar."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build a shift-swap screen for security officers who use cheap 320px-wide Android phones: see "
+                     "my shifts for the next 2 weeks on a calendar, pick one, choose a colleague who can take it, "
+                     "add a reason, and send the request; then see it pending. web app, plain HTML/CSS/JS with mock "
+                     "data, folder shiftswap, index.html.", workspace, plugin, max_turns=300)
+    project = workspace / "shiftswap"
+    code = site_code(project)
+    return new_product_checks(run, project, workspace) + [
+        check("designed for 320px (media query or fluid sizing at that width)",
+              has(code, r"max-width\s*:\s*3[0-9]{2}px|min-width\s*:\s*3[0-9]{2}px|clamp\(|@container")),
+        check("touch targets ≥44px", has(code, r"(min-)?(height|width)\s*:\s*(4[4-9]|[5-9]\d)px|44px|48px|2\.75rem|3rem")),
+        check("pending state after sending", has(code, r"pending")),
+    ]
+
+
+# ---------------------------------------------------------------------------
 # New projects and delivery
 # ---------------------------------------------------------------------------
 
@@ -921,6 +1008,11 @@ SCENARIOS = {
     "ui-i-progress": ("ui variety", ui_i_progress),
     "ui-j-data-story": ("ui variety", ui_j_data_story),
     "ui-k-onboarding": ("ui variety", ui_k_onboarding),
+    "ui-l-vague-brief": ("ui edge cases", ui_l_vague_brief),
+    "ui-m-contradictory-brief": ("ui edge cases", ui_m_contradictory_brief),
+    "ui-n-big-data": ("ui edge cases", ui_n_big_data),
+    "ui-o-thin-content": ("ui edge cases", ui_o_thin_content),
+    "ui-p-tiny-phone": ("ui edge cases", ui_p_tiny_phone),
     "new-fastapi": ("new projects", new_project("fastapi")),
     "new-django": ("new projects", new_project("django")),
     "delivery": ("delivery", delivery),

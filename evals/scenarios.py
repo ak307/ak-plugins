@@ -292,7 +292,7 @@ def measure_motion(site: Path) -> dict:
     reduced = re.search(r"reduced motion: (\d+) animation\(s\); longest (\d+) ms; (\d+) looping", output)
     looping = re.search(r"longest \d+ ms; (\d+) looping\n", output)
     animated = re.search(r"animated: (.*)", output)
-    loading_only = bool(animated) and all(re.search(r"skeleton|shimmer|spinner|loading|progress", target, re.I)
+    loading_only = bool(animated) and all(re.search(r"skel|\.sk(\b|-)|shimmer|spinner|loading|progress|placeholder", target, re.I)
                                           for target in animated.group(1).split(", "))
     return {
         "output": output[-1200:],
@@ -326,7 +326,9 @@ def site_code(project: Path) -> str:
 
 
 def design_doc(project: Path) -> str:
-    return next((path.read_text() for path in project.rglob("DESIGN.md")), "")
+    """The project's DESIGN.md — inside the project folder, or next to it at the workspace root."""
+    found = next(project.rglob("DESIGN.md"), None) or next(iter(project.parent.glob("DESIGN.md")), None)
+    return found.read_text() if found else ""
 
 
 DIRECTIONS = r"premium minimalis|modern editorial|enterprise professional|modern saas|ai-native|futuristic|" \
@@ -399,8 +401,13 @@ def critique_check(run, workspace: Path) -> dict:
     record = "".join(path.read_text(errors="ignore") for path in workspace.rglob("premium-pass.md"))
     recorded = re.search(r"##\s*Independent critique", record, re.I)
     used_agent = any(tool in ("Agent", "Task") for tool in run.tools)
-    return check("independent critique by a subagent, recorded in premium-pass.md",
-                 bool(recorded) and used_agent, f"agent used: {used_agent}; recorded: {bool(recorded)}")
+    # A "generic / template" verdict must lead to a new composition, never be left standing.
+    refused = [line.strip() for line in record.splitlines()
+               if re.search(r"generic|template", line, re.I)
+               and re.search(r"not changed|not done|proposal|partly|\bkept\b", line, re.I)]
+    return check("independent critique by a subagent, recorded; no 'generic' verdict left standing",
+                 bool(recorded) and used_agent and not refused,
+                 f"agent used: {used_agent}; recorded: {bool(recorded)}; left standing: {refused[:2]}")
 
 
 def motion_review_check(run, workspace: Path) -> dict:

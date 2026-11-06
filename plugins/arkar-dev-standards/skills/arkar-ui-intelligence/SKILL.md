@@ -161,6 +161,13 @@ or folded into another step — and their written output is the proof.
    Use `arkar-ui-art-direction/references/visual-ambition.md` §4. Build the
    obvious version only if every alternative hurts the user's job — say so
    in the section.
+   **A requested frame is not the composition.** "A list and a detail
+   panel" in the request is a feature list: keep the list fast and the panel
+   there, and still bring the strongest idea in where it doesn't slow the
+   job — a hero band above the list that shows the whole data set in the
+   product's own terms, a second view of the same data, the panel's
+   centrepiece, the empty state. "The brief asked for a list" never
+   justifies a screen that looks like every other list.
 4. **Build** — follow the project's architecture and conventions, reuse its
    components and dependencies, keep functionality intact
    (implementation; the change workflow's steps for existing code).
@@ -176,6 +183,12 @@ or folded into another step — and their written output is the proof.
    `## Independent critique` section in `qa-screenshots/premium-pass.md`:
    each finding, and what you changed (or why not). No Agent tool → do the
    cold read that file describes and say so.
+   **If the critic says a screen looks generic or like a template, that
+   finding can't be marked "not changed", "partly" or "proposal"**: go back
+   to step 3 for that screen, build a different composition within the
+   request (see step 3's note on requested frames), and send the new
+   screenshots to a fresh critic. Repeat until the critic no longer calls
+   it generic.
 
 ## 5. Final message
 

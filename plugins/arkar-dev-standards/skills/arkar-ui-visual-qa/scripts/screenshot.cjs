@@ -109,7 +109,7 @@ function summariseAnimations() {
   for (const animation of animations) kinds[animation.kind] = (kinds[animation.kind] || 0) + 1;
   // Skeleton shimmer and spinners loop by design while data loads, so they
   // don't count towards the longest or looping animation.
-  const loading = (animation) => /skeleton|shimmer|spinner|loading|progress/i.test(animation.target || "");
+  const loading = (animation) => /skel|\.sk(\b|-)|shimmer|spinner|loading|progress|placeholder/i.test(animation.target || "");
   const content = animations.filter((animation) => !loading(animation));
   const longest = content.reduce((max, animation) => Math.max(max, animation.duration), 0);
   const targets = [...new Set(animations.map((animation) => animation.target).filter(Boolean))].slice(0, 8);

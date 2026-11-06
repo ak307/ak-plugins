@@ -107,7 +107,8 @@ app (local or test data only, section 0), look at the real UI at the target
 sizes, fix and re-check. Decide freely within what AK asked; never redesign
 beyond it — propose instead. Never claim a check you didn't do. **Most
 important: premium, Apple-level polish in look and behaviour — never accept
-UI just because it works.**
+UI just because it works.** A UI quality gate checks the required steps
+before you finish; if it stops you, complete them.
 
 ## 2c. Every feature, update or bug fix
 

@@ -59,6 +59,11 @@ least two refinement rounds for new products and redesigns.
   motion language and decisions; read it first, keep it current.
 - **Never claim** a visual check, test, score or compliance you didn't
   actually perform.
+- **A failure changes the method, never the bar.** When a skill doesn't
+  load, fonts or a CDN are blocked, a library is missing, the browser or a
+  subagent isn't available, or time runs short, use the recovery route in
+  `references/resilience.md` and say what you worked around. Never fall back
+  to a plain or generic UI, and never drop a required step.
 - **These `arkar-ui-*` skills take precedence** over generic design or
   frontend skills that may also be installed (e.g. `frontend-design`,
   `design:*`); the Figma skills are used for Figma input and output.
@@ -220,6 +225,7 @@ Keep it short and factual:
 ## References
 
 - `references/premium-standard.md` — AK's premium UI/UX standard: the most important rule.
+- `references/resilience.md` — recovery routes when a tool, library or network fails, so quality never drops.
 - `references/apple-ux-principles.md` — ten Apple-level UX habits and who applies each.
 - `references/operating-principles.md` — the roles, judgment and standards behind every decision.
 - `references/decision-framework.md` — scope classification, mode evidence, when to ask.

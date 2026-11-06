@@ -79,6 +79,13 @@ structure changed.
   column shows something useful (what needs attention, recent items, a
   short guide) or collapses until it has content — never a big empty box
   with one icon.
+- **Notifications never hide what they talk about.** Toasts and snackbars
+  sit where they don't cover the item that just changed or the next thing
+  people need (and move clear of sticky bars on phones); the changed item
+  itself also shows the change (a brief highlight in place).
+- **Every control answers.** Each click, filter or download gives visible
+  feedback (state change, highlight, toast or progress) — "only the counts
+  changed somewhere" is not feedback.
 - **One meaning, one encoding.** A status shown by colour, icon or bar uses
   the same thresholds everywhere (a "low stock" item is never shown with a
   "healthy" green bar).

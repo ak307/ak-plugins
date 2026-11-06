@@ -24,7 +24,7 @@ not by everything you could improve.
 | Evidence | Points to |
 |---|---|
 | Existing app with a `DESIGN.md`, a component library, consistent tokens or screens | **A · Preserve & improve** |
-| Existing app whose look AK calls dated/ugly/plain, or asks to modernize/overhaul | **B · Modernize & transform** |
+| Existing app whose look AK calls dated, old, outdated, ugly, plain, boring or "not good", or asks to modernize/overhaul/improve its design | **B · Modernize & transform** (all nine specialists) |
 | Existing app with no real identity (default fonts, unstyled pages) **and** AK asked to improve it | **B** |
 | Existing app with no real identity and AK asked for something else (a field, a fix) | **A** for the requested change; propose B as 🟠 |
 | No code yet: a new product, app or site | **C · Create & innovate** |

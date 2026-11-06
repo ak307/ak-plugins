@@ -350,6 +350,15 @@ def motion_checks(run, project: Path) -> list:
     ]
 
 
+def premium_pass_check(run, rounds_needed: int = 2) -> dict:
+    """The reply must carry visual-qa's Premium pass block with real rounds and probe numbers."""
+    final = run.final
+    rounds = len(re.findall(r"round\s*\d", final, re.I))
+    has_block = re.search(r"premium pass", final, re.I) and re.search(r"probe", final, re.I)
+    return check(f"premium pass reported ({rounds_needed}+ rounds, interaction probe)",
+                 has_block and rounds >= rounds_needed, final[-700:])
+
+
 def loaded_check(run, required: set, forbidden: set = frozenset()) -> dict:
     loaded = {key for key in ("ui",) + UI_SPECIALISTS if run.loaded(key)}
     ok = required <= loaded and not (forbidden & loaded)
@@ -383,6 +392,7 @@ def ui_a_existing_corporate(root: Path, plugin: Path):
     code = site_code(workspace)
     problems = layout_problems(workspace, pages)
     return [
+        premium_pass_check(run, 2),
         loaded_check(run, {"ui", "discovery", "vqa"}),
         check("all three pages kept, nav links intact",
               all(page.exists() for page in pages) and all(f'href="{p.name}"' in html for p in pages)),
@@ -416,6 +426,7 @@ def ui_b_new_ai_saas(root: Path, plugin: Path):
     custom_properties = set(re.findall(r"--[a-z0-9-]+\s*:", code))
     problems = layout_problems(project)
     return [
+        premium_pass_check(run, 2),
         loaded_check(run, {"ui", "art", "ds", "motion", "vqa"}),
         check("a design direction chosen and recorded", re.search(DIRECTIONS, design), design[:300]),
         check("AI activity states designed (≥5 of 6)", len(ai_states) >= 5, str(ai_states)),
@@ -440,6 +451,7 @@ def ui_c_enterprise_admin(root: Path, plugin: Path):
     measured = measure_motion(project)
     problems = layout_problems(project)
     return [
+        premium_pass_check(run, 2),
         loaded_check(run, {"ui", "ux", "vqa"}),
         check("a design direction chosen and recorded", re.search(DIRECTIONS, design_doc(project).lower())),
         check("data table semantics (table with header cells, or grid role)",
@@ -497,6 +509,7 @@ def ui_e_small_component(root: Path, plugin: Path):
     changed_files = re.findall(r"^diff --git a/(\S+)", diff, re.M)
     changed_lines = len([line for line in diff.splitlines() if line[:1] in "+-" and line[:3] not in ("+++", "---")])
     return [
+        premium_pass_check(run, 1),
         loaded_check(run, {"ui", "vqa"}, forbidden={"discovery", "art", "ds"}),
         check("only a few files touched (≤3)", len(changed_files) <= 3, str(changed_files)),
         check("a focused change (≤80 changed lines)", changed_lines <= 80, str(changed_lines)),
@@ -514,6 +527,7 @@ def ui_f_premium_motion(root: Path, plugin: Path):
     ids_after = set(re.findall(r'id="([^"]+)"', (workspace / "index.html").read_text()))
     problems = layout_problems(workspace)
     return [
+        premium_pass_check(run, 1),
         loaded_check(run, {"ui", "motion", "vqa"}, forbidden={"art"}),
         check("concept preserved (Night Elevation)", "Night Elevation" in (workspace / "DESIGN.md").read_text()),
         check("existing elements and behaviour kept (all ids still present)", ids_before <= ids_after,

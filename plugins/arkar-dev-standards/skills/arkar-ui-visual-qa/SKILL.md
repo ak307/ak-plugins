@@ -13,6 +13,25 @@ A completed code change doesn't mean the UI is finished. This skill looks
 at the real rendered result, finds what's wrong before users do, fixes it,
 and reports with evidence.
 
+## Definition of done — the premium pass is required
+
+UI work is **not done** until you have run the premium pass (section 3) and
+your final message contains this block, filled in with real results:
+
+```
+Premium pass
+- Round 1: <screens × sizes looked at> → felt ordinary: <list> → refined: <list>
+- Round 2: <…> → felt ordinary: <list or "nothing"> → refined: <list>
+- Interaction probe (scripts/interaction-probe.cjs, before → after):
+  no hover <a→b>, no focus <a→b>, no transition <a→b>, under 24px <a→b>
+- Loading / processing / success / error states seen: <which>
+- Still not premium (if any) and why: <…>
+```
+
+At least **two rounds** for a new product, page set or redesign; at least one
+for smaller changes. If a tool couldn't run, the block says so — never fill
+it with results you didn't get.
+
 ## Activate when
 
 - after any change users can see — always the last step of UI work;

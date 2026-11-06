@@ -61,10 +61,16 @@ function lookOf(id) {
   const element = document.querySelector(`[data-probe-id="${id}"]`);
   if (!element) return null;
   const style = getComputedStyle(element);
+  // Rows and list items often show hover on their container, so include it.
+  const container = element.closest("tr, li, [role=row], [role=option]") || element.parentElement;
+  const containerStyle = container ? getComputedStyle(container) : style;
   return {
     background: style.backgroundColor, color: style.color, border: style.borderColor, shadow: style.boxShadow,
     outline: `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}`, transform: style.transform,
-    opacity: style.opacity, textDecoration: style.textDecorationLine, transition: style.transitionDuration,
+    opacity: style.opacity, textDecoration: style.textDecorationLine,
+    containerBackground: containerStyle.backgroundColor, containerShadow: containerStyle.boxShadow,
+    containerOutline: `${containerStyle.outlineStyle} ${containerStyle.outlineWidth}`,
+    transition: style.transitionDuration + "," + containerStyle.transitionDuration,
     cursor: style.cursor,
   };
 }

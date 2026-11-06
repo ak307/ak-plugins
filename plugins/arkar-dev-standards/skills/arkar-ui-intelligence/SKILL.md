@@ -110,7 +110,7 @@ any other specialist the task clearly touches
 | Small component change | ux-engineering → implementation → visual-qa |
 | New screens or a feature in an existing product (web or mobile) | ux-engineering → motion → responsive → accessibility → implementation → visual-qa (+ discovery if the product is unfamiliar) |
 | Existing site or page improvement (A) | discovery → art-direction → ux-engineering → implementation → visual-qa (+ motion / responsive / accessibility for what you change) |
-| Modernization or redesign (B) | all nine |
+| Modernization or redesign (B) — including whenever AK calls a UI dated, old, plain, boring, ugly, outdated or "not good" | all nine |
 | New product (C) — any new app, site, dashboard or admin panel | all nine: discovery → art-direction → ux-engineering → design-system → motion → responsive → accessibility → implementation → visual-qa |
 | Motion enhancement | motion → implementation → visual-qa |
 | Responsive correction | responsive → implementation → visual-qa |
@@ -148,8 +148,10 @@ Keep it short and factual:
 - what you designed and built (for identity work: the direction and
   signature elements; for motion: its language and the levels used);
 - what you verified and how (sizes, interactions, motion, reduced motion),
-  what the premium pass found and refined, and anything **not** verified,
-  with the reason;
+  and anything **not** verified, with the reason;
+- **the "Premium pass" block from `arkar-ui-visual-qa`** (rounds, what felt
+  ordinary, what you refined, interaction-probe numbers before → after) —
+  UI work without it is not finished;
 - assumptions you made;
 - improvements beyond the request, as labelled proposals for AK — not done.
 

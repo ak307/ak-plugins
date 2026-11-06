@@ -148,3 +148,15 @@ def test_small_edit_to_existing_design_doc_needs_no_redesign_evidence(tmp_path):
         tool_use("Edit", file_path=str(tmp_path / "styles.css")),
         tool_use("Edit", file_path=str(tmp_path / "DESIGN.md"))]
     assert run_gate(tmp_path, events) == ""
+
+
+def test_html_built_in_python_counts_as_ui(tmp_path):
+    events = [{"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Edit", "input": {
+        "file_path": str(tmp_path / "app.py"), "old_string": "x",
+        "new_string": 'html += f"<label for=phone>Phone</label><input id=phone name=phone>"'}}]}}]
+    assert json.loads(run_gate(tmp_path, events))["decision"] == "block"
+
+
+def test_python_without_markup_is_not_ui(tmp_path):
+    events = [tool_use("Edit", file_path=str(tmp_path / "app.py"), old_string="a", new_string="total = a + b")]
+    assert run_gate(tmp_path, events) == ""

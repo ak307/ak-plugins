@@ -104,6 +104,11 @@ Context decides the exact value: frequent interactions sit at the short end.
 - Animate `transform` and `opacity` (and `filter`/`clip-path` sparingly);
   avoid continuous rendering, large blurs and off-screen work; pause ambient
   loops when hidden — battery matters on mobile.
+- **Loops:** apart from loading indicators (which stop when loading ends),
+  at most **one** slow ambient loop per screen — and only in a hero or
+  marketing illustration, never in a work tool, never beside text people are
+  reading. It plays a few cycles or pauses when off-screen, and stops under
+  reduced motion. Twenty little things moving at once is noise, not premium.
 
 ## Acceptance criteria — every meaningful animation
 

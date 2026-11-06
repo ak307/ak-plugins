@@ -33,6 +33,7 @@ UI_FILE = re.compile(
     r"|/(components?|views?|pages?|screens?|widgets?|templates?|layouts?)/.*\.(js|ts|php|py|kt|swift)$",
     re.IGNORECASE,
 )
+MARKUP = re.compile(r"<(form|input|button|label|table|select|textarea|nav|header|main|section)\b[^>]*>", re.IGNORECASE)
 SKIP_PATH = re.compile(r"(^|/)(node_modules|vendor|dist|build|qa-screenshots|\.git)/|(^|/)tests?/|_test\.|\.test\.|\.spec\.")
 ORCHESTRATOR = "arkar-ui-intelligence"
 VISUAL_QA = "arkar-ui-visual-qa"
@@ -65,7 +66,12 @@ def read_session(transcript_path: str) -> tuple[set[str], list[str], list[str]]:
                 if block.get("name") == "Skill":
                     skills.add(str(tool_input.get("skill", "")))
                 elif block.get("name") in ("Write", "Edit", "MultiEdit", "NotebookEdit"):
-                    edited.append(str(tool_input.get("file_path", "")))
+                    file_path = str(tool_input.get("file_path", ""))
+                    # HTML built inside code (Python f-strings, PHP echo, JS template literals) is UI too.
+                    text = str(tool_input.get("content", "")) + str(tool_input.get("new_string", ""))
+                    if not UI_FILE.search(file_path) and MARKUP.search(text):
+                        file_path += "#markup"
+                    edited.append(file_path)
                     if block.get("name") == "Write":
                         written.append(str(tool_input.get("file_path", "")))
     return skills, edited, written
@@ -132,7 +138,9 @@ def decide(event: dict) -> str | None:
         return None
     skills, edited, written = read_session(transcript_path)
     cwd = Path(event.get("cwd") or ".")
-    ui_edits = [path for path in edited if UI_FILE.search(path) and not SKIP_PATH.search(relative(path, cwd))]
+    ui_edits = [path for path in edited
+                if (UI_FILE.search(path) or path.endswith("#markup"))
+                and not SKIP_PATH.search(relative(path[:-7] if path.endswith("#markup") else path, cwd))]
     if not ui_edits:
         return None
     problems: list[str] = []

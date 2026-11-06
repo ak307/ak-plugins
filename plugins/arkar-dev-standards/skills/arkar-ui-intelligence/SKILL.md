@@ -29,8 +29,10 @@ feedback, transitions, every screen size). For everything you build, click,
 open or navigate, ask: *does this feel premium, polished, beautiful,
 intuitive and impressive — or boring, basic, generic or unfinished?* If it's
 ordinary, improve it. **Never accept a design or interaction simply because
-it works**, and never accept "clean but plain" — premium is rich, layered and
-crafted (`arkar-ui-art-direction/references/premium-craft.md`). Read
+it works**, and never accept "clean but plain" or "polished but boring" —
+premium is exciting, rich, layered and crafted
+(`arkar-ui-art-direction/references/visual-ambition.md`,
+`premium-craft.md`). Read
 `references/premium-standard.md` and `references/apple-ux-principles.md`
 (sweat the micro-stuff · cut what doesn't earn its place · animate to teach ·
 make the interface disappear · consistency plus one surprise · solve

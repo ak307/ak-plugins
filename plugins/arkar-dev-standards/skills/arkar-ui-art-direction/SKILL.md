@@ -54,23 +54,28 @@ constraints. Note existing brand assets that must be kept
    (shown on the screens where it helps — data-heavy screens may have none)
    from the product's own content, users and domain. Two products in
    the same direction should still be recognisably different.
-4. **Execute with premium craft** — read `references/premium-craft.md` and
+4. **Aim to impress** — read `references/visual-ambition.md`: every main
+   screen passes the three-second "wow" test, has a hero moment, colour with
+   conviction, contrast range and depth; none of the boring signals. Enterprise,
+   finance and admin products get the same ambition as consumer ones —
+   calm belongs to motion and clutter, never to colour and impact.
+5. **Execute with premium craft** — read `references/premium-craft.md` and
    apply its techniques (type with finesse, tinted neutrals and layered
    surfaces, crafted depth and light, real imagery or product visuals
    instead of empty space, expensive-feeling components, detail polish).
    Apply the anti-generic rules (below) and learn from the quality
    inspirations in `references/visual-reference-library.md` — principles,
    never copied interfaces or identities.
-5. **One small surprise.** Keep everything consistent, then design one
+6. **One small surprise.** Keep everything consistent, then design one
    tasteful moment of delight for the product (a crafted empty state, a
    satisfying completion, a thoughtful detail) — see
    `arkar-ui-intelligence/references/apple-ux-principles.md`.
-6. **Record the identity** in `DESIGN.md` using
+7. **Record the identity** in `DESIGN.md` using
    `references/design-md-template.md`: direction and why, alternatives
    considered, users and target screens, palette, type, shape, signature
    elements, voice. The design-system and motion specialists add their
    sections.
-7. **Refine until premium — at least two rounds** for new products and
+8. **Refine until premium — at least two rounds** for new products and
    redesigns. Screenshot every main screen (visual-qa's tools), then judge
    it against AK's premium standard: would it sit comfortably beside the
    best product in its category? Name the ten most visible shortfalls (type,
@@ -93,7 +98,8 @@ whitespace, visual balance, contrast and information hierarchy.
 Also avoid the "basic form" look (system font, white page, grey inputs, bare
 table, one blue button) — it is not an acceptable result even when it works.
 
-**Restrained is not plain, and restrained is not generic.** Enterprise, data-centric and minimal
+**Restrained is not plain, and restrained is not generic** — and it is never
+an excuse for a boring palette or a screen without a hero moment. Enterprise, data-centric and minimal
 directions still need to be recognisably *this* product: a deliberately
 chosen typeface (not the default sans), a palette with character in its
 surfaces and semantic colours, a considered header and brand moment, and the
@@ -118,7 +124,9 @@ is shown). "Clean default UI" is not a direction.
 - Fonts are chosen deliberately and bundled with the app (rules in
   `arkar-ui-design-system/references/typography-system.md`).
 - The product has one memorable signature idea, used where it helps;
-  everything around it is quiet and disciplined.
+  the working areas around it stay clear and disciplined.
+- Passes the three-second test in `references/visual-ambition.md`: exciting,
+  not merely polished; none of its boring signals.
 
 ## Dependencies
 

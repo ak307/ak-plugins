@@ -61,6 +61,11 @@ How products reach this bar: `apple-ux-principles.md`.
   you report it done. Ordinary-feeling screens or interactions you notice
   outside the request go to AK as labelled premium-upgrade proposals (what
   feels basic, what you'd do) — the approval rule still applies.
+- **Premium is exciting, not merely polished.** Every main screen passes the
+  three-second "wow" test and avoids the boring signals in
+  `arkar-ui-art-direction/references/visual-ambition.md` (monochrome or muted
+  palettes, no hero moment, flat, low contrast range, rows-only layouts) —
+  for business tools too.
 - **Premium is rich, not plain.** Restraint means precision, never
   emptiness: crafted type, layered surfaces and depth, real imagery or
   product visuals, polished components in every state, motion on every

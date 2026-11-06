@@ -23,6 +23,12 @@ tendencies — not a layout to copy.
 
 ## Choosing
 
+Every direction is executed with full visual ambition
+(`visual-ambition.md`) — "enterprise" or "minimal" decides the character,
+not the energy. Don't pick the safest direction just because the product is
+for business; pick what will make *these* users proud to use it.
+
+
 1. From the evaluation (brand, industry, audience, category, density,
    expectations, workflows, hierarchy, accessibility, platform), shortlist
    the directions that fit.

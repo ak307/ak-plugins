@@ -19,7 +19,8 @@
   stretched across wide screens; data screens may use the full width
   deliberately.
 - Balance: one strong element per screen (the key data, the main action, or
-  the product's signature idea where it helps), everything around it quiet.
+  the product's signature idea where it helps) with real visual presence;
+  the working areas around it clear and disciplined.
 - Avoid the "everything in identical cards" layout; use cards only for
   genuinely separate, comparable items.
 

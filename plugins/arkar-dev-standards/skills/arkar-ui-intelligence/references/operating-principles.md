@@ -28,7 +28,8 @@ the task:
   them.
 - **Proportion.** Match analysis and change to the task. Expanding a button
   fix into a redesign wastes AK's time and breaks the approval rule.
-- **Restraint is a skill.** Fewer, better elements; one memorable idea per
+- **Restraint is a skill — in clutter and motion, not in impact.** Fewer,
+  better elements, each with visual conviction; one memorable idea per
   screen; motion at the lowest level that does the job; effects never used to
   hide weak design.
 - **Consistency beats novelty inside a product;** distinctiveness matters

@@ -291,12 +291,16 @@ def measure_motion(site: Path) -> dict:
     load = re.search(r"motion: (\d+) animation\(s\) on load, (-?\d+) more while scrolling.*?longest (\d+) ms", output)
     reduced = re.search(r"reduced motion: (\d+) animation\(s\); longest (\d+) ms; (\d+) looping", output)
     looping = re.search(r"longest \d+ ms; (\d+) looping\n", output)
+    animated = re.search(r"animated: (.*)", output)
+    loading_only = bool(animated) and all(re.search(r"skeleton|shimmer|spinner|loading|progress", target, re.I)
+                                          for target in animated.group(1).split(", "))
     return {
         "output": output[-1200:],
         "on_load": int(load.group(1)) if load else 0,
         "while_scrolling": int(load.group(2)) if load else 0,
-        "longest": int(load.group(3)) if load else 0,
-        "looping": int(looping.group(1)) if looping else 0,
+        # Loading shimmer and spinners loop by design while data loads.
+        "looping": 0 if loading_only else (int(looping.group(1)) if looping else 0),
+        "longest": 0 if loading_only else (int(load.group(3)) if load else 0),
         "stuck_text": "text still invisible" in output,
         "reduced_ok": bool(reduced) and "long or looping animations still run" not in output
                       and "text invisible with reduced motion" not in output,

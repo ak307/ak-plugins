@@ -13,10 +13,10 @@ record:
    in DESIGN.md, and `premium-pass.md` with an independent critique and a
    motion review from filmstrips.
 
-When something is missing it blocks the stop once, with a reason that tells
-Claude exactly what to finish. It never blocks twice in a row
-(`stop_hook_active`), and any error inside the gate lets Claude stop normally —
-the gate must never trap a session.
+When something is missing it blocks the stop with a reason that tells Claude
+exactly what to finish — up to three times per session, so a session can't
+just reply "I didn't get to it" — then lets it stop. Any error inside the gate
+lets Claude stop normally: the gate must never trap a session.
 
 Input: the Stop hook event as JSON on stdin. Output: a JSON decision on stdout,
 or nothing. Standard library only, Python 3.8+.
@@ -26,6 +26,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 UI_FILE = re.compile(
@@ -41,6 +42,31 @@ VISUAL_QA = "arkar-ui-visual-qa"
 ALL_SPECIALISTS = ("arkar-ui-discovery", "arkar-ui-art-direction", "arkar-ui-ux-engineering",
                    "arkar-ui-design-system", "arkar-ui-motion-design", "arkar-ui-responsive-design",
                    "arkar-ui-accessibility", "arkar-ui-implementation", VISUAL_QA)
+
+
+# Files written through the shell: `cat > f`, `tee f`, `> f`, Python `open("f", "w")` /
+# `Path("f").write_text(...)`, `sed -i ... f`, `cp/mv ... f`. Sessions sometimes build whole sites this way.
+SHELL_TARGET = re.compile(
+    r"(?:>>?|\btee(?:\s+-a)?)\s*['\"]?([\w./~-]+\.[\w.]+)"
+    r"|open\(\s*['\"]([^'\"]+)['\"]\s*,\s*['\"][wa]"
+    r"|Path\(\s*['\"]([^'\"]+)['\"]\s*\)\s*\.write_text"
+    r"|\bp\s*=\s*['\"]([^'\"]+\.[\w.]+)['\"]"
+    r"|\bsed\s+-i\S*\s+(?:-e\s+)?(?:'[^']*'|\"[^\"]*\")\s+([\w./~-]+)"
+    r"|\b(?:cp|mv)\s+(?:-\w+\s+)*\S+\s+([\w./~-]+\.[\w.]+)")
+
+
+def shell_writes(command: str) -> list[tuple[str, bool]]:
+    """(path, written whole) for each file a shell command writes."""
+    found = []
+    for match in SHELL_TARGET.finditer(command):
+        target = next(group for group in match.groups() if group)
+        if target.startswith("/dev/") or target.endswith((".log", ".txt", ".json", ".png")) and "DESIGN" not in target:
+            continue
+        operator = match.group(0).lstrip()
+        whole = (operator.startswith(">") and not operator.startswith(">>")) or \
+            (operator.startswith("tee") and not operator.startswith("tee -a"))
+        found.append((target, whole))
+    return found
 
 
 def read_session(transcript_path: str) -> tuple[set[str], list[str], list[str]]:
@@ -65,6 +91,11 @@ def read_session(transcript_path: str) -> tuple[set[str], list[str], list[str]]:
                 tool_input = block.get("input") or {}
                 if block.get("name") == "Skill":
                     skills.add(str(tool_input.get("skill", "")))
+                elif block.get("name") == "Bash":
+                    for file_path, whole in shell_writes(str(tool_input.get("command", ""))):
+                        edited.append(file_path)
+                        if whole:
+                            written.append(file_path)
                 elif block.get("name") in ("Write", "Edit", "MultiEdit", "NotebookEdit"):
                     file_path = str(tool_input.get("file_path", ""))
                     # HTML built inside code (Python f-strings, PHP echo, JS template literals) is UI too.
@@ -106,7 +137,10 @@ def find_files(roots: list[Path], name: str) -> list[Path]:
 
 def missing_evidence(cwd: Path, edited: list[str]) -> list[str]:
     """What a new product, page set or redesign still lacks."""
-    design_docs = [Path(path) for path in edited if Path(path).name == "DESIGN.md"]
+    # Shell writes give relative paths (often after a `cd`), so find those DESIGN.md files in the project.
+    design_docs = [Path(path) for path in edited if Path(path).name == "DESIGN.md" and Path(path).is_absolute()]
+    if any(Path(path).name == "DESIGN.md" and not Path(path).is_absolute() for path in edited):
+        design_docs += find_files([cwd], "DESIGN.md")
     roots = {cwd} | {doc.parent for doc in design_docs}
     problems: list[str] = []
     design_text = "".join(doc.read_text(errors="ignore") for doc in design_docs if doc.exists())
@@ -129,9 +163,23 @@ def missing_evidence(cwd: Path, edited: list[str]) -> list[str]:
     return problems
 
 
+MAX_BLOCKS = 3
+
+
+def blocks_so_far(session_id: str, add: bool = False) -> int:
+    """How many times the gate has stopped this session (kept in the temp folder)."""
+    counter = Path(tempfile.gettempdir()) / f"arkar-ui-gate-{re.sub(r'[^\w-]', '', session_id)[:64]}"
+    count = int(counter.read_text() or 0) if counter.exists() else 0
+    if add:
+        counter.write_text(str(count + 1))
+    return count
+
+
 def decide(event: dict) -> str | None:
     """The reason to keep going, or None when Claude may stop."""
-    if event.get("stop_hook_active"):
+    session_id = str(event.get("session_id") or "")
+    # Insist a few times, never forever: after MAX_BLOCKS the session may stop and report what's missing.
+    if event.get("stop_hook_active") and (not session_id or blocks_so_far(session_id) >= MAX_BLOCKS):
         return None
     transcript_path = event.get("transcript_path")
     if not transcript_path or not Path(transcript_path).exists():
@@ -161,8 +209,10 @@ def decide(event: dict) -> str | None:
         problems += missing_evidence(cwd, edited)
     if not problems:
         return None
+    if session_id:
+        blocks_so_far(session_id, add=True)
     return ("arkar UI quality gate — the UI work isn't finished yet:\n- " + "\n- ".join(problems) +
-            "\nFinish these now, then update your final message. If a step truly can't run here "
+            "\nDo these steps now — don't just report them as not done — then update your final message. If a step truly can't run here "
             "(e.g. no browser or no subagent tool), record why in premium-pass.md and say so in your reply.")
 
 

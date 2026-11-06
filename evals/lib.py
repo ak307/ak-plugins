@@ -43,6 +43,7 @@ class Run:
     session_id: str | None = None
     guard_hits: int = 0
     raw: str = ""
+    ending: str = ""
 
     def loaded(self, key: str) -> bool:
         return any(skill.endswith(SKILL_KEYS[key]) for skill in self.skills)
@@ -78,8 +79,10 @@ def run_claude(prompt: str, cwd: Path, plugin_dir: Path, max_turns: int = 100, r
         run.session_id = event.get("session_id") or run.session_id
         if event.get("type") == "result":
             run.final = event.get("result", "") or ""
+            # error_max_turns means the eval's turn cap cut the session short (no such cap in real use).
+            run.ending = f"{event.get('subtype', '?')} after {event.get('num_turns', '?')} turns"
             # Kept beside the workspace so a failed check can be read afterwards.
-            (cwd.parent / f"reply-{run.session_id}.md").write_text(run.final)
+            (cwd.parent / f"reply-{run.session_id}.md").write_text(run.final + f"\n\n<!-- session ended: {run.ending} -->\n")
         if event.get("type") != "assistant":
             continue
         for block in event.get("message", {}).get("content", []):

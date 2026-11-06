@@ -102,9 +102,24 @@ def test_complete_redesign_passes(tmp_path):
     assert run_gate(tmp_path, events) == ""
 
 
-def test_never_blocks_twice_in_a_row(tmp_path):
+def test_never_blocks_twice_in_a_row_without_a_session_id(tmp_path):
     events = [tool_use("Edit", file_path=str(tmp_path / "index.html"))]
     assert run_gate(tmp_path, events, stop_hook_active=True) == ""
+
+
+def test_insists_up_to_three_times_then_lets_go(tmp_path):
+    import uuid
+    transcript = tmp_path / "session.jsonl"
+    transcript.write_text(json.dumps(tool_use("Edit", file_path=str(tmp_path / "index.html"))))
+    session = f"test-{uuid.uuid4()}"
+    decisions = []
+    for attempt in range(5):
+        hook_event = {"transcript_path": str(transcript), "cwd": str(tmp_path), "session_id": session,
+                      "stop_hook_active": attempt > 0}
+        result = subprocess.run([BASH, str(LAUNCHER)], input=json.dumps(hook_event), capture_output=True,
+                                text=True, timeout=30)
+        decisions.append(bool(result.stdout.strip()))
+    assert decisions == [True, True, True, False, False]
 
 
 def test_bad_input_never_traps_the_session(tmp_path):
@@ -159,4 +174,21 @@ def test_html_built_in_python_counts_as_ui(tmp_path):
 
 def test_python_without_markup_is_not_ui(tmp_path):
     events = [tool_use("Edit", file_path=str(tmp_path / "app.py"), old_string="a", new_string="total = a + b")]
+    assert run_gate(tmp_path, events) == ""
+
+
+def test_files_written_through_the_shell_count(tmp_path):
+    (tmp_path / "kopi").mkdir()
+    (tmp_path / "kopi" / "DESIGN.md").write_text("# Design\n## Direction\n")
+    events = skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + [
+        tool_use("Bash", command="cd kopi && cat > DESIGN.md <<'EOF'\n# Design\nEOF"),
+        tool_use("Bash", command="cd kopi && cat > index.html <<'EOF'\n<main></main>\nEOF")]
+    reason = json.loads(run_gate(tmp_path, events))["reason"]
+    assert "Compositions" in reason and "arkar-ui-motion-design" in reason
+
+
+def test_shell_logs_and_appends_are_not_rewrites(tmp_path):
+    events = skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + [
+        tool_use("Bash", command="node probe.cjs http://127.0.0.1:8000/ > probe.log 2>&1"),
+        tool_use("Bash", command="echo '.x{}' | tee -a styles.css")]
     assert run_gate(tmp_path, events) == ""

@@ -132,19 +132,46 @@ Beyond the minimum, don't load specialists "just in case".
 
 ## 4. Work through it
 
+Steps 3 and 6 are **required for every new product, new page set and
+redesign** (Modes B and C, and new screens in Mode A). They are where
+"polished but boring" is prevented, so they are never skipped, shortened
+or folded into another step — and their written output is the proof.
+
 1. **Understand** — the product, its users, primary journeys, existing
    identity, stack and constraints (discovery, scaled to the task).
 2. **Decide** — direction, structure, tokens, motion language, responsive
    behaviour; record lasting decisions in `DESIGN.md` (every new product
    gets one).
-3. **Build** — follow the project's architecture and conventions, reuse its
+3. **Compose (required, before any code)** — add a `## Compositions`
+   section to `DESIGN.md`. For each main screen write:
+   - **The obvious version** — one line on the layout anyone would build for
+     this kind of screen (e.g. "hero → three service cards → CTA band";
+     "KPI tiles over a table"). This one is **rejected by default**.
+   - **Two or three alternatives**, each a few lines or a tiny ASCII
+     wireframe, worked out from the content (what is it — a sequence,
+     places, quantities, a choice? what must be noticed first?), at least
+     one of them unexpected.
+   - **Chosen** — which one and why; its **hero moment** (what the eye lands
+     on in the first three seconds) and the **visual** it uses that isn't
+     just text and icons.
+   Use `arkar-ui-art-direction/references/visual-ambition.md` §4. Build the
+   obvious version only if every alternative hurts the user's job — say so
+   in the section.
+4. **Build** — follow the project's architecture and conventions, reuse its
    components and dependencies, keep functionality intact
    (implementation; the change workflow's steps for existing code).
-4. **Verify** — load `arkar-ui-visual-qa` now (Skill tool) and follow it:
+5. **Verify** — load `arkar-ui-visual-qa` now (Skill tool) and follow it:
    run on local/test data, look at the real rendered UI at the target sizes,
    try the interactions and motion, fix and re-check. Use the quality gates in
    `references/quality-standards.md` as a diagnostic, with hard blockers
    fixed before you call it done.
+6. **Independent critique (required)** — start a fresh subagent with the
+   Agent tool, give it only the screenshot paths, one line on the product
+   and the brief in `arkar-ui-visual-qa/references/design-critic.md`. Fix at
+   least its five most severe findings, re-shoot, and record a
+   `## Independent critique` section in `qa-screenshots/premium-pass.md`:
+   each finding, and what you changed (or why not). No Agent tool → do the
+   cold read that file describes and say so.
 
 ## 5. Final message
 
@@ -158,6 +185,9 @@ Keep it short and factual:
 - **the "Premium pass" block from `arkar-ui-visual-qa`** (rounds, what felt
   ordinary, what you refined, interaction-probe numbers before → after) —
   UI work without it is not finished;
+- for new products, page sets and redesigns: the composition chosen per
+  main screen (and the obvious one rejected), and the independent critique
+  (findings count, how many fixed);
 - assumptions you made;
 - improvements beyond the request, as labelled proposals for AK — not done.
 

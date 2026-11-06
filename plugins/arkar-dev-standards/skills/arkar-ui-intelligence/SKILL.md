@@ -173,7 +173,10 @@ or folded into another step — and their written output is the proof.
    (implementation; the change workflow's steps for existing code).
 5. **Verify** — load `arkar-ui-visual-qa` now (Skill tool) and follow it:
    run on local/test data, look at the real rendered UI at the target sizes,
-   try the interactions and motion, fix and re-check. Use the quality gates in
+   try the interactions and motion, fix and re-check. **Film the main flows**
+   with its `scripts/film.cjs` (open, filter, ask/answer, confirm, close)
+   and judge every filmstrip by eye — motion is reviewed like layout, never
+   from stills or animation counts alone. Use the quality gates in
    `references/quality-standards.md` as a diagnostic, with hard blockers
    fixed before you call it done.
 6. **Independent critique (required)** — start a fresh subagent with the

@@ -74,6 +74,11 @@ production, every click changes live data and sends real messages.
   that the UI wasn't inspected.
 - Never run seeders or create users except in a confirmed local database;
   never start queue workers or schedulers for QA.
+- When you serve files yourself, pick a **free port** (check it isn't in
+  use — other projects and sessions may be serving on this machine) and
+  confirm the first page you load is your project (its title or content)
+  before taking any screenshots. If another app answers, stop using that
+  port and don't repeat anything you saw from it.
 - Browse only local addresses — `localhost`, `127.0.0.1` or a local
   development host such as Herd/Valet `*.test` — never a production or
   staging site: Claude in Chrome is AK's real browser, signed in as him.

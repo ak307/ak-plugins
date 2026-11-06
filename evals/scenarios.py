@@ -366,6 +366,24 @@ def premium_pass_check(run, rounds_needed: int = 2, workspace: Path | None = Non
                  has_block and rounds >= rounds_needed, final[-700:])
 
 
+PROBE_SCRIPT = SCREENSHOT_SCRIPT.parent / "interaction-probe.cjs"
+
+
+def structure_check(project: Path, workspace: Path) -> dict:
+    """Template structures flagged by the probe must be gone, or justified in the premium-pass record."""
+    index = find_index(project)
+    if index is None:
+        return check("no unjustified template structures", False, "no index.html")
+    with serve(project) as base:
+        output = subprocess.run(["node", str(PROBE_SCRIPT), f"{base}/{index.relative_to(project).as_posix()}",
+                                 str(project.parent / "structure-probe"), "--max-clicks=0"],
+                                capture_output=True, text=True, timeout=240).stdout
+    flags = re.findall(r"^  - ((?:equal-cards|tiles-over-table|uniform-sections|mostly-empty)[^\n]*)", output, re.M)
+    record = "".join(path.read_text(errors="ignore") for path in workspace.rglob("premium-pass.md")).lower()
+    justified = bool(flags) and "justif" in record
+    return check("no unjustified template structures", not flags or justified, "\n".join(flags) or "none")
+
+
 def loaded_check(run, required: set, forbidden: set = frozenset()) -> dict:
     loaded = {key for key in ("ui",) + UI_SPECIALISTS if run.loaded(key)}
     ok = required <= loaded and not (forbidden & loaded)
@@ -400,6 +418,7 @@ def ui_a_existing_corporate(root: Path, plugin: Path):
     problems = layout_problems(workspace, pages)
     return [
         premium_pass_check(run, 2, workspace),
+        structure_check(workspace, workspace),
         loaded_check(run, {"ui", "discovery", "vqa"}),
         check("all three pages kept, nav links intact",
               all(page.exists() for page in pages) and all(f'href="{p.name}"' in html for p in pages)),
@@ -434,6 +453,7 @@ def ui_b_new_ai_saas(root: Path, plugin: Path):
     problems = layout_problems(project)
     return [
         premium_pass_check(run, 2, workspace),
+        structure_check(project, workspace),
         loaded_check(run, {"ui", "art", "ds", "motion", "vqa"}),
         check("a design direction chosen and recorded", re.search(DIRECTIONS, design), design[:300]),
         check("AI activity states designed (≥5 of 6)", len(ai_states) >= 5, str(ai_states)),
@@ -459,6 +479,7 @@ def ui_c_enterprise_admin(root: Path, plugin: Path):
     problems = layout_problems(project)
     return [
         premium_pass_check(run, 2, workspace),
+        structure_check(project, workspace),
         loaded_check(run, {"ui", "ux", "vqa"}),
         check("a design direction chosen and recorded", re.search(DIRECTIONS, design_doc(project).lower())),
         check("data table semantics (table with header cells, or grid role)",

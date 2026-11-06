@@ -129,6 +129,12 @@ or remove it.
   sequence done within ~600 ms.
 - No count-up animation on a figure people came to read; show the real
   value at once (animate *changes* to it later if that helps).
+- **Content is visible by default.** Scroll reveals and entrances are an
+  enhancement layered on visible content: hide nothing in CSS that only
+  JavaScript (an IntersectionObserver, an animation library) will reveal.
+  Add the "ready to animate" state from JS just before animating, so if the
+  script fails, loads slowly or the page is printed or captured, everything
+  is still there.
 - Animate only what changed. Filtering, sorting or refreshing must not blank
   and re-reveal content that stayed the same — that reads as flicker.
 - A filmstrip (`arkar-ui-visual-qa/scripts/film.cjs`) of the first load must

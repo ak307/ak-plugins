@@ -251,6 +251,12 @@ async function main() {
     }
 
     const file = path.join(outputFolder, `${pageSlug(url)}-${viewport.name}-${viewport.width}.png`);
+    if (fullPage) {
+      // Scroll like a visitor first so scroll-triggered reveals have run, then return to the top.
+      await scrollThrough(page);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForTimeout(400);
+    }
     await page.screenshot({ path: file, fullPage });
     console.log(`${viewport.name} ${viewport.width}x${viewport.height}: ${file}`);
     for (const problem of problems) console.log(`  - ${problem}`);

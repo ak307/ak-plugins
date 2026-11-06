@@ -69,6 +69,10 @@ short note of what was unified.
 - No duplicate components doing the same job; no abstraction that only one
   place uses.
 - An existing effective system is extended, not replaced.
+- **Readable by default:** body text ≥ 16px (≥ 14px in dense work tools),
+  secondary text ≥ 13px, and anything people must read at real contrast —
+  pale grey 12px text on off-white looks refined in a screenshot and fails
+  in use (and often fails WCAG AA).
 - **Form controls belong to the system:** selects, date pickers, checkboxes
   and file inputs are styled to match (custom-styled native controls keep
   their accessibility); an unstyled OS dropdown next to crafted components

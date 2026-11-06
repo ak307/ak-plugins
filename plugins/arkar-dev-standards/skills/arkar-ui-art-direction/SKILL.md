@@ -61,12 +61,16 @@ constraints. Note existing brand assets that must be kept
    Apply the anti-generic rules (below) and learn from the quality
    inspirations in `references/visual-reference-library.md` — principles,
    never copied interfaces or identities.
-5. **Record the identity** in `DESIGN.md` using
+5. **One small surprise.** Keep everything consistent, then design one
+   tasteful moment of delight for the product (a crafted empty state, a
+   satisfying completion, a thoughtful detail) — see
+   `arkar-ui-intelligence/references/apple-ux-principles.md`.
+6. **Record the identity** in `DESIGN.md` using
    `references/design-md-template.md`: direction and why, alternatives
    considered, users and target screens, palette, type, shape, signature
    elements, voice. The design-system and motion specialists add their
    sections.
-6. **Refine until premium — at least two rounds** for new products and
+7. **Refine until premium — at least two rounds** for new products and
    redesigns. Screenshot every main screen (visual-qa's tools), then judge
    it against AK's premium standard: would it sit comfortably beside the
    best product in its category? Name the ten most visible shortfalls (type,

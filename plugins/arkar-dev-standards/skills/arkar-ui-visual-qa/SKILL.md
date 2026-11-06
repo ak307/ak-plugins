@@ -25,6 +25,7 @@ Premium pass
 - Interaction probe (scripts/interaction-probe.cjs, before → after):
   no hover <a→b>, no focus <a→b>, no transition <a→b>, under 24px <a→b>
 - Loading / processing / success / error states seen: <which>
+- First-time-user walkthrough: <flows walked> → hesitations found and fixed: <list>
 - Still not premium (if any) and why: <…>
 ```
 
@@ -112,8 +113,11 @@ and after each click for you to look at. Then write down each thing that
 feels ordinary (e.g. "save gives no
 feedback", "dropdown pops in with no transition", "empty state is a grey
 sentence", "phone layout is the desktop squeezed"), refine it, re-shoot and
-ask again. Repeat until nothing in scope feels ordinary. Also judge each
-main screen as a whole: would it sit comfortably beside the best product in
+ask again. Repeat until nothing in scope feels ordinary. Then do a
+**first-time-user walkthrough** of each main flow: with no prior knowledge
+and a real goal, go step by step and note every moment of hesitation,
+confusion, missing feedback, unclear wording or dead end — and fix it. Also
+judge each main screen as a whole: would it sit comfortably beside the best product in
 its category? "Clean but plain", large empty areas, default type, flat grey
 surfaces and unstyled states are premium failures — fix them using
 `arkar-ui-art-direction/references/premium-craft.md`. New products and

@@ -45,6 +45,8 @@ detail has been thoughtfully designed. This feels like a truly premium
 product."* Treat every screen, every interaction, and every transition as an
 opportunity to deliver that.
 
+How products reach this bar: `apple-ux-principles.md`.
+
 ## How to apply it
 
 - **While designing and building:** hold every decision to this bar —

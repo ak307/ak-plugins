@@ -112,12 +112,23 @@ latency and errors so these states are built and visible, not skipped.
 - Motion for these states comes from `arkar-ui-motion-design`
   (`ai-interaction-motion.md`).
 
-## 8. UX writing
+## 8. UX writing and feelings
+
+Talk like a person, not an error log, and design for how users feel
+(`arkar-ui-intelligence/references/apple-ux-principles.md`):
 
 - Plain words users use; sentence case; specific verbs on buttons ("Submit
-  claim", not "OK").
-- Errors: what happened, why if useful, what to do — no blame, no codes
-  alone.
+  claim", not "OK"); status in human terms ("Waiting for finance…", not
+  "status_code=2").
+- Errors own the mistake: what happened in plain words, what was kept, what
+  to do next — never blame, never a raw code, never a dead end ("We couldn't
+  save your claim — your changes are still here. Try again.").
+- **Reassure** before risky or irreversible steps (what happens, whether it
+  can be undone); **encourage** progress in multi-step tasks ("2 of 3 steps
+  done"); **celebrate** completion in proportion (a calm, warm confirmation
+  with the next step — confetti only for genuine milestones).
+- Show empathy with context where it helps the user decide ("The oldest
+  request has waited 5 days").
 - Empty states: what goes here, why it's empty, the next action.
 - The same term for the same thing everywhere; translation-ready strings
   through the project's message catalogue.

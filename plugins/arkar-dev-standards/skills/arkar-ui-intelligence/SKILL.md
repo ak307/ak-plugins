@@ -31,9 +31,13 @@ intuitive and impressive — or boring, basic, generic or unfinished?* If it's
 ordinary, improve it. **Never accept a design or interaction simply because
 it works**, and never accept "clean but plain" — premium is rich, layered and
 crafted (`arkar-ui-art-direction/references/premium-craft.md`). Read
-`references/premium-standard.md` at the start of every UI task; every
-specialist works to it, and visual-qa's premium pass enforces it in at least
-two refinement rounds for new products and redesigns.
+`references/premium-standard.md` and `references/apple-ux-principles.md`
+(sweat the micro-stuff · cut what doesn't earn its place · animate to teach ·
+make the interface disappear · consistency plus one surprise · solve
+problems, not trends · talk like a person · design for feelings · own
+mistakes · test like a first-time user) at the start of every UI task; every
+specialist works to them, and visual-qa's premium pass enforces them in at
+least two refinement rounds for new products and redesigns.
 
 ## 1. Fixed rules that apply to every UI task
 
@@ -158,6 +162,7 @@ Keep it short and factual:
 ## References
 
 - `references/premium-standard.md` — AK's premium UI/UX standard: the most important rule.
+- `references/apple-ux-principles.md` — ten Apple-level UX habits and who applies each.
 - `references/operating-principles.md` — the roles, judgment and standards behind every decision.
 - `references/decision-framework.md` — scope classification, mode evidence, when to ask.
 - `references/adaptive-design-modes.md` — what A, B and C each require, preserve and improve.

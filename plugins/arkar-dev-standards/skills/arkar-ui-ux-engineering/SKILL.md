@@ -50,6 +50,10 @@ behaviour right.
    language that says what happened and what to do; the same word for the
    same thing everywhere.
 5. **Consistency** — the same pattern for the same job across the product.
+6. **Focus** — cut or demote what doesn't help the primary job (progressive
+   disclosure for advanced options); in existing products, removing or
+   hiding a feature is a 🟠 proposal for AK. Make the interface disappear:
+   content first, controls quiet until needed.
 
 ## Expected output
 

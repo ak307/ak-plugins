@@ -79,6 +79,11 @@ def test_ui_ecosystem_complete():
         assert name in orchestrator, f"orchestrator doesn't route to {name}"
     rules = (PLUGIN / "hooks" / "coding-rules.md").read_text()
     assert "arkar-ui-intelligence" in rules and "arkar-ui-visual-qa" in rules
+    # AK's premium standard is the most important rule: present and enforced.
+    assert (SKILLS / "arkar-ui-intelligence" / "references" / "premium-standard.md").exists()
+    assert "premium" in rules.lower()
+    for name in UI_SKILLS:
+        assert "premium" in (SKILLS / name / "SKILL.md").read_text().lower(), name
 
 
 @pytest.mark.parametrize("skill_dir", SKILL_DIRS, ids=lambda path: path.name)

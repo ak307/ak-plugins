@@ -60,6 +60,8 @@ short note of what was unified.
 
 ## Quality criteria
 
+- Meets AK's premium standard (`arkar-ui-intelligence/references/premium-standard.md`): nothing basic, generic or unfinished — working is not enough.
+
 - Components never use raw values (hex, px one-offs, arbitrary Tailwind
   values like `p-[13px]`); they use semantic tokens.
 - Every interactive component has its full set of states.

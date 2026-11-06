@@ -59,6 +59,8 @@ measurement taken.
 
 ## Quality criteria
 
+- Meets AK's premium standard (`arkar-ui-intelligence/references/premium-standard.md`): nothing basic, generic or unfinished — working is not enough.
+
 - No new framework or library because it's fashionable; the platform or an
   existing dependency first.
 - No monolithic components; no duplicated components doing the same job.

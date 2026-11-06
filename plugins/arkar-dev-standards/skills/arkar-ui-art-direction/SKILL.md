@@ -96,6 +96,8 @@ is shown). "Clean default UI" is not a direction.
 
 ## Quality criteria
 
+- Meets AK's premium standard (`arkar-ui-intelligence/references/premium-standard.md`): nothing basic, generic or unfinished — working is not enough.
+
 - The direction is justified by the product, not by habit or trend.
 - Brand assets AK has are respected; CBM red only when he asks for CBM
   branding (kept in Mode A if the product already uses it).

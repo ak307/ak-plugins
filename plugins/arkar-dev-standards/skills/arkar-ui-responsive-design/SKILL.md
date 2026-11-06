@@ -53,6 +53,8 @@ breakpoints, and the sizes QA must check.
 
 ## Quality criteria
 
+- Meets AK's premium standard (`arkar-ui-intelligence/references/premium-standard.md`): nothing basic, generic or unfinished — working is not enough.
+
 - No horizontal page scroll, clipped content or overlapping text from 320 px
   wide up to large desktops (web), at every target screen.
 - Touch targets at least 44×44 pt (iOS) / 48×48 dp (Android) on touch

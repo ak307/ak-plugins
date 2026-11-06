@@ -78,7 +78,20 @@ For each screen in scope:
    motion, nothing is left invisible.
 5. **Console and network:** no errors or failed requests.
 
-## 3. Gate, fix, re-check
+## 3. The premium pass — the most important check
+
+Apply `arkar-ui-intelligence/references/premium-standard.md` to everything in
+scope. Walk every page, button, tab, dropdown, menu, form, loading,
+processing, download, success and error state you built or changed — on
+each target size — and for each ask: *does this feel premium, polished,
+beautiful, intuitive and impressive, or boring, basic, generic or
+unfinished?* Write down each thing that feels ordinary (e.g. "save gives no
+feedback", "dropdown pops in with no transition", "empty state is a grey
+sentence", "phone layout is the desktop squeezed"), refine it, re-shoot and
+ask again. Repeat until nothing in scope feels ordinary. **Working is not
+done; exceptional is done.**
+
+## 4. Gate, fix, re-check
 
 Apply `references/quality-gates.md`: the hard floor and hard blockers first,
 then the weighted gates as a diagnostic. Fix meaningful defects, re-shoot,
@@ -91,16 +104,18 @@ proposals"): end the reply with a 🟠 proposal (redesign with the UI skills —
 which screens, what stays the same), record it under "Open proposals" in
 `ARCHITECTURE.md`, and don't do it. Once recorded, don't repeat it.
 
-## 4. Report honestly
+## 5. Report honestly
 
 In the final message: screens and sizes inspected, interactions and motion
-tried, defects found and fixed, checks run, and a score only if there was
+tried, what the premium pass found and refined, defects found and fixed, checks run, and a score only if there was
 enough evidence. **Say exactly what wasn't verified and why** (no browser,
 no device, a login you couldn't get, data not local). Never claim to have
 seen, clicked or tested something you didn't.
 
 ## Quality criteria
 
+- Nothing in scope still feels basic, generic or unfinished after the
+  premium pass — on any target size.
 - Every claim in the report is backed by a screenshot, an interaction tried,
   or a check run.
 - Defects within the scope are fixed and re-checked, not just listed.

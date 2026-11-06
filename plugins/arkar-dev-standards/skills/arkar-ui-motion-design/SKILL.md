@@ -122,6 +122,10 @@ The motion language in `DESIGN.md`, motion tokens in the design system,
 implemented motion for the moments in scope, and a line in the final message
 naming the levels used and the signature moment (if any).
 
+## Quality criteria
+
+- Meets AK's premium standard (`arkar-ui-intelligence/references/premium-standard.md`).
+
 ## Dependencies
 
 Direction from `arkar-ui-art-direction`; tokens live in

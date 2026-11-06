@@ -63,6 +63,8 @@ reader test performed").
 
 ## Quality criteria
 
+- Meets AK's premium standard (`arkar-ui-intelligence/references/premium-standard.md`): nothing basic, generic or unfinished — working is not enough.
+
 - Semantic HTML first; ARIA only where native semantics can't express it.
 - Automated checks clean for the scope (where a tool is available) **and**
   a manual keyboard pass done — automated tools find only part of the

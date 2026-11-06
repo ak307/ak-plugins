@@ -31,7 +31,9 @@ and record it under "Deliberate deviations" — never the hard floor.
 
 Broken functionality · build failures · severe responsive defects · critical
 accessibility problems · major usability problems · serious performance
-regressions. These override any score.
+regressions · **anything in scope that still feels basic, generic or
+unfinished** (AK's premium standard — `arkar-ui-intelligence/references/premium-standard.md`).
+These override any score.
 
 ## 3. Weighted gates (diagnostic)
 
@@ -54,6 +56,6 @@ then: **90–100** excellent · **80–89** good · **70–79** needs refinement
 - Don't score areas you couldn't check — mark them "not assessed" and leave
   them out of the total (say so).
 - Never fabricate or round up a score; the evidence column must be real.
-- Score only what you built or changed. Below 80 there: improve the weakest
-  areas and re-check before finishing. Weak areas outside the scope are
+- Score only what you built or changed. The premium standard expects 90+;
+  below that, improve the weakest areas and re-check before finishing. Weak areas outside the scope are
   proposals, not work.

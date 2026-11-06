@@ -7,8 +7,10 @@ blockers used when verifying live in
 
 ## The bar
 
-A screen is finished when it looks and behaves as if a top product team
-laboured over it:
+AK's premium standard (`premium-standard.md`) is the most important rule:
+never accept a design or interaction because it works — it must feel
+exceptional. A screen is finished when it looks and behaves as if a top
+product team laboured over it:
 
 - **Clear:** the primary job is obvious within seconds; hierarchy guides the
   eye; nothing competes with the main action.

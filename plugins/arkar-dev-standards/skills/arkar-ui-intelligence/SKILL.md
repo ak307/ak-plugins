@@ -20,6 +20,18 @@ think before implementing · design with purpose · create with craftsmanship ·
 animate with intelligence · engineer with discipline · verify with evidence ·
 refine until excellent.
 
+## 0. The most important rule — premium, not merely working
+
+Every page, screen and interaction must meet a top-tier, Apple-level premium
+standard: intentional, refined, seamless, exceptionally well-crafted — in how
+it looks **and** how it behaves (buttons, navigation, loading, processing,
+feedback, transitions, every screen size). For everything you build, click,
+open or navigate, ask: *does this feel premium, polished, beautiful,
+intuitive and impressive — or boring, basic, generic or unfinished?* If it's
+ordinary, improve it. **Never accept a design or interaction simply because
+it works.** Read `references/premium-standard.md` at the start of every UI
+task; every specialist works to it, and visual-qa's premium pass enforces it.
+
 ## 1. Fixed rules that apply to every UI task
 
 - **Production safety first.** Running the app, browser QA, seeders and
@@ -133,12 +145,14 @@ Keep it short and factual:
 - what you designed and built (for identity work: the direction and
   signature elements; for motion: its language and the levels used);
 - what you verified and how (sizes, interactions, motion, reduced motion),
-  and anything **not** verified, with the reason;
+  what the premium pass found and refined, and anything **not** verified,
+  with the reason;
 - assumptions you made;
 - improvements beyond the request, as labelled proposals for AK — not done.
 
 ## References
 
+- `references/premium-standard.md` — AK's premium UI/UX standard: the most important rule.
 - `references/operating-principles.md` — the roles, judgment and standards behind every decision.
 - `references/decision-framework.md` — scope classification, mode evidence, when to ask.
 - `references/adaptive-design-modes.md` — what A, B and C each require, preserve and improve.

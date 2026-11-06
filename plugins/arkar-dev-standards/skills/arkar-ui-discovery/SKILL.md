@@ -77,6 +77,8 @@ Lasting facts (users and setting, target screens, identity) go into
 
 ## Quality criteria
 
+- Meets AK's premium standard (`arkar-ui-intelligence/references/premium-standard.md`): nothing basic, generic or unfinished — working is not enough.
+
 - Every claim about the existing UI is grounded in code or a real
   screenshot, not guessed.
 - Problems are specific (screen, element, effect), ranked, and tied to users.

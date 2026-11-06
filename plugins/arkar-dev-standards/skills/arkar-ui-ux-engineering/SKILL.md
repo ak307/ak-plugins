@@ -60,6 +60,8 @@ structure changed.
 
 ## Quality criteria
 
+- Meets AK's premium standard (`arkar-ui-intelligence/references/premium-standard.md`): nothing basic, generic or unfinished — working is not enough.
+
 - One obvious primary action per screen; secondary actions look secondary.
 - Every action gets feedback within ~100 ms; long operations show progress
   honestly.

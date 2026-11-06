@@ -29,7 +29,8 @@ Premium pass
 - Loading / processing / success / error states seen: <which>
 - First-time-user walkthrough: <flows walked> → hesitations found and fixed: <list>
 - Three-second test per main screen: <screen → what catches the eye first → wow / fine>
-- Composition: <template structures found and replaced, or "none">
+- Composition: <probe structure flags → replaced or justified>
+- Independent critique: <top findings → fixed> (or "cold read" if no subagent tool)
 - Still not premium (if any) and why: <…>
 ```
 
@@ -110,10 +111,20 @@ processing, download, success and error state you built or changed — on
 each target size — and for each ask: *does this feel premium, polished,
 beautiful, intuitive and impressive, or boring, basic, generic or
 unfinished?* For web UIs, run `scripts/interaction-probe.cjs` on each
-changed page first: it hovers, focuses and clicks every safe control and
-reports which give no hover/focus/press feedback, have no transition, are
-too small, or do nothing visible when clicked — and saves a frame mid-click
-and after each click for you to look at. Then write down each thing that
+changed page first: it takes a full-page screenshot, flags **template
+structures** (equal-card rows, tiles over a long table, repeating uniform
+sections, mostly empty sections), hovers, focuses and clicks every safe
+control, and reports which give no hover/focus/press feedback, have no
+transition, are too small, or do nothing visible when clicked — saving a
+frame mid-click and after each click. Every template-structure flag must be
+redesigned from the content (see
+`arkar-ui-art-direction/references/visual-ambition.md`) or justified in the
+record as a deliberate, designed choice. Judge the **full page section by
+section** — the three-second test applies to every section, not only the
+first screen. For new products, page sets and redesigns, also get an
+**independent critique** (`references/design-critic.md`): a fresh subagent
+that sees only the screenshots names the ten most visible shortfalls; fix at
+least the top five and re-shoot. Then write down each thing that
 feels ordinary (e.g. "save gives no
 feedback", "dropdown pops in with no transition", "empty state is a grey
 sentence", "phone layout is the desktop squeezed"), refine it, re-shoot and

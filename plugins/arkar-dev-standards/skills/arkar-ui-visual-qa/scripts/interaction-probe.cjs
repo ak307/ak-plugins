@@ -1,4 +1,6 @@
-// Walks a local page the way a user would and reports how every interactive
+// Walks a local page the way a user would. First it looks for template
+// structures (equal card rows, tiles over a long table, repeating uniform
+// sections, mostly empty sections); then it reports how every interactive
 // element responds: hover, keyboard focus and press feedback, transitions,
 // and what happens when it's clicked (loading, dialogs, toasts, layout jumps).
 // Saves frames for each click so the premium pass can be judged by eye.
@@ -57,6 +59,74 @@ function listInteractive() {
   return items;
 }
 
+// Runs in the page: looks for template structures that make a page feel generic.
+function auditStructure() {
+  const findings = [];
+  const viewportArea = window.innerWidth * window.innerHeight;
+  const visible = (element) => {
+    const box = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
+    return box.width > 40 && box.height > 40 && style.visibility !== "hidden" && style.display !== "none";
+  };
+  const describe = (element) => element.tagName.toLowerCase() + (element.className && typeof element.className === "string"
+    ? "." + element.className.trim().split(/\s+/).slice(0, 2).join(".") : "");
+
+  // 1. Three or more equal cards side by side.
+  for (const parent of document.body.querySelectorAll("*")) {
+    const kids = [...parent.children].filter(visible);
+    if (kids.length < 3) continue;
+    const boxes = kids.map((kid) => kid.getBoundingClientRect());
+    const sameRow = boxes.filter((box) => Math.abs(box.top - boxes[0].top) < 6);
+    if (sameRow.length < 3) continue;
+    const widths = sameRow.map((box) => box.width);
+    const heights = sameRow.map((box) => box.height);
+    const spread = (values) => (Math.max(...values) - Math.min(...values)) / Math.max(...values);
+    // Same element type and a similar inner structure (a selected tile may carry an extra class).
+    const rowKids = kids.slice(0, sameRow.length);
+    const sameShape = new Set(rowKids.map((kid) => kid.tagName)).size === 1 &&
+      Math.max(...rowKids.map((kid) => kid.children.length)) - Math.min(...rowKids.map((kid) => kid.children.length)) <= 1;
+    if (spread(widths) < 0.06 && spread(heights) < 0.15 && sameShape && heights[0] > 60) {
+      findings.push(`equal-cards: ${sameRow.length} identical blocks in a row (${describe(parent)})`);
+    }
+  }
+
+  // 2. A row of tiles above one long table.
+  for (const table of document.querySelectorAll("table, [role=grid], [role=table]")) {
+    const box = table.getBoundingClientRect();
+    if (box.height > window.innerHeight * 0.8 && findings.some((finding) => finding.startsWith("equal-cards"))) {
+      findings.push(`tiles-over-table: a tile row above a long table (${describe(table)}, ${Math.round(box.height)}px tall)`);
+      break;
+    }
+  }
+
+  // 3. Repeating uniform sections and 4. mostly empty sections.
+  const main = document.querySelector("main") || document.body;
+  const sections = [...main.children].filter(visible);
+  let run = 1;
+  for (let index = 1; index < sections.length; index += 1) {
+    const a = sections[index - 1];
+    const b = sections[index];
+    const sameBackground = getComputedStyle(a).backgroundColor === getComputedStyle(b).backgroundColor;
+    const ha = a.getBoundingClientRect().height;
+    const hb = b.getBoundingClientRect().height;
+    run = sameBackground && Math.abs(ha - hb) / Math.max(ha, hb) < 0.25 ? run + 1 : 1;
+    if (run === 3) findings.push(`uniform-sections: 3+ sections in a row with the same background and height (${describe(b)})`);
+  }
+  for (const section of sections) {
+    const box = section.getBoundingClientRect();
+    if (box.width * box.height < viewportArea * 0.4) continue;
+    let covered = 0;
+    section.querySelectorAll("h1,h2,h3,h4,p,li,img,svg,canvas,video,button,input,table,figure,a").forEach((element) => {
+      const inner = element.getBoundingClientRect();
+      covered += inner.width * inner.height;
+    });
+    if (covered / (box.width * box.height) < 0.12) {
+      findings.push(`mostly-empty: a large section with little content (${describe(section)}, ${Math.round(box.height)}px tall)`);
+    }
+  }
+  return [...new Set(findings)].slice(0, 12);
+}
+
 function lookOf(id) {
   const element = document.querySelector(`[data-probe-id="${id}"]`);
   if (!element) return null;
@@ -109,6 +179,11 @@ async function main() {
     await page.goto(url, { waitUntil: "load", timeout: 30000 });
     await page.waitForTimeout(1500);
     await page.screenshot({ path: path.join(outputFolder, "00-settled.png") });
+
+    await page.screenshot({ path: path.join(outputFolder, "00-full-page.png"), fullPage: true });
+    const structure = await page.evaluate(auditStructure);
+    lines.push(`structure: ${structure.length ? structure.length + " template signal(s)" : "no template signals found"}`);
+    for (const finding of structure) lines.push(`  - ${finding}`);
 
     const items = await page.evaluate(listInteractive);
     let noHover = [];

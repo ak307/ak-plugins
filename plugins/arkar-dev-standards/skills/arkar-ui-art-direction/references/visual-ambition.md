@@ -75,7 +75,18 @@ signals:
 Instead, for each main screen **sketch two or three genuinely different
 compositions** (a few lines or a tiny ASCII wireframe each) before
 building, and choose the one that is most striking while keeping the user's
-job easy. Let the nature of the content decide its form: a sequence can be a
+job easy. Work each section out from these questions:
+
+- **What is this content?** A sequence, a comparison, a place, a quantity,
+  people, time, a choice, a story?
+- **What must the user notice first** — and which single thing deserves to
+  be the largest on the screen?
+- **Where does the contrast come from** — size, colour, light/dark, density,
+  motion?
+- **What would make someone stop and look** here, without slowing the job?
+
+At least one sketch must be an unexpected option, not the layout this kind
+of page usually has. Let the nature of the content decide its form: a sequence can be a
 journey, a comparison a split, places a plan or map, numbers a data visual,
 a set of services something users can explore. Vary section treatments down
 a page so it reads as a designed story, not stacked boxes. Note the chosen

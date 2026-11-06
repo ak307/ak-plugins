@@ -49,6 +49,9 @@ for the premium pass:
 node "<skill folder>/scripts/interaction-probe.cjs" http://localhost:8000/claims qa-screenshots/probe --size=1440x900
 ```
 
+- First takes a full-page screenshot and flags **template structures**:
+  equal-card rows, a tile row over a long table, repeating uniform sections,
+  mostly empty sections.
 - Lists every interactive element and reports those with **no hover
   feedback**, **no visible keyboard focus**, **no transition**, **no pointer
   cursor**, or **smaller than 24×24**.

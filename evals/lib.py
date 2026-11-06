@@ -69,7 +69,7 @@ def run_claude(prompt: str, cwd: Path, plugin_dir: Path, max_turns: int = 100, r
         command += ["--resume", resume]
     environment = {**os.environ, "IS_SANDBOX": "1"}
     process = subprocess.run(command, cwd=cwd, env=environment, stdin=subprocess.DEVNULL,
-                             capture_output=True, text=True, timeout=3600)
+                             capture_output=True, text=True, timeout=5400)
     run = Run(raw=process.stdout)
     for line in process.stdout.splitlines():
         try:

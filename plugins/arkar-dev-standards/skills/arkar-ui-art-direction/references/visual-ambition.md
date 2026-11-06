@@ -104,6 +104,16 @@ labels). The table or list stays fully efficient inside whichever is
 chosen; what changes is what the screen is *about* and what the eye meets
 first.
 
+**When the request fixes the frame** ("a list of cards and a detail
+panel"), that is a feature requirement, not the composition. The list and
+panel must exist and stay efficient; the composition is what they *become*
+and what surrounds them. An idea-level alternative you reject because it
+would slow the main task is rarely worthless — bring it in where it doesn't
+slow anything: as the hero band above the list, as a second view of the same
+data (List | Plan | Timeline), as the detail panel's centrepiece, or as the
+empty state. "The user asked for a list" is never a reason for a screen that
+looks like every other list.
+
 **The test of a composition:** blur the screenshot until you can't read
 the text. If what's left looks like every other product of this type
 (header, a band of numbers, filters, a full-width list), the composition

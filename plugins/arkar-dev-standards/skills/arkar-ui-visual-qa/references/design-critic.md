@@ -23,7 +23,9 @@ For smaller changes it's optional.
    Don't dismiss a finding by pointing at your own `DESIGN.md` ("that idea
    was rejected there") — the critic is judging the result, and your
    earlier reasoning is what it's checking. If the critic says a screen
-   looks like a generic template, redo that screen's composition.
+   looks like a generic template, redo that screen's composition — the
+   interaction probe finding no template flags doesn't answer it (the probe
+   only catches a few mechanical patterns; the critic sees the whole).
 4. If no subagent tool is available, do a "cold read" yourself: look at each
    screenshot as a stranger seeing the product for the first time, before
    re-reading any code.

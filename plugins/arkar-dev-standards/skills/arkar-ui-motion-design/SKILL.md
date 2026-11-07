@@ -73,6 +73,17 @@ not finished. In particular:
   their new value, and the confirmation arrives last — the whole thing
   within ~300–450 ms. Nothing snaps while something else glides; a single
   element animating while its neighbours jump reads as jank.
+- **Build it with the kit, not from scratch.** Plain web builds copy
+  `assets/motion-kit.js` and use it for every data change and overlay:
+  `flip` (lists reorder/filter/insert without jumping), `collapseOut`,
+  `handOff` (skeleton → content in place), `withLoading` (no loader on
+  fast data, a notice when slow), `rollNumber`, `fly` (shared-element
+  flight from source to destination), `openFrom`/`closeInto` (panels and
+  dialogs from their trigger), `slideStep`, `settle` (the row that changed),
+  `pressable`. Its timings read the product's motion tokens. Frameworks use
+  their layout animations (Motion `layout`/`layoutId`, `<TransitionGroup>`,
+  Svelte `flip`, Flutter implicit/Hero animations) for the same ideas. A
+  state change with no motion, where the kit makes it one line, is a defect.
 - **Spatial continuity for every change of place:** opening a detail grows
   from the thing tapped, closing returns to it, steps slide with direction,
   filtered lists move rows rather than blinking them. Restraint applies to levels 4–5: marketing pages, signature

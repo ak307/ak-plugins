@@ -20,9 +20,10 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // ---- Mock server ---------------------------------------------------------
 
 // latency: fast by default with natural variation; ?latency=slow → 3–8 s;
-// ?latency=fast → ~0 (for demos). Failures: ?fail=1 → each operation fails on
-// its first try and succeeds on retry (so recovery can be seen); ?fail=always
-// → every request fails (so the error state can be studied).
+// ?latency=fast → ~0 (for demos). Failures: ?fail=1 → each operation (by its
+// name) fails on its first try and succeeds on every retry, so recovery can
+// be seen — name operations by what the user does ("load cards", "save
+// card"), not per internal call; ?fail=always → every request fails.
 const attempts = new Map();
 
 export async function request(operation, run) {
@@ -34,7 +35,7 @@ export async function request(operation, run) {
   const fail = params().get("fail");
   const tries = (attempts.get(operation) || 0) + 1;
   attempts.set(operation, tries);
-  if (fail === "always" || (fail === "1" && tries % 2 === 1)) {
+  if (fail === "always" || (fail === "1" && tries === 1)) {
     const error = new Error(`Couldn't ${operation.replace(/[-_]/g, " ")}. Check the connection and try again.`);
     error.retryable = true;
     throw error;
@@ -86,12 +87,14 @@ export function latestOnly() {
 
 // ---- View state in the URL -------------------------------------------------
 
-// read() → current view; write(changes, {push}) → update the URL (push for a
-// change of place such as opening an item or a step, replace for filters and
-// typing); onChange(render) → re-render on Back/Forward.
+// read() → current view; write(changes, {push}) → update the URL. Push (the
+// default) for every deliberate change of view — opening an item, a step, a
+// filter or tab — so Back returns to the previous view and never leaves the
+// app; pass {push: false} only while the user is typing (search as you type),
+// then push once when they stop. onChange(render) → re-render on Back/Forward.
 export const view = {
   read() { return Object.fromEntries(params()); },
-  write(changes, { push = false } = {}) {
+  write(changes, { push = true } = {}) {
     const next = params();
     for (const [name, value] of Object.entries(changes)) {
       if (value === null || value === undefined || value === "") next.delete(name); else next.set(name, value);

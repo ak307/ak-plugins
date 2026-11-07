@@ -97,9 +97,13 @@ export async function withLoading(load, { showSkeleton, hideSkeleton, slowNotice
 
 // Numbers roll from their current value to the new one (counts, totals) so a
 // change is seen, not just swapped. Interrupting continues from where it is.
+// `el` must hold only the number (wrap it: "<b data-count>7</b> requests need
+// you") — never a whole sentence. Update the sentence's other words in the
+// same frame the roll starts, so the sentence changes as one.
 export function rollNumber(el, to, { format = (n) => Math.round(n).toLocaleString(), duration } = {}) {
   const t = timing();
-  const from = Number(el.dataset.value ?? (parseFloat(el.textContent.replace(/[^\d.-]/g, "")) || 0));
+  const first = el.textContent.match(/-?\d[\d,]*(\.\d+)?/);
+  const from = Number(el.dataset.value ?? (first ? first[0].replace(/,/g, "") : 0));
   el.dataset.value = to;
   cancelAnimationFrame(el._roll);
   if (reduced() || from === to) { el.textContent = format(to); return Promise.resolve(); }

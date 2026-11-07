@@ -64,6 +64,15 @@ not finished. In particular:
   that redraws as a filter narrows it. It is tied to the product's core
   action, crafted frame by frame on its filmstrip, and short enough to
   enjoy the fiftieth time.
+- **Choreography, not isolated animations.** When one action changes
+  several places (an officer assigned: the suggestion leaves the panel, the
+  shift fills in the grid, the counts drop, a toast confirms), they move as
+  one sequence with one easing family: the thing travels from where it was
+  to where it goes (a shared-element flight or a clear hand-off), the lists
+  close their gaps smoothly (FLIP reflow, never a jump), numbers roll to
+  their new value, and the confirmation arrives last — the whole thing
+  within ~300–450 ms. Nothing snaps while something else glides; a single
+  element animating while its neighbours jump reads as jank.
 - **Spatial continuity for every change of place:** opening a detail grows
   from the thing tapped, closing returns to it, steps slide with direction,
   filtered lists move rows rather than blinking them. Restraint applies to levels 4–5: marketing pages, signature
@@ -76,8 +85,9 @@ moments and AI products, sparingly, and never to compensate for weak design.
    springs), which levels are used where, signature moments, reduced-motion
    behaviour. Principles: `references/motion-principles.md`.
 2. **Loading:** content-aware skeletons and honest progress — never flash an
-   empty state before data arrives, and keep mock or local data latency
-   short (≤ ~300 ms) so a demo doesn't feel slow
+   empty state before data arrives. Real data comes from a database or API
+   that is sometimes instant and sometimes slow: mocks simulate that
+   (see the experience standard, "Real data takes time")
    (`references/skeleton-loading.md`).
 3. **Transitions:** spatial continuity for navigation, dialogs, drawers,
    shared elements, lists and dynamic content

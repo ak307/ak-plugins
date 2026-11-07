@@ -44,6 +44,31 @@ decides the exact feel.
 - Optimistic updates for safe, frequent actions (the change shows at once,
   confirmed quietly, rolled back clearly if it fails).
 
+### Real data takes time
+
+The UI talks to a database or API: sometimes it answers in 50 ms, sometimes
+in 3 s, sometimes it times out. Design every data moment for the whole
+range, and make the mock data layer behave like the real one so it can be
+seen and tested:
+
+- **Realistic, variable latency by default** (e.g. 200–1200 ms per request,
+  occasionally slower), plus a visible or URL switch (`?latency=slow`,
+  `?fail=1`) for slow (3–8 s) and failing responses.
+- **Fast (< ~300 ms):** no loader — the content just arrives with the
+  normal entrance; no spinner flash.
+- **Noticeable (~0.3–2 s):** content-shaped skeleton or in-place progress
+  in the exact area that will change; the rest of the screen stays usable.
+- **Long (> ~2 s):** say what's happening, keep the user able to work or
+  cancel; for multi-step jobs show steps or determinate progress.
+- **Very long / timeout:** a calm message with retry, keeping what's
+  already loaded and what the user typed.
+- **Refresh and filter:** keep the current content visible (dimmed slightly
+  at most) until the new data replaces it in place; ignore out-of-date
+  responses that arrive after a newer request.
+- **Actions:** optimistic where safe (show the change at once, confirm
+  quietly, roll back clearly on failure); otherwise busy state in the
+  control that was pressed.
+
 ## 3. Success — confirmation people trust
 
 - **Proportionate:** a small action confirms in place (a check that draws
@@ -96,6 +121,10 @@ decides the exact feel.
 - State survives: refresh, back/forward and a shared link land on the same
   view, filters and selections persist where it helps.
 - Only what changed animates; nothing else flickers or re-reveals.
+- **One action, one choreographed sequence:** every place it changes moves
+  together — the item travels from source to destination, lists close
+  gaps smoothly, numbers roll, the confirmation lands last — never one
+  element animating while its neighbours snap.
 
 ## 7. Information at the right moment
 

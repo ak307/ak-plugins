@@ -10,7 +10,7 @@ never prove the experience.
 ## How to run it
 
 Start a fresh subagent with the Agent tool (so it has no attachment to the
-build). Give it: the local URL (the app must already be running on local or
+build). Run it in the foreground (`run_in_background: false`) and wait for its report — never end your turn waiting for a background agent, or the work stops there. Give it: the local URL (the app must already be running on local or
 test data), one line on the product and its users, the main flows, the path
 to these scripts, and the brief below. No Agent tool → do it yourself as a
 cold pass and say so.

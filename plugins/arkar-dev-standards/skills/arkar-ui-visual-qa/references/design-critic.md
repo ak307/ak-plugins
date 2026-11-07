@@ -19,7 +19,7 @@ For smaller changes it's optional.
    filmstrips of the first load and the main flows
    (`scripts/interaction-probe.cjs`, `scripts/film.cjs`). A critic who only
    sees the empty start screen can't judge the product.
-2. Start a fresh subagent with the Agent tool. Give it **only**: the
+2. Start a fresh subagent with the Agent tool, in the foreground (`run_in_background: false`) — wait for its report; never end your turn waiting for a background agent. Give it **only**: the
    screenshot and filmstrip paths, one line on what the product is and who
    uses it, and the brief below. Never give it the code, `DESIGN.md`, or your
    reasoning — that would anchor it to your intentions.

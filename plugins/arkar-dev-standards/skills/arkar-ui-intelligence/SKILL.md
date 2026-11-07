@@ -194,6 +194,16 @@ polish iterations — never drop these.
    change, overlay and step through it; framework builds use their layout
    animations. In testing, builds that did this scored about 1.5 points
    higher (motion 7 vs 4–5) than builds that hand-made a few effects.
+   The experience is built in the same way: plain web builds with mock
+   data copy `assets/experience-kit.js` and use its `createStore`/`request`
+   (variable latency, the standard `?latency=slow` and `?fail=1` switches
+   on every request, the user's changes persisted across refresh), `view`
+   (filters, search, selected item and steps in the URL and history),
+   `keepDraft`, `toast` (next to the action, one at a time, with undo) and
+   `roving`/`keepFocus` (keyboard). Frameworks keep the same behaviour with
+   their router and stores. Testers found the same failures in nearly every
+   hand-rolled build: work undone by refresh, drafts lost, Back leaving the
+   app, non-standard switches, distant toasts, focus dropped.
 5. **Verify** — load `arkar-ui-visual-qa` now (Skill tool) and follow it:
    run on local/test data, look at the real rendered UI at the target sizes,
    try the interactions and motion, fix and re-check. **Film the main flows**
@@ -278,6 +288,7 @@ Keep it short and factual:
 ## References
 
 - `references/premium-standard.md` — AK's premium UI/UX standard: the most important rule.
+- `assets/experience-kit.js` — tested mechanics for the experience standard (mock server with latency/failure switches and persistence, URL view state, drafts, anchored toasts, roving focus).
 - `references/experience-standard.md` — End-to-End Product Craftsmanship & Experience Excellence: every moment of the experience (press, wait, success, dialogs, errors, transitions, timing of information, feedback, phones, consistency) and how it's checked.
 - `references/resilience.md` — recovery routes when a tool, library or network fails, so quality never drops.
 - `references/apple-ux-principles.md` — ten Apple-level UX habits and who applies each.

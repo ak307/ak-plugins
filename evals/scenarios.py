@@ -697,6 +697,8 @@ def new_product_checks(run, project: Path, workspace: Path) -> list:
         check("choreography built with the motion kit or a framework's layout animations",
               has(site_code(project), r"motion-kit|\bflip\(|layoutId|TransitionGroup|animate:flip|startViewTransition")),
         loaded_check(run, {"ui", "discovery", "art", "ux", "ds", "motion", "responsive", "a11y", "impl", "vqa"}),
+        check("standard ?latency=slow and ?fail=1 switches exist",
+              has(site_code(project), r"latency") and has(site_code(project), r"['\"]fail['\"]|fail=")),
         check("no layout problems at phone, tablet, desktop", not problems, problems),
     ] + motion_checks(run, project) + audit_checks(project)
 

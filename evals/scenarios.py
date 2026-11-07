@@ -686,6 +686,11 @@ def new_product_checks(run, project: Path, workspace: Path) -> list:
     ] + motion_checks(run, project) + audit_checks(project)
 
 
+def without_comments(code: str) -> str:
+    """Code with HTML, CSS and JS block comments removed (instructions left for the owner aren't markup)."""
+    return re.sub(r"<!--.*?-->|/\*.*?\*/", "", code, flags=re.S)
+
+
 def has(code: str, pattern: str) -> bool:
     return bool(re.search(pattern, code, re.I | re.S))
 
@@ -855,7 +860,7 @@ def ui_o_thin_content(root: Path, plugin: Path):
     return new_product_checks(run, project, workspace) + [
         check("all the given facts present", all(fact in html for fact in ("9123 4567", "7", "Monday"))),
         check("no invented prices, reviews or awards", not has(html, r"\$\s?\d|★|award|rated \d|testimonial")),
-        check("missing logo handled (not a broken image)", not has(html, r"src=[\"']images/logo\.png") or
+        check("missing logo handled (not a broken image)", not has(without_comments(html), r"src=[\"']images/logo\.png") or
               (project / "images" / "logo.png").exists()),
         stated_assumptions(run),
     ]

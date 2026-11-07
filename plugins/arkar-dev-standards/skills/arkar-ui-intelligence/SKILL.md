@@ -217,6 +217,11 @@ polish iterations — never drop these.
 
 ## 5. Final message
 
+Finish background work first: stop servers and timers you started, and wait
+in the foreground rather than leaving a background wait running — a late
+notification after your summary would replace it as your last message. If
+one arrives anyway, repeat the summary.
+
 Keep it short and factual:
 
 - the one-line classification (scope · mode · specialists used);

@@ -1,4 +1,11 @@
-# The experience standard — every moment, not just every screen
+# End-to-End Product Craftsmanship & Experience Excellence
+
+AK's name for his standard: not just a beautiful UI, but an exceptionally
+refined product where every detail, interaction, animation, system response
+and workflow feels deliberately designed and flawlessly executed — and keeps
+impressing throughout use, not only at first sight.
+
+## Every moment, not just every screen
 
 AK can judge how a product *looks* from screenshots. What makes it feel
 Apple-level is what happens between them, and that is equally important —

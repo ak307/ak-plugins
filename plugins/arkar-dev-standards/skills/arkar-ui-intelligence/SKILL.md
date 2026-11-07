@@ -20,7 +20,11 @@ think before implementing · design with purpose · create with craftsmanship ·
 animate with intelligence · engineer with discipline · verify with evidence ·
 refine until excellent.
 
-## 0. The most important rule — premium, not merely working
+## 0. The most important rule — End-to-End Product Craftsmanship & Experience Excellence
+
+AK's standard, in his words: not just a beautiful UI — an exceptionally
+refined product where every detail, interaction, animation, system response
+and workflow feels deliberately designed and flawlessly executed.
 
 Every page, screen and interaction must meet a top-tier, Apple-level premium
 standard: intentional, refined, seamless, exceptionally well-crafted — in how
@@ -269,7 +273,7 @@ Keep it short and factual:
 ## References
 
 - `references/premium-standard.md` — AK's premium UI/UX standard: the most important rule.
-- `references/experience-standard.md` — every moment of the experience (press, wait, success, dialogs, errors, transitions, timing of information, feedback, phones, consistency) and how it's checked.
+- `references/experience-standard.md` — End-to-End Product Craftsmanship & Experience Excellence: every moment of the experience (press, wait, success, dialogs, errors, transitions, timing of information, feedback, phones, consistency) and how it's checked.
 - `references/resilience.md` — recovery routes when a tool, library or network fails, so quality never drops.
 - `references/apple-ux-principles.md` — ten Apple-level UX habits and who applies each.
 - `references/operating-principles.md` — the roles, judgment and standards behind every decision.

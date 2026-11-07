@@ -67,6 +67,9 @@ def run_claude(prompt: str, cwd: Path, plugin_dir: Path, max_turns: int = 100, r
                "--dangerously-skip-permissions", "--max-turns", str(max_turns), "--plugin-dir", str(plugin_dir)]
     if resume:
         command += ["--resume", resume]
+    # EVAL_MODEL picks the model under test (default: the CLI's own default).
+    if os.environ.get("EVAL_MODEL"):
+        command += ["--model", os.environ["EVAL_MODEL"]]
     environment = {**os.environ, "IS_SANDBOX": "1"}
     process = subprocess.run(command, cwd=cwd, env=environment, stdin=subprocess.DEVNULL,
                              capture_output=True, text=True, timeout=5400)

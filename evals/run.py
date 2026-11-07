@@ -50,7 +50,8 @@ def run_one(name: str, attempt: int, out: Path, plugin: Path) -> dict:
         checks = [{"check": "scenario ran", "passed": False, "detail": traceback.format_exc()[-800:], "known_gap": False}]
     return {"scenario": name, "area": area, "attempt": attempt, "workspace": str(root), "checks": checks,
             "minutes": round((time.time() - started) / 60, 1), "skills_commit": SKILLS_COMMIT,
-            "model": os.environ.get("EVAL_MODEL", "default"), "plugin": plugin.name}
+            "model": os.environ.get("EVAL_MODEL", "default"), "plugin": plugin.name,
+            "brief_suffix": os.environ.get("EVAL_BRIEF_SUFFIX", "")}
 
 
 def write_summary(results: list, out: Path, label: str, quiet: bool = False) -> bool:
@@ -80,6 +81,7 @@ def main() -> int:
     parser.add_argument("--runs", type=int, default=1, help="repeat each scenario")
     parser.add_argument("--jobs", type=int, default=4, help="scenarios run in parallel")
     parser.add_argument("--baseline", action="store_true", help="run without the plugin")
+    parser.add_argument("--brief-suffix", help="extra requirement appended to each scenario's first message")
     parser.add_argument("--model", help="model for the sessions under test (e.g. opus); default: the CLI default")
     parser.add_argument("--list", action="store_true")
     args = parser.parse_args()
@@ -96,10 +98,14 @@ def main() -> int:
 
     if args.model:
         os.environ["EVAL_MODEL"] = args.model
+    if args.brief_suffix:
+        os.environ["EVAL_BRIEF_SUFFIX"] = args.brief_suffix
     plugin = empty_plugin_dir() if args.baseline else PLUGIN
     label = "without the plugin" if args.baseline else f"plugin v{json.loads((PLUGIN / '.claude-plugin' / 'plugin.json').read_text())['version']}"
     if args.model:
         label += f" · model {args.model}"
+    if args.brief_suffix:
+        label += f" · brief + '{args.brief_suffix}'"
     out = RESULTS / datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     out.mkdir(parents=True)
     jobs = [(name, attempt) for name in names for attempt in range(1, args.runs + 1)]

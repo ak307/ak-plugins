@@ -63,6 +63,9 @@ def empty_plugin_dir() -> Path:
 
 def run_claude(prompt: str, cwd: Path, plugin_dir: Path, max_turns: int = 100, resume: str | None = None) -> Run:
     """Run one headless Claude Code session with the given plugin folder loaded."""
+    # EVAL_BRIEF_SUFFIX adds a requirement to the first message (e.g. a requested material or style).
+    if os.environ.get("EVAL_BRIEF_SUFFIX") and not resume:
+        prompt = f"{prompt} {os.environ['EVAL_BRIEF_SUFFIX']}"
     command = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose",
                "--dangerously-skip-permissions", "--max-turns", str(max_turns), "--plugin-dir", str(plugin_dir)]
     if resume:

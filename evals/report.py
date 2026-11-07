@@ -25,14 +25,25 @@ CRITICAL = ("scenario ran", "no console or page errors", "no horizontal overflow
             "no serious/critical accessibility")
 
 
+CUT_OFF = re.compile(r"hit your .{0,20}limit|Authentication error", re.I)
+
+
+def cut_off(result: dict) -> bool:
+    """True when the session was stopped by the account rather than by its own work."""
+    if any(CUT_OFF.search(str(check.get("detail", ""))) for check in result["checks"]):
+        return True
+    replies = sorted(Path(result["workspace"]).glob("reply-*.md"), key=lambda path: path.stat().st_mtime)
+    return bool(replies) and bool(CUT_OFF.search(replies[-1].read_text(errors="ignore")[-400:]))
+
+
 def load_results(since: str | None) -> list:
     runs = []
     for path in sorted((HERE / "results").glob("*/results.json")):
         if since and path.parent.name < since:
             continue
         for result in json.loads(path.read_text()):
-            # A session cut off by the account's usage limit never ran: leave it out of the statistics.
-            if any(re.search(r"hit your .{0,20}limit", str(check.get("detail", "")), re.I) for check in result["checks"]):
+            # A session cut off by the usage limit or a lost sign-in never finished: leave it out.
+            if cut_off(result):
                 continue
             result["round"] = path.parent.name
             runs.append(result)
@@ -40,11 +51,15 @@ def load_results(since: str | None) -> list:
 
 
 def load_scores() -> dict:
-    """Blind scores by run folder name (from the labels mapping of each scoring pack)."""
+    """Blind visual scores by run folder name (experience scores and AK's reviews are kept apart)."""
     scores = {}
     for path in sorted((HERE / "scores").glob("*.json")):
-        for entry in json.loads(path.read_text()):
-            scores[entry["run"]] = entry
+        entries = json.loads(path.read_text())
+        if not isinstance(entries, list):
+            continue
+        for entry in entries:
+            if entry.get("kind", "visual") == "visual":
+                scores[entry["run"]] = entry
     return scores
 
 

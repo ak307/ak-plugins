@@ -188,7 +188,12 @@ polish iterations — never drop these.
    justifies a screen that looks like every other list.
 4. **Build** — follow the project's architecture and conventions, reuse its
    components and dependencies, keep functionality intact
-   (implementation; the change workflow's steps for existing code).
+   (implementation; the change workflow's steps for existing code). Motion
+   is built in from the start, not added at the end: plain web builds copy
+   `arkar-ui-motion-design/assets/motion-kit.js` and route every data
+   change, overlay and step through it; framework builds use their layout
+   animations. In testing, builds that did this scored about 1.5 points
+   higher (motion 7 vs 4–5) than builds that hand-made a few effects.
 5. **Verify** — load `arkar-ui-visual-qa` now (Skill tool) and follow it:
    run on local/test data, look at the real rendered UI at the target sizes,
    try the interactions and motion, fix and re-check. **Film the main flows**

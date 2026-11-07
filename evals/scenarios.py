@@ -694,6 +694,8 @@ def new_product_checks(run, project: Path, workspace: Path) -> list:
         critique_check(run, workspace),
         experience_check(workspace),
         motion_review_check(run, workspace),
+        check("choreography built with the motion kit or a framework's layout animations",
+              has(site_code(project), r"motion-kit|\bflip\(|layoutId|TransitionGroup|animate:flip|startViewTransition")),
         loaded_check(run, {"ui", "discovery", "art", "ux", "ds", "motion", "responsive", "a11y", "impl", "vqa"}),
         check("no layout problems at phone, tablet, desktop", not problems, problems),
     ] + motion_checks(run, project) + audit_checks(project)

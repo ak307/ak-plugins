@@ -133,6 +133,14 @@ seen and tested:
   and a shared link land on the same place; multi-step flows push each
   step into history, so Back returns to the previous step, not out of the
   app.
+- **What the user typed is never lost:** form and composer drafts survive
+  closing (Escape asks "Discard your reason?" or keeps the draft per item)
+  and survive a refresh (saved as they type); only an explicit cancel
+  discards.
+- **Moving between pages is continuous too:** a multi-page product uses
+  cross-document view transitions (`@view-transition { navigation: auto; }`
+  with matching `view-transition-name`s, so the clicked row or building
+  carries into its page) rather than a hard page swap.
 - **Opening detail doesn't move what's being read:** a side panel overlays
   or reserves its space; the list keeps its columns, row heights and
   scroll position, and the selected row stays where the eye left it.

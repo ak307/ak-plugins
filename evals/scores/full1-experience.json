@@ -1,0 +1,96 @@
+[
+ {
+  "build": "build-jmdrp",
+  "run": "arkar-eval-ui-s-rostering-1-1xppi591",
+  "round": "full1",
+  "kind": "experience",
+  "scores": {
+   "feedback": 7,
+   "waiting": 6,
+   "success": 6,
+   "errors": 6,
+   "transitions": 6,
+   "information": 7,
+   "state": 6,
+   "touch_keyboard": 5,
+   "consistency": 7
+  },
+  "overall": 6.2,
+  "not_testable": [
+   "switches non-standard / partial"
+  ],
+  "critical_failures": []
+ },
+ {
+  "build": "build-jxtgk",
+  "run": "arkar-eval-ui-r-approvals-1-f9s15eoo",
+  "round": "full1",
+  "kind": "experience",
+  "scores": {
+   "feedback": 8,
+   "waiting": 7,
+   "success": 7,
+   "errors": 6,
+   "transitions": 7,
+   "information": 8,
+   "state": 6,
+   "touch_keyboard": 6,
+   "consistency": 8
+  },
+  "overall": 7.0,
+  "not_testable": [
+   "switches non-standard (?sim)"
+  ],
+  "critical_failures": [
+   "reject reason lost on Escape"
+  ]
+ },
+ {
+  "build": "build-rppjb",
+  "run": "arkar-eval-ui-c-enterprise-admin-1-d9tpg16v",
+  "round": "full1",
+  "kind": "experience",
+  "scores": {
+   "feedback": 7,
+   "waiting": 7,
+   "success": 7,
+   "errors": 8,
+   "transitions": 6,
+   "information": 6,
+   "state": 4,
+   "touch_keyboard": 7,
+   "consistency": 7
+  },
+  "overall": 6.6,
+  "not_testable": [
+   "switches non-standard"
+  ],
+  "critical_failures": [
+   "deactivation undone by refresh"
+  ]
+ },
+ {
+  "build": "build-vfgbe",
+  "run": "arkar-eval-ui-q-multi-page-1-9ck0i2xg",
+  "round": "full1",
+  "kind": "experience",
+  "scores": {
+   "feedback": 7,
+   "waiting": 5,
+   "success": 6,
+   "errors": 7,
+   "transitions": 5,
+   "information": 8,
+   "state": 6,
+   "touch_keyboard": 6,
+   "consistency": 7
+  },
+  "overall": 6.3,
+  "not_testable": [
+   "no latency/fail switches; only save-fail toggle"
+  ],
+  "critical_failures": [
+   "new work order draft lost on refresh"
+  ]
+ }
+]

@@ -1,0 +1,126 @@
+[
+ {
+  "build": "build-ikhak",
+  "run": "arkar-eval-ui-i-progress-1-797qqq28",
+  "round": "biz2",
+  "overall": 5.5,
+  "scores": {
+   "visual": 7,
+   "layout": 6,
+   "functionality": 6,
+   "completeness": 4,
+   "responsiveness": 6,
+   "motion": 2,
+   "consistency": 7,
+   "originality": 6
+  },
+  "critical_failures": [
+   "only empty upload step shown",
+   "no motion at all"
+  ]
+ },
+ {
+  "build": "build-lmzxe",
+  "run": "arkar-eval-ui-m-contradictory-brief-2-2ice1buv",
+  "round": "biz2",
+  "overall": 6.25,
+  "scores": {
+   "visual": 6,
+   "layout": 6,
+   "functionality": 7,
+   "completeness": 6,
+   "responsiveness": 7,
+   "motion": 5,
+   "consistency": 7,
+   "originality": 6
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-nryey",
+  "run": "arkar-eval-ui-m-contradictory-brief-1-v9g9tgyj",
+  "round": "biz2",
+  "overall": 6.5,
+  "scores": {
+   "visual": 7,
+   "layout": 7,
+   "functionality": 7,
+   "completeness": 6,
+   "responsiveness": 6,
+   "motion": 6,
+   "consistency": 7,
+   "originality": 6
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-qflep",
+  "run": "arkar-eval-ui-n-big-data-2-o29zb243",
+  "round": "biz2",
+  "overall": 6.25,
+  "scores": {
+   "visual": 7,
+   "layout": 6,
+   "functionality": 7,
+   "completeness": 6,
+   "responsiveness": 6,
+   "motion": 4,
+   "consistency": 7,
+   "originality": 7
+  },
+  "critical_failures": [
+   "page may collapse after filter click"
+  ]
+ },
+ {
+  "build": "build-rbhzt",
+  "run": "arkar-eval-ui-n-big-data-1-00vl6clt",
+  "round": "biz2",
+  "overall": 6.56,
+  "scores": {
+   "visual": 7,
+   "layout": 7,
+   "functionality": 7.5,
+   "completeness": 5,
+   "responsiveness": 7,
+   "motion": 5,
+   "consistency": 7.5,
+   "originality": 6.5
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-rjndd",
+  "run": "arkar-eval-ui-j-data-story-2-56ctt_gs",
+  "round": "biz2",
+  "overall": 6.69,
+  "scores": {
+   "visual": 7.5,
+   "layout": 7,
+   "functionality": 7.5,
+   "completeness": 6.5,
+   "responsiveness": 5.5,
+   "motion": 6,
+   "consistency": 6.5,
+   "originality": 7
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-yzqen",
+  "run": "arkar-eval-ui-j-data-story-1-hh_kq4hn",
+  "round": "biz2",
+  "overall": 7.56,
+  "scores": {
+   "visual": 8,
+   "layout": 8,
+   "functionality": 8,
+   "completeness": 7,
+   "responsiveness": 6.5,
+   "motion": 7.5,
+   "consistency": 7.5,
+   "originality": 8
+  },
+  "critical_failures": []
+ }
+]

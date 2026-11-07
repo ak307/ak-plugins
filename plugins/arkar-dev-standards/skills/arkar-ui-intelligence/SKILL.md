@@ -28,7 +28,10 @@ it looks **and** how it behaves (buttons, navigation, loading, processing,
 feedback, transitions, every screen size). For everything you build, click,
 open or navigate, ask: *does this feel premium, polished, beautiful,
 intuitive and impressive — or boring, basic, generic or unfinished?* If it's
-ordinary, improve it. **Never accept a design or interaction simply because
+ordinary, improve it. **The experience counts as much as the look — if
+not more:** every press, wait, success, confirmation, error, recovery and
+transition is designed and checked to `references/experience-standard.md`.
+**Never accept a design or interaction simply because
 it works**, and never accept "clean but plain" or "polished but boring" —
 premium is exciting, rich, layered and crafted
 (`arkar-ui-art-direction/references/visual-ambition.md`,
@@ -187,7 +190,11 @@ polish iterations — never drop these.
    try the interactions and motion, fix and re-check. **Film the main flows**
    with `arkar-ui-visual-qa/scripts/film.cjs` (open, filter, ask/answer, confirm, close)
    and judge every filmstrip by eye — motion is reviewed like layout, never
-   from stills or animation counts alone. Use the quality gates in
+   from stills or animation counts alone. **Walk the experience**
+   (`references/experience-standard.md`): each main flow as a user — happy
+   path, invalid input, failure and retry, cancel/back/undo, refresh
+   mid-task, keyboard only, phone — recorded at real speed with
+   `arkar-ui-visual-qa/scripts/record.cjs`, every moment judged and fixed. Use the quality gates in
    `references/quality-standards.md` as a diagnostic, with hard blockers
    fixed before you call it done.
 6. **Independent critique (required)** — start a fresh subagent with the
@@ -214,6 +221,19 @@ polish iterations — never drop these.
    generic screen is recomposed with what the brief already contains —
    layout, hierarchy, scale, a visual for the content, motion, empty-space
    use — never by adding fields or features the brief didn't ask for.
+7. **Independent experience test (required)** — for new products, page
+   sets and redesigns, also start a fresh subagent with the brief in
+   `arkar-ui-visual-qa/references/experience-tester.md`: it *uses* the
+   running app (happy path, invalid input, failure and retry,
+   cancel/back/undo, refresh, keyboard, phone), films every moment and
+   scores the experience rubric. Same bar and loop as the critique: fix,
+   re-test with a fresh tester until overall ≥ 8.5 with no dimension below
+   7 (up to four rounds), recorded under `## Experience test` in
+   `qa-screenshots/premium-pass.md`. A build that looks premium but
+   behaves ordinarily is not finished. Design the mock data layer so
+   failures can be exercised (a visible or URL switch to simulate errors
+   and slow responses) — error handling that can't be triggered can't be
+   checked.
 
 ## Business systems first
 
@@ -249,6 +269,7 @@ Keep it short and factual:
 ## References
 
 - `references/premium-standard.md` — AK's premium UI/UX standard: the most important rule.
+- `references/experience-standard.md` — every moment of the experience (press, wait, success, dialogs, errors, transitions, timing of information, feedback, phones, consistency) and how it's checked.
 - `references/resilience.md` — recovery routes when a tool, library or network fails, so quality never drops.
 - `references/apple-ux-principles.md` — ten Apple-level UX habits and who applies each.
 - `references/operating-principles.md` — the roles, judgment and standards behind every decision.

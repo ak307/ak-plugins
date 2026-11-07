@@ -396,6 +396,17 @@ def compositions_check(project: Path) -> dict:
                  ok, body[:400] or "no Compositions section")
 
 
+def experience_check(workspace: Path) -> dict:
+    """The experience was tested by use, not only looked at: an Experience test section with scores, and videos."""
+    record = "".join(path.read_text(errors="ignore") for path in workspace.rglob("premium-pass.md"))
+    section = re.search(r"##\s*Experience test(.*?)(?=\n## |\Z)", record, re.S | re.I)
+    videos = [path for path in workspace.rglob("*.mp4") if "node_modules" not in path.parts] + \
+             [path for path in workspace.rglob("*.webm") if "node_modules" not in path.parts]
+    scored = bool(section and re.search(r"\d(\.\d)?\s*(/\s*10)?", section.group(1)))
+    return check("experience tested by use (Experience test section with scores, journeys recorded)",
+                 scored and bool(videos), {"section": bool(section), "scored": scored, "videos": len(videos)})
+
+
 def critique_check(run, workspace: Path) -> dict:
     """An independent critic subagent looked at the screenshots, and its findings were recorded."""
     record = "".join(path.read_text(errors="ignore") for path in workspace.rglob("premium-pass.md"))
@@ -501,6 +512,7 @@ def ui_a_existing_corporate(root: Path, plugin: Path):
         structure_check(workspace, workspace),
         compositions_check(workspace),
         critique_check(run, workspace),
+        experience_check(workspace),
         motion_review_check(run, workspace),
         *audit_checks(workspace),
         loaded_check(run, {"ui", "discovery", "vqa"}),

@@ -30,6 +30,8 @@ Premium pass
   no hover <a→b>, no focus <a→b>, no transition <a→b>, under 24px <a→b>
 - Motion (filmstrips: load + <flows filmed>): <what moved well · what felt abrupt, slow, decorative or confusing → fixed> · reduced motion filmed: <yes/no>
 - Loading / processing / success / error states seen: <which>
+- Experience walk (record.cjs videos, experience-standard.md): <flows × paths walked (happy, invalid,
+  failure+retry, cancel/back/undo, refresh, keyboard, phone)> → moments fixed: <list> · still weak: <list>
 - First-time-user walkthrough: <flows walked> → hesitations found and fixed: <list>
 - Three-second test per main screen: <screen → what catches the eye first → wow / fine>
 - Composition: <probe structure flags → replaced or justified>
@@ -136,7 +138,17 @@ slowed-down **filmstrip** of the first load and of each click. Then film
 each main flow with `scripts/film.cjs` (open the detail, filter, ask the AI
 and watch the answer arrive, confirm a destructive action, open and close a
 menu; `--span=3000` for longer sequences, `--reduced` once with reduced
-motion) and **look at every strip**: motion is judged by eye, like layout. Every template-structure flag must be
+motion) and **look at every strip**: motion is judged by eye, like layout.
+Then **walk the experience** to
+`arkar-ui-intelligence/references/experience-standard.md`: record each main
+flow at real speed with `scripts/record.cjs <url> <out.mp4> --cursor <steps>`
+— the happy path, then invalid input, a failure and retry (make the mock
+fail), cancel/back/undo, a refresh mid-task, keyboard only, and the phone
+size — and judge every moment: the press, the wait, the hand-off from
+loading to result, success and toasts (position, timing, wording, undo),
+dialogs, errors and recovery, transitions, information timing. Write a
+table in the record (moment → what happens → verdict → fix) and fix every
+moment that feels abrupt, generic, unclear or unfinished. Every template-structure flag must be
 redesigned from the content (see
 `arkar-ui-art-direction/references/visual-ambition.md`) or justified in the
 record as a deliberate, designed choice. Judge the **full page section by

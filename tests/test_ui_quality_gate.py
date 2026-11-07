@@ -17,7 +17,8 @@ BASH = shutil.which("bash")
 
 COMPLETE_DESIGN = "# Design\n## Direction\nData-centric\n## Compositions\n- Obvious: ...\n- Chosen: ...\n"
 COMPLETE_RECORD = ("# Premium pass\n- Motion (filmstrips: load, open card): eased, quick\n"
-                   "## Independent critique\n1. generic header → recomposed\n")
+                   "## Independent critique\n1. generic header → recomposed\n"
+                   "## Experience test\nRound 1: feedback 7, errors 6 → retry kept input; round 2: all ≥ 7\n")
 
 
 def tool_use(name: str, **tool_input) -> dict:
@@ -94,6 +95,7 @@ def test_redesign_missing_critique_and_motion_is_blocked(tmp_path):
     reason = json.loads(run_gate(tmp_path, events))["reason"]
     assert "Independent critique" in reason
     assert "film" in reason
+    assert "Experience test" in reason
 
 
 def test_complete_redesign_passes(tmp_path):

@@ -160,6 +160,10 @@ def missing_evidence(cwd: Path, edited: list[str]) -> list[str]:
         if not (re.search(r"film", record, re.IGNORECASE) and re.search(r"motion", record, re.IGNORECASE)):
             problems.append("premium-pass.md has no motion review from filmstrips — film the main flows with "
                             "arkar-ui-visual-qa/scripts/film.cjs and judge them by eye (orchestrator step 5)")
+        if not re.search(r"experience (test|walk)", record, re.IGNORECASE):
+            problems.append("premium-pass.md has no `## Experience test` — a fresh subagent must use the running "
+                            "app (happy path, errors and retry, cancel/undo, keyboard, phone) and score the "
+                            "experience (orchestrator step 7, arkar-ui-visual-qa/references/experience-tester.md)")
     return problems
 
 

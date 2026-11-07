@@ -692,6 +692,7 @@ def new_product_checks(run, project: Path, workspace: Path) -> list:
         structure_check(project, workspace),
         compositions_check(project),
         critique_check(run, workspace),
+        experience_check(workspace),
         motion_review_check(run, workspace),
         loaded_check(run, {"ui", "discovery", "art", "ux", "ds", "motion", "responsive", "a11y", "impl", "vqa"}),
         check("no layout problems at phone, tablet, desktop", not problems, problems),

@@ -64,7 +64,7 @@ def write_summary(results: list, out: Path, label: str, quiet: bool = False) -> 
             mark = "PASS" if item["passed"] else ("GAP " if item["known_gap"] else "FAIL")
             if not item["passed"] and not item["known_gap"]:
                 failed_any = True
-            detail = f" — {item['detail'][:160]}" if item["detail"] and not item["passed"] else ""
+            detail = f" — {str(item['detail'])[:160]}" if item["detail"] and not item["passed"] else ""
             lines.append(f"- {mark} {item['check']}{detail}")
         lines.append("")
     (out / "summary.md").write_text("\n".join(lines))

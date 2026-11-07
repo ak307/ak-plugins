@@ -138,7 +138,13 @@ or remove it.
   JavaScript (an IntersectionObserver, an animation library) will reveal.
   Add the "ready to animate" state from JS just before animating, so if the
   script fails, loads slowly or the page is printed or captured, everything
-  is still there.
+  is still there. A reveal starts readable (opacity ≥ ~0.6, a short rise),
+  and content reached by a link, menu or anchor jump is shown at once —
+  never a blank or washed-out viewport after navigating.
+- **Overlays never ghost through content.** A dialog, sheet or menu panel is
+  opaque from its first frame: animate its position/scale and the
+  backdrop's opacity, not the panel's opacity over the page — text must
+  never print over other text mid-transition (opening or closing).
 - **Multi-step flows move with direction:** forward slides one way, back the
   other (or a shared element carries over), so people feel where they came
   from — no hard cuts between steps.

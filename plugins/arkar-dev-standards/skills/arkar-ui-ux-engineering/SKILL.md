@@ -101,7 +101,15 @@ structure changed.
   "healthy" green bar).
 - **One number, one source.** A figure shown in more than one place (a
   header count and a legend, a total and its rows) is computed from the same
-  data, so they can never disagree.
+  data, so they can never disagree. One format per kind of value (times,
+  dates, money) across the whole product.
+- **No placeholder data on a finished page.** No "[Street address]",
+  "555-0100", "example.com", "Your Town" or lorem ipsum. When a real fact is
+  missing, design the page without it (leave the element out or reshape the
+  section) and list it under **What I need from you** in the reply.
+- **Long lists stay manageable:** past a screen or two of rows, page, group
+  or virtualise them, and keep filters and the summary in reach — never one
+  5,000-pixel scroll.
 - Every page ends deliberately: a closing action or next step, not an
   abrupt stop after the last section.
 

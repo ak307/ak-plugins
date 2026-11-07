@@ -550,7 +550,18 @@ def ui_b_new_ai_saas(root: Path, plugin: Path):
         check("design tokens (≥15 custom properties)", len(custom_properties) >= 15, str(len(custom_properties))),
         check("status changes announced to screen readers", re.search(r"aria-live|role=\"status\"|role=\"log\"", code)),
         check("no layout problems at phone, tablet, desktop", not problems, problems),
+        placeholder_check(project),
     ] + motion_checks(run, project) + audit_checks(project)
+
+
+PLACEHOLDER = (r"\[(street|address|phone|city|email|your)[^\]]*\]|\(?555\)?[- ]?01\d\d|example\.(com|org)|"
+               r"Your Town|ST 00000|lorem ipsum")
+
+
+def placeholder_check(project: Path) -> dict:
+    """A finished page shows no placeholder facts (fake address, 555 number, example.com, lorem)."""
+    found = sorted({match.group(0) for match in re.finditer(PLACEHOLDER, site_code(project), re.I)})
+    return check("no placeholder data shipped (fake address, 555 number, example.com)", not found, found[:5])
 
 
 def ui_c_enterprise_admin(root: Path, plugin: Path):

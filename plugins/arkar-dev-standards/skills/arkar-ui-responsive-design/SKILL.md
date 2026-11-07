@@ -70,6 +70,14 @@ breakpoints, and the sizes QA must check.
   `scroll-padding` / `scroll-margin` so focused fields scroll clear of fixed
   bars); labels that would be cut off wrap or move to a second line instead
   of truncating meaning; a scrolling chip row shows that it scrolls.
+- **Data screens are re-thought for phones**, not squeezed: a long table
+  becomes cards or rows showing the two or three fields that matter with
+  the rest one tap away; the desktop's most useful panel (attention list,
+  summary) stays on the phone, near the top; summary chips wrap or scroll
+  visibly instead of clipping.
+- **A side panel that opens beside data** overlays it or switches the data
+  to a designed narrow layout — never a table squeezed into wrapped names
+  and gaps.
 - **Phone-first is not phone-only.** A product built for phones still gets a
   designed tablet and desktop composition (two panes, a wider calendar, the
   detail beside the list) or a deliberate framed layout with purpose in the

@@ -63,7 +63,9 @@ moments and AI products, sparingly, and never to compensate for weak design.
    `DESIGN.md` (a `## Motion` section): character, tokens (durations in ms, easings,
    springs), which levels are used where, signature moments, reduced-motion
    behaviour. Principles: `references/motion-principles.md`.
-2. **Loading:** content-aware skeletons and honest progress
+2. **Loading:** content-aware skeletons and honest progress — never flash an
+   empty state before data arrives, and keep mock or local data latency
+   short (≤ ~300 ms) so a demo doesn't feel slow
    (`references/skeleton-loading.md`).
 3. **Transitions:** spatial continuity for navigation, dialogs, drawers,
    shared elements, lists and dynamic content

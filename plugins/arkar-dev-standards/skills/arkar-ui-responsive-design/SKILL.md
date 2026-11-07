@@ -69,7 +69,13 @@ breakpoints, and the sizes QA must check.
   content people need to read — or form fields and their buttons (use
   `scroll-padding` / `scroll-margin` so focused fields scroll clear of fixed
   bars); labels that would be cut off wrap or move to a second line instead
-  of truncating meaning; a scrolling chip row shows that it scrolls.
+  of truncating meaning; anything that scrolls sideways (chip rows,
+  date strips, board columns on a phone) shows that it does — a deliberate
+  peek of the next item plus a cue (fade edge, dots, count).
+- **At rest, sticky bars cover nothing you can act on:** in the first view
+  and at the end of the page, no button, row or field sits under a fixed
+  bar or composer; content scrolling beneath one passes under a clear edge
+  or fade.
 - **Data screens are re-thought for phones**, not squeezed: a long table
   becomes cards or rows showing the two or three fields that matter with
   the rest one tap away; the desktop's most useful panel (attention list,

@@ -103,6 +103,9 @@ structure changed.
   header count and a legend, a total and its rows) is computed from the same
   data, so they can never disagree. One format per kind of value (times,
   dates, money) across the whole product.
+- **Every chart answers a question.** If all values are equal or there is
+  one value, say it in a sentence or a number instead; label what the
+  axes and bars mean and show the values people compare.
 - **No placeholder data on a finished page.** No "[Street address]",
   "555-0100", "example.com", "Your Town" or lorem ipsum. When a real fact is
   missing, design the page without it (leave the element out or reshape the

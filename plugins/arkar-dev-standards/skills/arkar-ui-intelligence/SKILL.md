@@ -195,8 +195,13 @@ polish iterations — never drop these.
    and the brief in `arkar-ui-visual-qa/references/design-critic.md`. The
    critic scores the build with the acceptance rubric; **iterate with a
    fresh critic each round until it scores overall ≥ 8.5, no dimension or
-   section below 7, no critical failure** (at most four rounds — then report
-   honestly what's still short). Record a `## Independent critique` section
+   section below 7, no critical failure** (up to four rounds — stopping
+   earlier while below the bar is not allowed; after the fourth, report
+   honestly what's still short). "Needs assets" is not a blocker: build the
+   visual in code (illustration, diagram, data visual, typography as image)
+   or recompose; only real facts (certifications, clients, photos of the
+   real place) go to AK as a need — and the screen must still pass without
+   them. Record a `## Independent critique` section
    in `qa-screenshots/premium-pass.md`: each round's scores, findings and
    what you changed. No Agent tool → do the
    cold read that file describes and say so.

@@ -47,6 +47,12 @@ def make_pack(run_folder: Path, pack: Path) -> None:
                         "--sizes=1440x900,390x844"], capture_output=True, text=True, timeout=300)
         subprocess.run(["node", str(PROBE), url, str(pack / "films"), "--max-clicks=4"],
                        capture_output=True, text=True, timeout=900)
+        # Other pages of a multi-page product, so the scorer sees whether each page is composed for its job.
+        for page in sorted(index.parent.glob("*.html"))[:6]:
+            if page != index:
+                subprocess.run(["node", str(SCREENSHOT_SCRIPT), f"{base}/{page.relative_to(project).as_posix()}",
+                                str(pack / "pages"), "--full-page", "--sizes=1440x900"],
+                               capture_output=True, text=True, timeout=300)
     for leftover in (pack / "films").glob("00-full-page.png"):
         leftover.unlink()
     # The newest flow films show the final design; earlier ones may be from a first iteration.

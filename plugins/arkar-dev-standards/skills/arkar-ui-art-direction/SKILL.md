@@ -94,7 +94,9 @@ constraints. Note existing brand assets that must be kept
 
 These ban *lazy defaults*, not craft. Crafted depth, light, gradients and
 translucency done with intent (`references/premium-craft.md`) are welcome;
-the stock versions are not. Never use automatically: purple gradients · glassmorphism · glowing borders ·
+the stock versions are not. Apple's Liquid Glass, used as a material for
+floating controls with its rules (`arkar-ui-design-system/references/materials-glass.md`),
+is craft; frosted cards everywhere is stock. Never use automatically: purple gradients · glassmorphism · glowing borders ·
 excessive rounded cards · oversized typography · decorative background
 shapes · excessive shadows · repetitive dashboard cards · unnecessary
 gradients · generic AI-generated layouts · decorative animation without

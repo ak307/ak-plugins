@@ -47,9 +47,13 @@ sake.
 4. **Components** (`references/component-guidelines.md`): reusable, with
    consistent variants and every interaction state; library components
    restyled through tokens.
-5. **Themes** (`references/theming.md`): light/dark and how themes switch,
+5. **Materials** (`references/materials-glass.md`): solid surfaces and,
+   where the direction calls for it, Liquid Glass for the floating control
+   layer (bars, sheets, menus, palette) — with legibility guards and
+   reduced-transparency fallbacks. Content surfaces stay solid.
+6. **Themes** (`references/theming.md`): light/dark and how themes switch,
    per stack.
-6. **Record** the system in `DESIGN.md` (colour, type, shape and space
+7. **Record** the system in `DESIGN.md` (colour, type, shape and space
    sections) and in code (the token source of truth).
 
 ## Expected output

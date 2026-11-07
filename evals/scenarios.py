@@ -866,6 +866,25 @@ def ui_o_thin_content(root: Path, plugin: Path):
     ]
 
 
+def ui_q_multi_page(root: Path, plugin: Path):
+    """Q — a product of several pages: each page composed for its own job, all in one design language."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build the customer portal for 'Tidewell', a home-cleaning subscription: sign in, home (next "
+                     "visit and plan), visit history, one visit's detail (checklist, notes, rating), plan and billing "
+                     "settings, and help. plain HTML/CSS/JS with mock data, folder tidewell, one html file per page "
+                     "(index.html is home).", workspace, plugin, max_turns=300)
+    project = workspace / "tidewell"
+    pages = sorted(path.stem for path in project.glob("*.html"))
+    design = design_doc(project).lower()
+    section = re.search(r"##\s*compositions?(.*?)(?=\n## |\Z)", design, re.S)
+    composed = [page for page in pages if section and page.replace("-", " ") in section.group(1).replace("-", " ")]
+    return new_product_checks(run, project, workspace) + [
+        check("at least five pages built", len(pages) >= 5, pages),
+        check("Compositions cover most pages (each page composed for its job)",
+              len(composed) >= max(3, len(pages) - 2), {"pages": pages, "composed": composed}),
+    ]
+
+
 def ui_p_tiny_phone(root: Path, plugin: Path):
     """P — a dense task on a 320px phone: a shift-swap request with a calendar."""
     workspace = workspace_from(None, root / "workspace")
@@ -1032,6 +1051,7 @@ SCENARIOS = {
     "ui-n-big-data": ("ui edge cases", ui_n_big_data),
     "ui-o-thin-content": ("ui edge cases", ui_o_thin_content),
     "ui-p-tiny-phone": ("ui edge cases", ui_p_tiny_phone),
+    "ui-q-multi-page": ("ui variety", ui_q_multi_page),
     "new-fastapi": ("new projects", new_project("fastapi")),
     "new-django": ("new projects", new_project("django")),
     "delivery": ("delivery", delivery),

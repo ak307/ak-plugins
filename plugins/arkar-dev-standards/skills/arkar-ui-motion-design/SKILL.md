@@ -54,7 +54,19 @@ interfaces or force iOS behaviour onto other platforms.
 Every screen you build or redesign gets motion from the product's motion
 language at levels 1–3 where it serves the user (feedback, component
 changes, spatial transitions) — a new or redesigned screen with no motion is
-not finished. Restraint applies to levels 4–5: marketing pages, signature
+not finished. In particular:
+- **A composed arrival.** The first load is not a static snap: the key
+  content is readable at once, and the layout settles in a short, ordered
+  sequence (≤ ~600 ms) that leads the eye to what matters first.
+- **One signature moment per product** (level 3–5): the moment people
+  remember — a card that becomes its detail view, a ticket that prints and
+  stamps on confirmation, an answer that builds with its evidence, a chart
+  that redraws as a filter narrows it. It is tied to the product's core
+  action, crafted frame by frame on its filmstrip, and short enough to
+  enjoy the fiftieth time.
+- **Spatial continuity for every change of place:** opening a detail grows
+  from the thing tapped, closing returns to it, steps slide with direction,
+  filtered lists move rows rather than blinking them. Restraint applies to levels 4–5: marketing pages, signature
 moments and AI products, sparingly, and never to compensate for weak design.
 
 ## Responsibilities

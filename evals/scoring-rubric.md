@@ -13,7 +13,7 @@ Be demanding: polished-but-boring is 6 at most for visual design and layout.
 | Dimension | What to judge |
 |---|---|
 | Visual design | typography (scale, character, rhythm), colour with conviction and contrast range, depth, craft of components, a hero moment, the three-second "wow" |
-| Layout | composition from the content (not a template), hierarchy, alignment, proportion, density, balance; every section designed, not only the first |
+| Layout | composition from the content (not a template), hierarchy, alignment, proportion, density, balance; every section designed, not only the first; when `pages/` holds other pages of the product, each page is composed for its own job (not the same skeleton re-filled) while sharing one design language |
 | Functionality (as visible) | controls look and read as what they do; flows look complete; clear primary actions; nothing that looks broken or dead |
 | Completeness | loading, empty, error, success and processing states designed (where screenshots show them) |
 | Responsiveness | phone and tablet compositions designed for the size, not squeezed desktop |

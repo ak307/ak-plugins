@@ -52,8 +52,14 @@ range, and make the mock data layer behave like the real one so it can be
 seen and tested:
 
 - **Realistic, variable latency by default** (e.g. 200–1200 ms per request,
-  occasionally slower), plus a visible or URL switch (`?latency=slow`,
-  `?fail=1`) for slow (3–8 s) and failing responses.
+  occasionally slower), plus exactly these URL switches — `?latency=slow`
+  (3–8 s) and `?fail=1` (requests fail; retry can succeed) — applied to
+  every request (load, filter, search, save), not only the first page
+  load, so testers can exercise every data moment the same way.
+- **Placeholders match what arrives:** the skeleton has the real content's
+  shape and height (same headline lines, same chart frame), so nothing
+  jumps when data lands; a failed region keeps its frame and retries in
+  place (busy state in the Retry button, no page reload).
 - **Fast (< ~300 ms):** no loader — the content just arrives with the
   normal entrance; no spinner flash.
 - **Noticeable (~0.3–2 s):** content-shaped skeleton or in-place progress
@@ -118,8 +124,22 @@ seen and tested:
   item, closes back into it; steps slide with direction; tabs and filters
   move content rather than blinking it; the back button and browser
   history behave as people expect, and scroll position is kept on return.
-- State survives: refresh, back/forward and a shared link land on the same
-  view, filters and selections persist where it helps.
+- **State survives — the user's work above all.** What the user did
+  (acknowledged, approved, assigned, generated, edited) persists like real
+  data: the mock layer saves it (e.g. localStorage standing in for the
+  server), so a refresh never silently undoes work — and never claims
+  "your work is still here" unless it truly is. The view (filters, search,
+  selected item, current step) lives in the URL, so refresh, back/forward
+  and a shared link land on the same place; multi-step flows push each
+  step into history, so Back returns to the previous step, not out of the
+  app.
+- **Opening detail doesn't move what's being read:** a side panel overlays
+  or reserves its space; the list keeps its columns, row heights and
+  scroll position, and the selected row stays where the eye left it.
+- **No dead ends or false affordances:** anything that looks clickable
+  (rows, cards, counts like "40 more") does something meaningful — opens,
+  expands or navigates — and anything that doesn't is not styled as a
+  control.
 - Only what changed animates; nothing else flickers or re-reveals.
 - **One action, one choreographed sequence:** every place it changes moves
   together — the item travels from source to destination, lists close
@@ -141,7 +161,20 @@ seen and tested:
 - Every hover, focus, press, drag, drop, selection and keyboard shortcut
   gives a visible, immediate and proportionate response — and the same
   kind of action responds the same way across the product.
-- Focus rings are designed, visible, and never cut off.
+- Focus rings are designed, visible, and never cut off — on every custom
+  control too (map pins, chart points, tiles).
+- **Keyboard flow is designed, not left over:** a grid, chart or tile set
+  is one Tab stop with arrow keys inside (roving tabindex); focus stays on
+  the control that was used even when the view re-renders; Escape steps
+  back (closes, clears the selection); opening a panel moves focus into it
+  and closing returns it.
+- **One confirmation per action, where the action happened:** an in-place
+  confirmation (the button's check, the row's highlight) or a toast near it
+  — not both, and never a toast far across the screen or on top of the
+  content it describes. A blocked action explains itself next to the
+  control (and points to the first problem), not in a distant toast.
+- **One state, one message:** every place that describes the same state
+  agrees at the same moment (headline, captions, counts, chips).
 - Long-running work shows progress; finished work shows completion;
   background work that finishes later says so without interrupting.
 

@@ -28,9 +28,10 @@ cold pass and say so.
 > Read every image you make.
 >
 > Walk each main flow along these paths: the happy path; invalid and empty
-> input; a failure and retry (use any mock failure switch or the app's
-> error simulation; if none exists, say that error handling can't be
-> exercised — that itself is a finding); cancel, back and undo; refresh
+> input; slow data and a failure and retry (open the URL with
+> `?latency=slow` and with `?fail=1`, then filter, search and save too — if
+> the switches don't exist or only affect the first load, that itself is a
+> finding); cancel, back and undo; refresh
 > mid-task (does state survive?); keyboard only (Tab, Enter, Escape,
 > shortcuts — is focus visible and sensible?); phone size (390×844).
 >

@@ -215,6 +215,12 @@ polish iterations — never drop these.
    layout, hierarchy, scale, a visual for the content, motion, empty-space
    use — never by adding fields or features the brief didn't ask for.
 
+## Business systems first
+
+Most of AK's work is business software (dashboards, management systems,
+workflow applications, operational tools). For these, the premium bar is
+judged as a daily work tool: `arkar-ui-art-direction/references/business-systems.md`.
+
 ## 5. Final message
 
 Finish background work first: stop servers and timers you started, and wait

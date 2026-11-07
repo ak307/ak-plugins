@@ -867,13 +867,14 @@ def ui_o_thin_content(root: Path, plugin: Path):
 
 
 def ui_q_multi_page(root: Path, plugin: Path):
-    """Q — a product of several pages: each page composed for its own job, all in one design language."""
+    """Q — a business system of several pages: each composed for its own job, all in one design language."""
     workspace = workspace_from(None, root / "workspace")
-    run = run_claude("build the customer portal for 'Tidewell', a home-cleaning subscription: sign in, home (next "
-                     "visit and plan), visit history, one visit's detail (checklist, notes, rating), plan and billing "
-                     "settings, and help. plain HTML/CSS/JS with mock data, folder tidewell, one html file per page "
-                     "(index.html is home).", workspace, plugin, max_turns=300)
-    project = workspace / "tidewell"
+    run = run_claude("build 'Fixwell', the maintenance management system for a facilities company that looks after "
+                     "30 buildings: overview (what needs attention today), work orders list, one work order's detail "
+                     "(timeline, technician, parts, photos placeholder, sign-off), assets register, technician "
+                     "schedule for the week, and reports. plain HTML/CSS/JS with mock data, folder fixwell, one html "
+                     "file per page (index.html is the overview).", workspace, plugin, max_turns=300)
+    project = workspace / "fixwell"
     pages = sorted(path.stem for path in project.glob("*.html"))
     design = design_doc(project).lower()
     section = re.search(r"##\s*compositions?(.*?)(?=\n## |\Z)", design, re.S)
@@ -882,6 +883,40 @@ def ui_q_multi_page(root: Path, plugin: Path):
         check("at least five pages built", len(pages) >= 5, pages),
         check("Compositions cover most pages (each page composed for its job)",
               len(composed) >= max(3, len(pages) - 2), {"pages": pages, "composed": composed}),
+    ]
+
+
+def ui_r_approvals(root: Path, plugin: Path):
+    """R — a workflow application: multi-level approvals with an audit trail."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build the approvals workspace for a 2,000-staff company: purchase requests go through manager, "
+                     "finance and director approval depending on amount. approvers see their queue, open a request "
+                     "with its line items, attachments and history, approve, reject with a reason, or send back for "
+                     "changes, one by one or in bulk. requesters see where their request is stuck and why. plain "
+                     "HTML/CSS/JS with mock data, folder approvals, index.html.", workspace, plugin, max_turns=300)
+    project = workspace / "approvals"
+    code = site_code(project)
+    return new_product_checks(run, project, workspace) + overlay_checks(code) + [
+        check("reject and send-back ask for a reason", has(code, r"reason") and has(code, r"reject")),
+        check("bulk approve exists", has(code, r"bulk|select all|selected")),
+        check("the approval path / history is shown", has(code, r"history|timeline|audit|trail|step")),
+    ]
+
+
+def ui_s_rostering(root: Path, plugin: Path):
+    """S — an operational scheduling tool: security-officer rostering across sites."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build the rostering tool for a security company: 120 officers across 18 sites, 12-hour day and "
+                     "night shifts. planners see next week's roster by site, spot unfilled shifts and officers over "
+                     "their 72-hour weekly limit, drag or assign officers to fill gaps, and publish the roster. plain "
+                     "HTML/CSS/JS with mock data, folder roster, index.html.", workspace, plugin, max_turns=300)
+    project = workspace / "roster"
+    code = site_code(project)
+    return new_product_checks(run, project, workspace) + [
+        check("gaps and over-limit officers are flagged", has(code, r"unfilled|gap|open shift") and has(code, r"72")),
+        check("assigning works without a mouse (keyboard alternative to drag)",
+              not has(code, r"draggable") or has(code, r"keydown|aria-grabbed|assign|<select|<button")),
+        check("publishing asks for confirmation", has(code, r"publish") and has(code, r"confirm|dialog|sure")),
     ]
 
 
@@ -1051,7 +1086,9 @@ SCENARIOS = {
     "ui-n-big-data": ("ui edge cases", ui_n_big_data),
     "ui-o-thin-content": ("ui edge cases", ui_o_thin_content),
     "ui-p-tiny-phone": ("ui edge cases", ui_p_tiny_phone),
-    "ui-q-multi-page": ("ui variety", ui_q_multi_page),
+    "ui-q-multi-page": ("ui business", ui_q_multi_page),
+    "ui-r-approvals": ("ui business", ui_r_approvals),
+    "ui-s-rostering": ("ui business", ui_s_rostering),
     "new-fastapi": ("new projects", new_project("fastapi")),
     "new-django": ("new projects", new_project("django")),
     "delivery": ("delivery", delivery),

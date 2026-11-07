@@ -48,7 +48,10 @@ constraints. Note existing brand assets that must be kept
    clearly primary (e.g. enterprise professional with a data-centric core).
    If AK is present and the choice is a real taste decision for a new
    product's brand, show the shortlist with your recommendation and let him
-   choose.
+   choose. For business systems — dashboards, management systems, workflow
+   and operational tools, AK's main work — also apply
+   `references/business-systems.md` (what premium means for software staff
+   use all day).
 3. **Make it this product's own.** Within the direction, decide the palette,
    type, layout idea, shape language and one signature idea for the product
    (shown on the screens where it helps — data-heavy screens may have none)

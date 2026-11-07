@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import statistics
 from itertools import combinations
 from pathlib import Path
@@ -30,6 +31,9 @@ def load_results(since: str | None) -> list:
         if since and path.parent.name < since:
             continue
         for result in json.loads(path.read_text()):
+            # A session cut off by the account's usage limit never ran: leave it out of the statistics.
+            if any(re.search(r"hit your .{0,20}limit", str(check.get("detail", "")), re.I) for check in result["checks"]):
+                continue
             result["round"] = path.parent.name
             runs.append(result)
     return runs

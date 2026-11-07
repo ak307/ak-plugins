@@ -24,7 +24,7 @@ import sys
 import tempfile
 import time
 import traceback
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -51,7 +51,7 @@ def run_one(name: str, attempt: int, out: Path, plugin: Path) -> dict:
             "minutes": round((time.time() - started) / 60, 1), "skills_commit": SKILLS_COMMIT}
 
 
-def write_summary(results: list, out: Path, label: str) -> bool:
+def write_summary(results: list, out: Path, label: str, quiet: bool = False) -> bool:
     lines = [f"# arkar-dev-standards behaviour evals — {label}", ""]
     failed_any = False
     for result in sorted(results, key=lambda r: (r["area"], r["scenario"], r["attempt"])):
@@ -66,7 +66,8 @@ def write_summary(results: list, out: Path, label: str) -> bool:
         lines.append("")
     (out / "summary.md").write_text("\n".join(lines))
     (out / "results.json").write_text(json.dumps(results, indent=2))
-    print("\n".join(lines))
+    if not quiet:
+        print("\n".join(lines))
     return failed_any
 
 
@@ -96,8 +97,12 @@ def main() -> int:
     out.mkdir(parents=True)
     jobs = [(name, attempt) for name in names for attempt in range(1, args.runs + 1)]
     print(f"Running {len(jobs)} scenario run(s) {label}; results in {out}")
+    results = []
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        results = list(pool.map(lambda job: run_one(job[0], job[1], out, plugin), jobs))
+        # Saved after every finished run, so a killed batch keeps what it completed.
+        for future in as_completed([pool.submit(run_one, name, attempt, out, plugin) for name, attempt in jobs]):
+            results.append(future.result())
+            write_summary(results, out, label, quiet=True)
     failed = write_summary(results, out, label)
     return 1 if failed and not args.baseline else 0
 

@@ -13,24 +13,32 @@ For smaller changes it's optional.
 ## How
 
 1. Take full-page screenshots of each main screen at desktop and phone size
-   (plus key states: a dialog open, loading, an AI answer, an empty state),
-   and the filmstrips of the first load and the main flows
-   (`scripts/interaction-probe.cjs`, `scripts/film.cjs`).
+   **and of every key state** — the core flow done once (e.g. a question
+   asked and answered, a booking confirmed, a form submitted with errors and
+   then successfully), a dialog open, loading, empty, error — plus the
+   filmstrips of the first load and the main flows
+   (`scripts/interaction-probe.cjs`, `scripts/film.cjs`). A critic who only
+   sees the empty start screen can't judge the product.
 2. Start a fresh subagent with the Agent tool. Give it **only**: the
-   screenshot and filmstrip paths, one line on what the product is and who uses it, and
-   the brief below. Never give it the code, `DESIGN.md`, or your reasoning —
-   that would anchor it to your intentions.
-3. Fix the critic's top findings (at least the five most severe), re-shoot,
-   and record the critique and fixes in `qa-screenshots/premium-pass.md`.
-   Don't dismiss a finding by pointing at your own `DESIGN.md` ("that idea
+   screenshot and filmstrip paths, one line on what the product is and who
+   uses it, and the brief below. Never give it the code, `DESIGN.md`, or your
+   reasoning — that would anchor it to your intentions.
+3. **The bar is the critic's score, not the number of fixes.** Fix every
+   critical failure, every section scored below 7 and the most severe
+   findings, re-shoot, and send the new screenshots to a **fresh** critic.
+   Repeat until the critic scores the build **overall ≥ 8.5 with no
+   dimension and no section below 7 and no critical failure** — or after
+   four critique rounds, stop and report honestly what is still below the
+   bar and why. Record each round's scores and fixes in
+   `qa-screenshots/premium-pass.md`.
+4. Don't dismiss a finding by pointing at your own `DESIGN.md` ("that idea
    was rejected there") — the critic is judging the result, and your
-   earlier reasoning is what it's checking. If the critic says a screen
-   looks like a generic template, redo that screen's composition — the
-   interaction probe finding no template flags doesn't answer it (the probe
-   only catches a few mechanical patterns; the critic sees the whole).
-4. If no subagent tool is available, do a "cold read" yourself: look at each
+   earlier reasoning is what it's checking. If the critic says a screen or
+   section looks like a generic template, redo that composition — the
+   interaction probe finding no template flags doesn't answer it.
+5. If no subagent tool is available, do a "cold read" yourself: look at each
    screenshot as a stranger seeing the product for the first time, before
-   re-reading any code.
+   re-reading any code, and score it with the same rubric.
 
 ## The critic's brief (paste it)
 
@@ -63,6 +71,19 @@ For smaller changes it's optional.
 >    anything decorative, slow, confusing or missing motion where a change
 >    would be hard to follow? Is there one moment of motion worth remembering?
 >
-> Return the 10 most visible shortfalls across all screens, most severe
-> first, each as: screen · what's wrong · a concrete direction to fix it (not
-> a specific copy of any existing product).
+> 6. Score with this rubric (1–10; 10 = best-in-category Apple/Linear/
+>    Stripe level, 7 = solid professional, 5 = generic template, 3 =
+>    basic/unfinished; polished-but-boring is at most 6 for visual and
+>    layout): **visual** · **layout** · **functionality** (controls read as
+>    what they do, flows complete, nothing broken) · **completeness**
+>    (loading/empty/error/success/processing states) · **responsiveness**
+>    (phone designed for the size; desktop not a stranded column) ·
+>    **motion** (from filmstrips; null if none) · **consistency** ·
+>    **originality**. Also score **each section** of each long page
+>    (hero, each band below it, footer) 1–10.
+>
+> Return: the scores (overall = mean of the dimensions), the section scores,
+> critical failures (anything visibly broken, covered, blank, unreadable, or
+> a missing core state), and the 10 most visible shortfalls, most severe
+> first, each as: screen/section · what's wrong · a concrete direction to fix
+> it (not a copy of any existing product).

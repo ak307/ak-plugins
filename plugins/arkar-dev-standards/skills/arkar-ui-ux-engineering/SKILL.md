@@ -83,6 +83,12 @@ structure changed.
   sit where they don't cover the item that just changed or the next thing
   people need (and move clear of sticky bars on phones); the changed item
   itself also shows the change (a brief highlight in place).
+- **Success is earned.** A form never shows success without validating:
+  required fields and formats are checked (inline, human messages), the
+  submit shows progress, then success — or a recoverable error.
+- **Fixed composers and footers reserve their space:** the scrolling area
+  ends above them (padding equal to their height), so the last message,
+  suggestion or row is never hidden behind them.
 - **Every control answers.** Each click, filter or download gives visible
   feedback (state change, highlight, toast or progress) — "only the counts
   changed somewhere" is not feedback.

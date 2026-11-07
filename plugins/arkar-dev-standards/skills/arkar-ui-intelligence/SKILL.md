@@ -192,10 +192,13 @@ polish iterations — never drop these.
    fixed before you call it done.
 6. **Independent critique (required)** — start a fresh subagent with the
    Agent tool, give it only the screenshot paths, one line on the product
-   and the brief in `arkar-ui-visual-qa/references/design-critic.md`. Fix at
-   least its five most severe findings, re-shoot, and record a
-   `## Independent critique` section in `qa-screenshots/premium-pass.md`:
-   each finding, and what you changed (or why not). No Agent tool → do the
+   and the brief in `arkar-ui-visual-qa/references/design-critic.md`. The
+   critic scores the build with the acceptance rubric; **iterate with a
+   fresh critic each round until it scores overall ≥ 8.5, no dimension or
+   section below 7, no critical failure** (at most four rounds — then report
+   honestly what's still short). Record a `## Independent critique` section
+   in `qa-screenshots/premium-pass.md`: each round's scores, findings and
+   what you changed. No Agent tool → do the
    cold read that file describes and say so.
    **If the critic says a screen looks generic or like a template, that
    finding can't be marked "not changed", "partly" or "proposal"**: go back

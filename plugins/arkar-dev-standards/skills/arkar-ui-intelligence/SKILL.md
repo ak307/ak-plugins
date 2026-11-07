@@ -222,7 +222,9 @@ Keep it short and factual:
 - for new products, page sets and redesigns: the composition chosen per
   main screen (and the obvious one rejected), and the independent critique
   (findings count, how many fixed);
-- assumptions you made;
+- **Assumptions:** always this line, under that word — what you assumed or
+  decided where the brief was silent (audience, content, tone, missing
+  files), so AK can correct it;
 - improvements beyond the request, as labelled proposals for AK — not done.
 
 ## References

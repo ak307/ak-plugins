@@ -123,8 +123,10 @@ it measures what the eye misses — accessibility violations (axe-core, WCAG
 2.2 AA), console errors, broken assets, overflow at 1440/768/375/320, small
 targets — and the design system as actually rendered (how many distinct
 radii, shadows, font sizes, spacing values and colours). Fix every serious or
-critical violation, error and overflow; a wide spread of values means tokens
-aren't being used — consolidate. Then run `scripts/interaction-probe.cjs` on each
+critical violation, console error, failed request (a missing file, a blocked
+font CDN), fallback font and overflow — these are defects, not notes for the
+report. A wide spread of values means tokens aren't being used — consolidate
+to about ≤ 6 radii, ≤ 12–14 font sizes and ≤ 5 shadows actually rendered. Then run `scripts/interaction-probe.cjs` on each
 changed page first: it takes a full-page screenshot, flags **template
 structures** (equal-card rows, tiles over a long table, repeating uniform
 sections, mostly empty sections), hovers, focuses and clicks every safe

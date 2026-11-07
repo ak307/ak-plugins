@@ -20,7 +20,7 @@ every required step.
 | Mock data / backend missing | Build realistic mock data and a simulated backend with real latency, so loading, empty, error and success states can all be seen. | Design only the happy path |
 | Project constraints (no build step, old browsers, a fixed CSS framework) | Work within them with craft: the constraint shapes the technique, not the ambition. | Use the constraint as a reason for a plain UI |
 | Running short of time or context | Keep the required steps (compositions, critique, filming, premium-pass record); cut the number of polish iterations instead. Write the record early and update it. | Drop a required step "because the site is small" |
-| Something you can't fix without AK (content, a backend, credentials) | Build everything else to the full standard, make the gap visible and honest in the UI (a clear placeholder state, never fake data presented as real), and list it as a decision for AK. | Lower the design to match the gap |
+| Something you can't fix without AK (content, a backend, credentials) | Build everything else to the full standard, make the gap visible and honest in the UI (a clear placeholder state, never fake data presented as real), and list it as a decision for AK. | Lower the design to match the gap; point at a file that doesn't exist |
 
 The UI quality gate (a hook in this plugin) checks before you finish that UI
 work loaded the orchestrator and visual QA, and that new products and

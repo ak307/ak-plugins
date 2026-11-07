@@ -89,6 +89,10 @@ structure changed.
 - **Fixed composers and footers reserve their space:** the scrolling area
   ends above them (padding equal to their height), so the last message,
   suggestion or row is never hidden behind them.
+- **Never reference a file that isn't there.** A missing logo, photo or
+  icon gets a designed stand-in (a typographic wordmark, an illustration
+  built in code) — not an `<img>` that 404s and hides itself on error.
+  Tell AK where the real file goes and what to change when it arrives.
 - **Every control answers.** Each click, filter or download gives visible
   feedback (state change, highlight, toast or progress) — "only the counts
   changed somewhere" is not feedback.

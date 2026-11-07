@@ -60,7 +60,7 @@ moments and AI products, sparingly, and never to compensate for weak design.
 ## Responsibilities
 
 1. **Define the motion language** for the product and record it in
-   `DESIGN.md` (Motion section): character, tokens (durations, easings,
+   `DESIGN.md` (a `## Motion` section): character, tokens (durations in ms, easings,
    springs), which levels are used where, signature moments, reduced-motion
    behaviour. Principles: `references/motion-principles.md`.
 2. **Loading:** content-aware skeletons and honest progress

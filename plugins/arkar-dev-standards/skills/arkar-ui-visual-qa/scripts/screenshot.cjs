@@ -95,8 +95,10 @@ function recordAnimations() {
       seen.set(animation, {
         kind: animation.constructor.name,
         duration: Number(timing.duration) || 0,
-        infinite: timing.iterations === Infinity,
+        // An ambient loop that plays a few cycles counts as a loop, not as one long animation.
+        infinite: timing.iterations > 1,
         target: describe(effect && effect.target),
+        name: animation.animationName || animation.id || "",
       });
     }
   }
@@ -104,6 +106,8 @@ function recordAnimations() {
 }
 
 function summariseAnimations() {
+  // One looping motif (e.g. three steam wisps sharing a keyframe) counts once.
+  const loops = (list) => new Set(list.filter((a) => a.infinite).map((a) => a.name || a.target)).size;
   const animations = [...window.__arkarAnimations.values()];
   const kinds = {};
   for (const animation of animations) kinds[animation.kind] = (kinds[animation.kind] || 0) + 1;
@@ -111,9 +115,10 @@ function summariseAnimations() {
   // don't count towards the longest or looping animation.
   const loading = (animation) => /skel|\.sk(\b|-)|shimmer|spinner|loading|progress|placeholder/i.test(animation.target || "");
   const content = animations.filter((animation) => !loading(animation));
-  const longest = content.reduce((max, animation) => Math.max(max, animation.duration), 0);
+  const longest = content.filter((animation) => !animation.infinite)
+    .reduce((max, animation) => Math.max(max, animation.duration), 0);
   const targets = [...new Set(animations.map((animation) => animation.target).filter(Boolean))].slice(0, 8);
-  return { count: animations.length, kinds, longest, infinite: content.filter((a) => a.infinite).length, targets };
+  return { count: animations.length, kinds, longest, infinite: loops(content), targets };
 }
 
 // Text that is still see-through after the page settled and was scrolled

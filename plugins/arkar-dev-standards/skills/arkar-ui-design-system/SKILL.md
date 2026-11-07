@@ -77,10 +77,17 @@ short note of what was unified.
   and file inputs are styled to match (custom-styled native controls keep
   their accessibility); an unstyled OS dropdown next to crafted components
   is a premium failure.
-- **The chosen fonts actually render.** Bundle or load them reliably and
-  check the result (`arkar-ui-visual-qa/scripts/audit.cjs` reports fonts
-  that fell back); a fallback to the browser default (Times, Arial) is a
-  defect.
+- **The chosen fonts actually render — everywhere.** Serve them from the
+  project (font files or `@fontsource` packages), not a runtime CDN: a
+  blocked CDN, an offline kiosk or a privacy rule silently leaves the
+  browser default. A font that only exists on one platform (Iowan Old Style,
+  SF Pro, Segoe UI) needs a bundled licensed equivalent or a deliberately
+  chosen fallback stack. Check the result
+  (`arkar-ui-visual-qa/scripts/audit.cjs` reports failed font requests and
+  fonts that fell back); Times or Arial by accident is a defect.
+- **A small, real scale:** the rendered page uses about ≤ 6 radii,
+  ≤ 12–14 font sizes and ≤ 5 shadows (audit.cjs counts them). More means
+  one-off values crept in — map them back to tokens.
 
 ## Dependencies
 

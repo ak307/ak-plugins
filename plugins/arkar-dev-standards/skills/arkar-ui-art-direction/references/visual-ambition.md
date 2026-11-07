@@ -37,7 +37,27 @@ relates to the product.
   it out into more sections of text. Use fewer sections and make each one a
   designed moment built from what exists; never invent facts, photos or
   figures to fill space.
+- **Plain rows of data:** a table or list ("Recent exports", work orders,
+  card holders) that is only text in columns. Each row should carry what it
+  means visually — an inline bar, sparkline, progress or status track, a
+  mini timeline, a thumbnail, a relative-size mark — so the list reads at a
+  glance and stops being a spreadsheet.
+- **A grid of equal KPI tiles** (8–12 numbers the same size): pick the one
+  to three that matter, state them as a sentence-headline, and let the rest
+  sit as a quiet ledger or move behind a detail.
+- **A thin page that looks thin:** when there is little content, the design
+  must carry it — one bold concept from the product's world (a signboard, a
+  menu board, a ticket, the cup and the steam) at hero scale, rich
+  typography, a strong colour field and one signature motion — not three
+  timid sections.
 - A safe default direction chosen because the product is "business".
+
+What AK judged premium (blind 7.4, his "premium"): an energy story whose
+headline states the insight ("Use is 3.3% over target this quarter") over
+a dramatic annotated chart on a deep surface; every ranked row with a
+sparkline and a bar; a heatmap as the visual centrepiece; dark and light
+sections alternating for rhythm. What he judged boring: equal KPI tiles,
+plain tables and "recent" lists, thin pages padded with small sections.
 
 ## 3. Levers for visual energy (choose and combine per product)
 

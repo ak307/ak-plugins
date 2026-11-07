@@ -16,8 +16,10 @@ look, and never a reason for products to resemble iOS or each other.
 
 ## When it doesn't
 
-- Dense work tools: tables, forms and dashboards gain nothing from glass on
-  content; at most the top bar or a floating action uses it.
+- Dense work tools without a visual canvas (a table page, a form): glass on
+  their content gains nothing; at most the top bar or a floating action
+  uses it. A dashboard built around a map, floor plan or site view is the
+  exception — floating glass panels over it can be the whole idea.
 - Over flat, empty backgrounds (glass over nothing is just grey).
 - Kiosks or low-end devices where blur would cost frame rate.
 

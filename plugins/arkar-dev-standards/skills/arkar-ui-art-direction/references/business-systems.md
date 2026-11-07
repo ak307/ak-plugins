@@ -57,8 +57,10 @@ for *this* job. These are principles to compose from, not a layout to copy
 
 ## Materials and motion in business tools
 
-Liquid Glass belongs only to floating controls here (a command palette, a
-toolbar over a map or schedule, a bulk-action bar); working surfaces stay
+Liquid Glass suits floating controls (a command palette, a toolbar, a
+bulk-action bar) and, when the screen is built around a visual canvas such
+as a site map or floor plan, floating content panels over it — AK rated
+such an operations map premium. Tables, forms and working grids stay
 solid for legibility. The signature motion moment is tied to the core
 action — a work order sliding into "Done", an approval stamping, a roster
 gap filling as an officer is assigned — fast enough to enjoy the fiftieth

@@ -205,7 +205,10 @@ polish iterations — never drop these.
    to step 3 for that screen, build a different composition within the
    request (see step 3's note on requested frames), and send the new
    screenshots to a fresh critic. Repeat until the critic no longer calls
-   it generic.
+   it generic. "Fixing it would go beyond the brief" is not a reason: a
+   generic screen is recomposed with what the brief already contains —
+   layout, hierarchy, scale, a visual for the content, motion, empty-space
+   use — never by adding fields or features the brief didn't ask for.
 
 ## 5. Final message
 

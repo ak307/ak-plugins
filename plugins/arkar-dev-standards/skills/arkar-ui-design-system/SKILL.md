@@ -80,9 +80,11 @@ short note of what was unified.
 - **The chosen fonts actually render — everywhere.** Serve them from the
   project (font files or `@fontsource` packages), not a runtime CDN: a
   blocked CDN, an offline kiosk or a privacy rule silently leaves the
-  browser default. A font that only exists on one platform (Iowan Old Style,
-  SF Pro, Segoe UI) needs a bundled licensed equivalent or a deliberately
-  chosen fallback stack. Check the result
+  browser default. Display and brand type is always a bundled font: a
+  system stack (Iowan Old Style → Charter → Georgia, SF Pro, Segoe UI)
+  looks different on every device and falls back to Times or DejaVu on
+  Windows, Android and Linux. A system stack is fine only for plain UI text
+  (`system-ui`, sans-serif). Check the result
   (`arkar-ui-visual-qa/scripts/audit.cjs` reports failed font requests and
   fonts that fell back); Times or Arial by accident is a defect.
 - **A small, real scale:** the rendered page uses about ≤ 6 radii,

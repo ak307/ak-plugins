@@ -729,7 +729,8 @@ def ui_h_overlays(root: Path, plugin: Path):
     project = workspace / "tandem"
     code = site_code(project)
     return new_product_checks(run, project, workspace) + overlay_checks(code) + [
-        check("command palette opens from the keyboard (Ctrl/Cmd+K)", has(code, r"(metakey|ctrlkey)[^;]{0,80}['\"]k['\"]")),
+        check("command palette opens from the keyboard (Ctrl/Cmd+K)", has(code, r"metakey|ctrlkey") and
+              has(code, r"key(\.tolowercase\(\))?\s*={2,3}\s*['\"]k['\"]|['\"]k['\"]\s*={2,3}|['\"]keyk['\"]")),
         check("undo offered after a destructive action", has(code, r"undo")),
         check("notifications announced (role=status / aria-live)", has(code, r"aria-live|role=[\"']status")),
     ]

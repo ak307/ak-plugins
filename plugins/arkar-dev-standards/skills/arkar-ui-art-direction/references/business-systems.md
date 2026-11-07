@@ -42,7 +42,16 @@ for *this* job. These are principles to compose from, not a layout to copy
    a triage surface, a detail is a record with its history, a schedule is a
    time grid, a report is a story with charts — one design language, never
    the same banner-plus-table skeleton re-filled on every page.
-9. **Phones get the field version.** Staff on site need the top actions and
+9. **Dense, not crammed — focus first, everything on demand.** Lead with
+   the screen's job (the 44 gaps to fill, the 6 overdue jobs), not with
+   every cell at once. Show the whole picture at a glanceable level (a
+   heat strip, a summary per site) and open the full detail for the one
+   place being worked on. Each number appears once in the main view (not in
+   the header pills, the hero and a side tile). Marks must carry meaning on
+   their own — a wall of initials or icons that needs a legend and hover to
+   decode is noise. AK judged a complete but tightly packed rostering grid
+   "too complex, information too tight".
+10. **Phones get the field version.** Staff on site need the top actions and
    the record they're standing at, not a squeezed desktop table: cards with
    the two or three fields that matter, big targets, the key panel kept.
 

@@ -23,9 +23,14 @@ look, and never a reason for products to resemble iOS or each other.
 
 ## Rules
 
-1. **Glass is for controls, content is solid.** Never glass cards, table
-   rows or text panels; never glass on glass (a glass menu over a glass bar
-   becomes a solid surface).
+1. **Glass floats; working surfaces are solid.** Glass suits controls and
+   floating panels over a visual canvas — a map, floor plan, site view,
+   schedule or imagery — where seeing the canvas through the panel keeps
+   people oriented. AK rated exactly that premium: a full-screen site map
+   with tinted glass panels for work orders, KPIs, alerts and crew. Content
+   panels on glass need a stronger tint so text stays crisp. Over plain page
+   backgrounds, tables and forms stay solid. Never glass on glass (a glass
+   menu over a glass bar becomes a solid surface).
 2. **Legibility first.** Text and icons on glass meet WCAG AA against the
    worst content that can pass beneath: add a tint (light or dark) strong
    enough, a subtle inner shadow or vibrancy for text, and test it over the

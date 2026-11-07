@@ -103,6 +103,13 @@ structure changed.
   header count and a legend, a total and its rows) is computed from the same
   data, so they can never disagree. One format per kind of value (times,
   dates, money) across the whole product.
+- **Nothing prints over text.** Badges, counts, chart callouts, labels and
+  toasts get their own space; check each against its neighbours at every
+  size (a "72h" badge on a name chip, a callout on a legend, a toast on the
+  tabs are all defects).
+- **Columns end together.** A side column beside a long list is sticky, or
+  holds enough to match it, or its content moves into the flow — never a
+  short panel above a tall empty strip.
 - **Every chart answers a question.** If all values are equal or there is
   one value, say it in a sentence or a number instead; label what the
   axes and bars mean and show the values people compare.

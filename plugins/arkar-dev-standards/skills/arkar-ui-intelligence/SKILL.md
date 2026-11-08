@@ -125,7 +125,7 @@ any other specialist the task clearly touches
 
 | Task | Load at least |
 |---|---|
-| Small component change | ux-engineering → implementation → visual-qa |
+| Small component change | ux-engineering → implementation → visual-qa (a one-round premium pass is still the definition of done: before/after shots at phone and desktop, the interaction probe on the changed control, its states filmed — minutes, not a redesign) |
 | New screens or a feature in an existing product (web or mobile) | ux-engineering → motion → responsive → accessibility → implementation → visual-qa (+ discovery if the product is unfamiliar) |
 | Existing site or page improvement (A) | discovery → art-direction → ux-engineering → implementation → visual-qa (+ motion / responsive / accessibility for what you change) |
 | Modernization or redesign (B) — including whenever AK calls a UI dated, old, plain, boring, ugly, outdated or "not good" | all nine |

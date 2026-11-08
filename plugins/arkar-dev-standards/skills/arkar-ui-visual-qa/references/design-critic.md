@@ -15,7 +15,8 @@ For smaller changes it's optional.
 1. Take full-page screenshots of each main screen at desktop and phone size
    **and of every key state** — the core flow done once (e.g. a question
    asked and answered, a booking confirmed, a form submitted with errors and
-   then successfully), a dialog open, loading, empty, error — plus the
+   then successfully), **every view behind each tab, segment and nav
+   item** (not only the first), a dialog open, loading, empty, error — plus the
    filmstrips of the first load and the main flows
    (`scripts/interaction-probe.cjs`, `scripts/film.cjs`). A critic who only
    sees the empty start screen can't judge the product.

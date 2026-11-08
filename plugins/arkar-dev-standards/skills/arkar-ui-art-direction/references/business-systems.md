@@ -77,18 +77,30 @@ Glass (`arkar-ui-design-system/references/materials-glass.md`):
 Legibility, reduced-transparency and no-backdrop-filter fallbacks are not
 optional.
 
-## The inside of every tab is designed, not just the header
+## Every view behind a tab is designed — and the tabs themselves
 
 AK judged an approvals queue "not bad, but the design inside the tab is
-too simple and boring — not innovative". The hero and header usually get
-the ideas; the list or panel inside each tab gets a plain stack of rows.
-Every tab, list and panel needs its own idea at the same level as the
-hero: rows as rich objects showing their meaning visually (the request's
-amount against budget, its route as a live track, its age as a growing
-bar, people as faces), a visual for what matters most in that tab, the
-detail as a designed record (not a form dump), and a signature moment for
-the tab's main action. When the critic reviews, it scores the inside of
-each tab as its own section.
+too simple and boring — not innovative". He means the view that appears
+when a tab, segment or navigation item is clicked ("Sent back",
+"Decided", "My requests", "History", a settings page, a widget's other
+mode): builds pour their ideas into the first view and fill every other
+view with the same plain list. Every reachable view is composed for its
+own job with the same ambition as the first: "Decided" might be a
+timeline of what you approved this week with amounts adding up; "Sent
+back" a set of cards showing what each requester must fix and how long
+they've had; "My requests" each request travelling along its route.
+Rows inside any view are rich objects that show their meaning visually,
+details are designed records, and each view's main action has its own
+moment.
+
+The tab controls are designed too (AK: "of course the tab background is
+also simple"): a crafted segmented control or tab bar — glass where
+Liquid Glass is used — with counts, a selection indicator that slides to
+the chosen tab, and the content changing with spatial continuity, not a
+row of plain text links with an underline.
+
+When the critic reviews, it is shown every tab's view and scores each as
+its own section.
 
 ## Materials and motion in business tools
 

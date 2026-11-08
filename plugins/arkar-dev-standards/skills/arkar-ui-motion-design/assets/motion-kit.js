@@ -14,7 +14,11 @@ const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 function token(name, fallback) {
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   if (!value) return fallback;
-  return name.startsWith("--motion") ? parseFloat(value) : value;
+  if (!name.startsWith("--motion")) return value;
+  // Durations may be written "420ms", "0.42s" or "420".
+  const number = parseFloat(value);
+  if (Number.isNaN(number)) return fallback;
+  return /\ds$/.test(value) && !value.endsWith("ms") ? number * 1000 : number;
 }
 
 const timing = () => ({
@@ -111,7 +115,8 @@ export function rollNumber(el, to, { format = (n) => Math.round(n).toLocaleStrin
   const start = performance.now();
   return new Promise((resolve) => {
     const step = (now) => {
-      const p = Math.min(1, (now - start) / length);
+      // rAF time can be slightly earlier than `start`: clamp, or the curve overshoots wildly.
+      const p = Math.min(1, Math.max(0, (now - start) / Math.max(1, length)));
       const eased = 1 - Math.pow(1 - p, 3);
       el.textContent = format(from + (to - from) * eased);
       if (p < 1) el._roll = requestAnimationFrame(step); else resolve();

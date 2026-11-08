@@ -8,7 +8,7 @@
     {
       "name": "arkar-dev-standards",
       "source": "./plugins/arkar-dev-standards",
-      "description": "AK's always-on coding rules and production guard, project templates, per-project frontend design, frontend QA (web and mobile), the clean/secure change and bug-fix workflow, and CI/release delivery"
+      "description": "AK's always-on coding rules and production guard, project templates, the clean/secure change and bug-fix workflow, CI/release delivery, and Adaptive UI Intelligence: ten arkar-ui-* skills for End-to-End Product Craftsmanship & Experience Excellence (premium design, Liquid Glass, motion and experience kits, independent critic and experience tester)"
     }
   ]
 }

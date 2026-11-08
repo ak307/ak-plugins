@@ -55,6 +55,41 @@ for *this* job. These are principles to compose from, not a layout to copy
    the record they're standing at, not a squeezed desktop table: cards with
    the two or three fields that matter, big targets, the key panel kept.
 
+## Liquid Glass is AK's default material for business systems
+
+AK consistently prefers Apple's Liquid Glass. He rated a glass operations
+map "premium" and asked for glass on a solid-surfaced system he otherwise
+called "mostly premium". So, unless the product's brand or context argues
+against it (record why in DESIGN.md), his business systems use Liquid
+Glass (`arkar-ui-design-system/references/materials-glass.md`):
+
+- glass for the whole floating layer: sidebar and top bar, toolbars and
+  filter bars, tab bars, bulk-action bars, detail sheets and side panels,
+  popovers, menus, the command palette, toasts;
+- floating glass content panels wherever the screen has a visual canvas
+  (a site map, skyline, floor plan, schedule or time grid, a hero chart):
+  the canvas fills the space and the queue, alerts or crew float over it;
+- a rich, deep background beneath (gradient field, the canvas itself), so
+  the glass has something to refract — glass over flat white is grey;
+- working surfaces people read for long — dense tables, forms, long text
+  — stay solid, or sit on a strongly tinted glass panel that reads as solid.
+
+Legibility, reduced-transparency and no-backdrop-filter fallbacks are not
+optional.
+
+## The inside of every tab is designed, not just the header
+
+AK judged an approvals queue "not bad, but the design inside the tab is
+too simple and boring — not innovative". The hero and header usually get
+the ideas; the list or panel inside each tab gets a plain stack of rows.
+Every tab, list and panel needs its own idea at the same level as the
+hero: rows as rich objects showing their meaning visually (the request's
+amount against budget, its route as a live track, its age as a growing
+bar, people as faces), a visual for what matters most in that tab, the
+detail as a designed record (not a form dump), and a signature moment for
+the tab's main action. When the critic reviews, it scores the inside of
+each tab as its own section.
+
 ## Materials and motion in business tools
 
 Liquid Glass suits floating controls (a command palette, a toolbar, a

@@ -3,9 +3,12 @@
 Apple's Liquid Glass (iOS/macOS 26) is a **material for the control layer**:
 tab bars, toolbars, sidebars, sheets, menus, popovers, floating buttons and
 the command palette float above the content as glass that bends and lights
-what passes beneath. The content itself stays solid and readable. Treat it
-as one material choice per product, made in art direction — not a default
-look, and never a reason for products to resemble iOS or each other.
+what passes beneath. Working content people read for long stays solid
+and readable. **For AK's business systems it is the default material**
+(see `arkar-ui-art-direction/references/business-systems.md` — he
+consistently rates glass designs higher); for other products it is chosen
+in art direction. Either way each product composes it in its own way — glass
+is a material, never a reason for products to resemble iOS or each other.
 
 ## When it fits
 

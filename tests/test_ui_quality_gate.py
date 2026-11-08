@@ -194,3 +194,23 @@ def test_shell_logs_and_appends_are_not_rewrites(tmp_path):
         tool_use("Bash", command="node probe.cjs http://127.0.0.1:8000/ > probe.log 2>&1"),
         tool_use("Bash", command="echo '.x{}' | tee -a styles.css")]
     assert run_gate(tmp_path, events) == ""
+
+
+def test_html_added_to_python_through_the_shell_counts(tmp_path):
+    # A form field added to a Python-rendered page by a shell edit is a UI change.
+    command = ("python3 - <<'EOF'\np = 'app/main.py'\ns = open(p).read()\n"
+               "s = s.replace('</form>', '<label>Phone <input name=\"phone\" type=\"tel\"></label></form>')\n"
+               "open(p, 'w').write(s)\nEOF")
+    assert "arkar-ui-intelligence" in run_gate(tmp_path, [tool_use("Bash", command=command)])
+
+
+def test_transcript_lines_with_raw_control_characters_are_read(tmp_path):
+    # Real transcripts can carry raw tabs inside strings; those lines must not be skipped.
+    transcript = tmp_path / "session.jsonl"
+    edit = json.dumps(tool_use("Write", file_path=str(tmp_path / "app" / "index.html"), content="x"))
+    transcript.write_text(edit.replace('"content": "x"', '"content": "a\tb"'))
+    hook_event = {"hook_event_name": "Stop", "transcript_path": str(transcript), "cwd": str(tmp_path),
+                  "stop_hook_active": False}
+    result = subprocess.run([BASH, str(LAUNCHER)], input=json.dumps(hook_event), capture_output=True,
+                            text=True, timeout=30)
+    assert "arkar-ui-intelligence" in result.stdout

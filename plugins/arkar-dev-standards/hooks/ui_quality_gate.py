@@ -77,7 +77,7 @@ def read_session(transcript_path: str) -> tuple[set[str], list[str], list[str]]:
     with open(transcript_path, encoding="utf-8", errors="ignore") as transcript:
         for line in transcript:
             try:
-                event = json.loads(line)
+                event = json.loads(line, strict=False)  # transcripts can hold raw tabs or newlines inside strings
             except json.JSONDecodeError:
                 continue
             if event.get("type") != "assistant":
@@ -92,8 +92,11 @@ def read_session(transcript_path: str) -> tuple[set[str], list[str], list[str]]:
                 if block.get("name") == "Skill":
                     skills.add(str(tool_input.get("skill", "")))
                 elif block.get("name") == "Bash":
-                    for file_path, whole in shell_writes(str(tool_input.get("command", ""))):
-                        edited.append(file_path)
+                    command = str(tool_input.get("command", ""))
+                    for file_path, whole in shell_writes(command):
+                        # HTML written into code through the shell (a heredoc, sed or a Python edit) is UI too.
+                        marker = "#markup" if not UI_FILE.search(file_path) and MARKUP.search(command) else ""
+                        edited.append(file_path + marker)
                         if whole:
                             written.append(file_path)
                 elif block.get("name") in ("Write", "Edit", "MultiEdit", "NotebookEdit"):

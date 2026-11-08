@@ -55,6 +55,13 @@ is a material, never a reason for products to resemble iOS or each other.
    moderate, no animated blur radius; check scrolling stays smooth on a
    phone-sized viewport.
 
+## Web: use the kit
+
+`../assets/liquid-glass.css` is the tested material (tint, blur and
+saturation, top-bright rim light, specular sheen, separating shadow,
+light/dark tints, a sliding segmented control, and the fallbacks). Copy it
+and theme it through its tokens; the recipe below shows the principle.
+
 ## Web recipe (adapt; tokens, not raw values in components)
 
 ```css

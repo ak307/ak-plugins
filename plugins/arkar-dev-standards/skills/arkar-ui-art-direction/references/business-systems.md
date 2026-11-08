@@ -77,6 +77,16 @@ Glass (`arkar-ui-design-system/references/materials-glass.md`):
 Legibility, reduced-transparency and no-backdrop-filter fallbacks are not
 optional.
 
+**Build it with the material kit:** copy
+`arkar-ui-design-system/assets/liquid-glass.css` and use its surfaces —
+`.lg-bar` (sidebar, top bar, tab and filter bars), `.lg-panel` (floating
+content over a canvas), `.lg-sheet` (detail sheets, dialogs), `.lg-control`
+and `.lg-segmented` (controls and tabs on glass, with a sliding
+indicator), `.lg-pill` — over `.lg-field` or the product's real canvas,
+themed through its tokens. AK looked at a rebuild with one glass panel
+and a solid sidebar and top bar and said "it is not using Liquid Glass":
+the whole floating layer must visibly be glass, not one card.
+
 ## Every view behind a tab is designed — and the tabs themselves
 
 AK judged an approvals queue "not bad, but the design inside the tab is

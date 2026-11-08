@@ -1,0 +1,164 @@
+[
+ {
+  "build": "build-ikhak",
+  "run": "arkar-eval-ui-i-progress-1-797qqq28",
+  "round": "biz2",
+  "kind": "experience",
+  "overall": 7.2,
+  "scores": {
+   "feedback": 8,
+   "waiting": 8,
+   "success": 7,
+   "errors": 8,
+   "transitions": 7,
+   "information": 8,
+   "state": 5,
+   "touch_keyboard": 7,
+   "consistency": 7
+  },
+  "not_testable": [],
+  "critical_failures": [
+   "refresh after generation loses finished run while toast claims work is kept"
+  ]
+ },
+ {
+  "build": "build-lmzxe",
+  "run": "arkar-eval-ui-m-contradictory-brief-2-2ice1buv",
+  "round": "biz2",
+  "kind": "experience",
+  "overall": 6.3,
+  "scores": {
+   "feedback": 6,
+   "waiting": 6,
+   "success": 7,
+   "errors": 5,
+   "transitions": 6,
+   "information": 6,
+   "state": 8,
+   "touch_keyboard": 6,
+   "consistency": 7
+  },
+  "not_testable": [
+   "fixed latency; only first load can fail"
+  ],
+  "critical_failures": []
+ },
+ {
+  "build": "build-nryey",
+  "run": "arkar-eval-ui-m-contradictory-brief-1-v9g9tgyj",
+  "round": "biz2",
+  "kind": "experience",
+  "overall": 5.3,
+  "scores": {
+   "feedback": 6,
+   "waiting": 3,
+   "success": 7,
+   "errors": 3,
+   "transitions": 7,
+   "information": 6,
+   "state": 4,
+   "touch_keyboard": 5,
+   "consistency": 7
+  },
+  "not_testable": [
+   "no latency switch",
+   "no failure switch"
+  ],
+  "critical_failures": [
+   "refresh silently undoes acknowledgements"
+  ]
+ },
+ {
+  "build": "build-qflep",
+  "run": "arkar-eval-ui-n-big-data-2-o29zb243",
+  "round": "biz2",
+  "kind": "experience",
+  "overall": 7.3,
+  "scores": {
+   "feedback": 8,
+   "waiting": 5,
+   "success": 7,
+   "errors": 6,
+   "transitions": 7,
+   "information": 8,
+   "state": 9,
+   "touch_keyboard": 8,
+   "consistency": 8
+  },
+  "not_testable": [
+   "no latency/fail switches"
+  ],
+  "critical_failures": []
+ },
+ {
+  "build": "build-rbhzt",
+  "run": "arkar-eval-ui-n-big-data-1-00vl6clt",
+  "round": "biz2",
+  "kind": "experience",
+  "overall": 7.4,
+  "scores": {
+   "feedback": 8,
+   "waiting": null,
+   "success": 7,
+   "errors": 6,
+   "transitions": 6,
+   "information": 8,
+   "state": 9,
+   "touch_keyboard": 7,
+   "consistency": 8
+  },
+  "not_testable": [
+   "waiting: no loading layer",
+   "errors: no failure switch",
+   "success: only copy action"
+  ],
+  "critical_failures": []
+ },
+ {
+  "build": "build-rjndd",
+  "run": "arkar-eval-ui-j-data-story-2-56ctt_gs",
+  "round": "biz2",
+  "kind": "experience",
+  "overall": 5.6,
+  "scores": {
+   "feedback": 6,
+   "waiting": 6,
+   "success": null,
+   "errors": 6,
+   "transitions": 5,
+   "information": 8,
+   "state": 4,
+   "touch_keyboard": 4,
+   "consistency": 6
+  },
+  "not_testable": [
+   "success: no actions",
+   "switches non-standard"
+  ],
+  "critical_failures": [
+   "Enter on filter chip drops focus to body"
+  ]
+ },
+ {
+  "build": "build-yzqen",
+  "run": "arkar-eval-ui-j-data-story-1-hh_kq4hn",
+  "round": "biz2",
+  "kind": "experience",
+  "overall": 6.7,
+  "scores": {
+   "feedback": 7,
+   "waiting": 8,
+   "success": 6,
+   "errors": 7,
+   "transitions": 7,
+   "information": 8,
+   "state": 5,
+   "touch_keyboard": 5,
+   "consistency": 7
+  },
+  "not_testable": [
+   "?latency=slow ignored (uses ?slow)"
+  ],
+  "critical_failures": []
+ }
+]

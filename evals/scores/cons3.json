@@ -1,0 +1,212 @@
+[
+ {
+  "build": "build-deglz",
+  "run": "arkar-eval-ui-b-new-ai-saas-1-yemd1pxl",
+  "round": "cons3",
+  "overall": 7.75,
+  "scores": {
+   "visual": 8,
+   "layout": 8,
+   "functionality": 8,
+   "completeness": 8,
+   "responsiveness": 7,
+   "motion": 7,
+   "consistency": 8,
+   "originality": 8
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-ffdzb",
+  "run": "arkar-eval-ui-h-overlays-2-fqhoor05",
+  "round": "cons3",
+  "overall": 6.25,
+  "scores": {
+   "visual": 7,
+   "layout": 7,
+   "functionality": 5,
+   "completeness": 6,
+   "responsiveness": 6,
+   "motion": 6,
+   "consistency": 7,
+   "originality": 6
+  },
+  "critical_failures": [
+   "overdue filter shows nothing and resets counts"
+  ]
+ },
+ {
+  "build": "build-ghsvq",
+  "run": "arkar-eval-ui-g-booking-flow-1-2o7gm5x_",
+  "round": "cons3",
+  "overall": 7.0,
+  "scores": {
+   "visual": 8,
+   "layout": 7,
+   "functionality": 6,
+   "completeness": 7,
+   "responsiveness": 7,
+   "motion": 5,
+   "consistency": 8,
+   "originality": 8
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-jytnr",
+  "run": "arkar-eval-ui-h-overlays-3-ter5jk5g",
+  "round": "cons3",
+  "overall": 7.75,
+  "scores": {
+   "visual": 8,
+   "layout": 8,
+   "functionality": 8,
+   "completeness": 8,
+   "responsiveness": 7,
+   "motion": 7,
+   "consistency": 8,
+   "originality": 8
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-onmhb",
+  "run": "arkar-eval-ui-a-existing-corporate-3-47wnyi0a",
+  "round": "cons3",
+  "overall": 5.1,
+  "scores": {
+   "visual": 5,
+   "layout": 5,
+   "functionality": 6,
+   "completeness": null,
+   "responsiveness": 6,
+   "motion": 4,
+   "consistency": 6,
+   "originality": 4
+  },
+  "critical_failures": [
+   "display serif fell back to Times"
+  ]
+ },
+ {
+  "build": "build-qktdj",
+  "run": "arkar-eval-ui-g-booking-flow-3-joayutov",
+  "round": "cons3",
+  "overall": 7.5,
+  "scores": {
+   "visual": 8,
+   "layout": 7,
+   "functionality": 7,
+   "completeness": 8,
+   "responsiveness": 7,
+   "motion": 7,
+   "consistency": 8,
+   "originality": 8
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-qrubo",
+  "run": "arkar-eval-ui-a-existing-corporate-2-8h28_oxd",
+  "round": "cons3",
+  "overall": 6.6,
+  "scores": {
+   "visual": 7,
+   "layout": 6,
+   "functionality": 7,
+   "completeness": 6,
+   "responsiveness": 7,
+   "motion": 6,
+   "consistency": 7,
+   "originality": 7
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-uyrwr",
+  "run": "arkar-eval-ui-g-booking-flow-2-7on99ztg",
+  "round": "cons3",
+  "overall": 7.4,
+  "scores": {
+   "visual": 8,
+   "layout": 7,
+   "functionality": 7,
+   "completeness": 8,
+   "responsiveness": 8,
+   "motion": 6,
+   "consistency": 7,
+   "originality": 8
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-vnirz",
+  "run": "arkar-eval-ui-h-overlays-1-vcmivdbu",
+  "round": "cons3",
+  "overall": 7.4,
+  "scores": {
+   "visual": 8,
+   "layout": 8,
+   "functionality": 8,
+   "completeness": 7,
+   "responsiveness": 7,
+   "motion": 6,
+   "consistency": 8,
+   "originality": 7
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-vrvxq",
+  "run": "arkar-eval-ui-b-new-ai-saas-2-jon42a38",
+  "round": "cons3",
+  "overall": 6.5,
+  "scores": {
+   "visual": 6,
+   "layout": 7,
+   "functionality": 7,
+   "completeness": 7,
+   "responsiveness": 6,
+   "motion": 6,
+   "consistency": 7,
+   "originality": 6
+  },
+  "critical_failures": [
+   "display serif fell back to Times"
+  ]
+ },
+ {
+  "build": "build-wnjfi",
+  "run": "arkar-eval-ui-b-new-ai-saas-3-17o_mmkp",
+  "round": "cons3",
+  "overall": 7.8,
+  "scores": {
+   "visual": 8,
+   "layout": 8,
+   "functionality": 8,
+   "completeness": 8,
+   "responsiveness": 7,
+   "motion": 7,
+   "consistency": 8,
+   "originality": 8
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-xaqqh",
+  "run": "arkar-eval-ui-a-existing-corporate-1-9uw349th",
+  "round": "cons3",
+  "overall": 6.3,
+  "scores": {
+   "visual": 7,
+   "layout": 6,
+   "functionality": 7,
+   "completeness": 7,
+   "responsiveness": 7,
+   "motion": 4,
+   "consistency": 7,
+   "originality": 5
+  },
+  "critical_failures": []
+ }
+]

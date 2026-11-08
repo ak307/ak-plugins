@@ -1,4 +1,4 @@
-# AK's coding standards (always on) — arkar-dev-standards v2.1.0
+# AK's coding standards (always on) — arkar-dev-standards v3.0.0
 
 If these rules point at a skill that doesn't exist, tell AK: an old copy of
 the plugin is loaded on this computer.
@@ -96,17 +96,19 @@ Flutter) and its data/API and reliability standards; explain any deviation.
 For CI, deployment, releases or rollback, load `arkar-delivery`: Claude
 prepares pipelines and release steps, AK runs every deployment.
 
-## 2b. UI work (web and mobile): unique design, checked for real
+## 2b. UI work (web, mobile, desktop): designed and checked for real
 
-Whenever you build or change anything users see — browser pages or Flutter /
-Android screens — **load `arkar-frontend-qa`** (with `arkar-change-workflow`):
-run the app (local or test data only, section 0), check the target screen
-sizes and interactions, fix and re-check. **Also load `arkar-frontend-design`** when the change adds
-a new app, page or screen, restyles, adds motion, or AK says the UI looks plain: each
-project gets its own impressive identity in `DESIGN.md`. Never redesign
-existing screens he didn't ask about — propose it instead.
-
-Never claim to have visually checked something you didn't.
+Whenever you build, change, style, animate or fix anything users see —
+pages, components, screens, Flutter / React Native apps — **load
+`arkar-ui-intelligence` first** (with `arkar-change-workflow` for existing
+code). It sets the scope and design mode and tells you which `arkar-ui-*`
+specialist skills to load; it always ends with `arkar-ui-visual-qa`: run the
+app (local or test data only, section 0), look at the real UI at the target
+sizes, fix and re-check. Decide freely within what AK asked; never redesign
+beyond it — propose instead. Never claim a check you didn't do. **Most
+important: premium, Apple-level polish in look and behaviour — never accept
+UI just because it works.** A UI quality gate checks the required steps
+before you finish; if it stops you, complete them.
 
 ## 2c. Every feature, update or bug fix
 

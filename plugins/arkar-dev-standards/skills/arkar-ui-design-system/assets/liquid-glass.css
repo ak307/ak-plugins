@@ -1,0 +1,156 @@
+/* liquid-glass.css — Liquid Glass material for web builds.
+   Copy into the project and theme it through the tokens below (never edit
+   the recipes per component). Glass needs something to refract: put a
+   .lg-field (or a real canvas — map, skyline, schedule, imagery) behind it.
+
+   Surfaces:
+     .lg-bar      sidebar, top bar, tab bar, toolbar, filter bar
+     .lg-panel    floating content panel over a canvas (stronger tint for reading)
+     .lg-sheet    detail sheet / side panel / dialog surface
+     .lg-control  buttons, chips, inputs sitting on glass
+     .lg-pill     small badges, counts, toasts
+     .lg-segmented + .lg-segment  tab/segment control with a sliding indicator
+                  (set --lg-index and --lg-count on the container)
+   Theme: data-theme="dark" on any ancestor (or :root) switches the tint.
+   Fallbacks: no backdrop-filter, prefers-reduced-transparency or
+   prefers-contrast: more → solid tinted surfaces with the same shape. */
+
+:root {
+  --lg-tint: 255 255 255;          /* RGB of the glass tint */
+  --lg-tint-alpha: 0.42;           /* bars and sheets */
+  --lg-panel-alpha: 0.62;          /* panels people read in */
+  --lg-blur: 22px;
+  --lg-saturate: 1.8;
+  --lg-edge: 255 255 255;          /* RGB of the rim light */
+  --lg-shadow: 15 23 42;           /* RGB of the drop shadow */
+  --lg-text: #0b1220;
+  --lg-radius: 22px;
+  --lg-radius-control: 999px;
+  --lg-solid: #f3f5f8;             /* fallback surface */
+  --lg-field-a: #8fb8ff;           /* .lg-field colours */
+  --lg-field-b: #b6f0d8;
+  --lg-field-c: #ffd6a5;
+  --lg-field-base: #eef2f7;
+}
+
+[data-theme="dark"], :root[data-theme="dark"] {
+  --lg-tint: 22 28 40;
+  --lg-tint-alpha: 0.46;
+  --lg-panel-alpha: 0.66;
+  --lg-edge: 255 255 255;
+  --lg-shadow: 0 0 0;
+  --lg-text: #f4f7fb;
+  --lg-solid: #161c28;
+  --lg-field-a: #1f4fd1;
+  --lg-field-b: #0e8f73;
+  --lg-field-c: #7a3db8;
+  --lg-field-base: #070b14;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --lg-tint: 22 28 40; --lg-tint-alpha: 0.46; --lg-panel-alpha: 0.66; --lg-shadow: 0 0 0;
+    --lg-text: #f4f7fb; --lg-solid: #161c28; --lg-field-a: #1f4fd1; --lg-field-b: #0e8f73;
+    --lg-field-c: #7a3db8; --lg-field-base: #070b14;
+  }
+}
+
+/* A colour field for glass to refract when there's no natural canvas. */
+.lg-field {
+  background:
+    radial-gradient(60% 50% at 12% 8%, var(--lg-field-a), transparent 70%),
+    radial-gradient(50% 45% at 88% 20%, var(--lg-field-c), transparent 70%),
+    radial-gradient(70% 60% at 60% 100%, var(--lg-field-b), transparent 70%),
+    var(--lg-field-base);
+  background-attachment: fixed;
+}
+
+/* The material: tint + blur + saturation, a rim light that is brighter at
+   the top, an inner specular sheen, and a soft separating shadow. */
+.lg-bar, .lg-panel, .lg-sheet, .lg-control, .lg-pill, .lg-segmented {
+  position: relative;
+  color: var(--lg-text);
+  background: rgb(var(--lg-tint) / var(--lg-tint-alpha));
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate));
+  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate));
+  border: 1px solid rgb(var(--lg-edge) / 0.22);
+  box-shadow:
+    inset 0 1px 0 rgb(var(--lg-edge) / 0.55),
+    inset 0 -1px 0 rgb(var(--lg-edge) / 0.08),
+    0 1px 2px rgb(var(--lg-shadow) / 0.10),
+    0 12px 32px -8px rgb(var(--lg-shadow) / 0.28);
+  isolation: isolate;
+}
+
+/* Specular sheen: light catching the upper edge of the glass. */
+.lg-bar::before, .lg-panel::before, .lg-sheet::before, .lg-control::before, .lg-segmented::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(var(--lg-edge) / 0.32), rgb(var(--lg-edge) / 0.04) 38%, transparent 60%);
+  mix-blend-mode: soft-light;
+  z-index: -1;
+}
+
+.lg-bar { border-radius: var(--lg-radius); }
+.lg-panel { border-radius: var(--lg-radius); background: rgb(var(--lg-tint) / var(--lg-panel-alpha)); }
+.lg-sheet { border-radius: calc(var(--lg-radius) + 6px); background: rgb(var(--lg-tint) / var(--lg-panel-alpha)); }
+.lg-pill { border-radius: var(--lg-radius-control); padding: 0.2em 0.7em; }
+
+/* Controls on glass: lighter glass that brightens on hover and presses in. */
+.lg-control {
+  border-radius: var(--lg-radius-control);
+  background: rgb(var(--lg-tint) / calc(var(--lg-tint-alpha) * 0.7));
+  transition: background-color 160ms ease, transform 120ms ease, box-shadow 160ms ease;
+  cursor: pointer;
+}
+.lg-control:hover { background: rgb(var(--lg-tint) / calc(var(--lg-tint-alpha) + 0.18)); }
+.lg-control:active { transform: scale(0.97); }
+.lg-control:focus-visible { outline: 2px solid rgb(var(--lg-edge) / 0.9); outline-offset: 2px; }
+
+/* Segmented / tab control with an indicator that slides to the chosen
+   segment. Set style="--lg-count: 3; --lg-index: 0" and update --lg-index. */
+.lg-segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 4px;
+  border-radius: var(--lg-radius-control);
+}
+.lg-segmented::after {
+  content: "";
+  position: absolute;
+  top: 4px; bottom: 4px; left: 4px;
+  width: calc((100% - 8px) / var(--lg-count, 2));
+  transform: translateX(calc(100% * var(--lg-index, 0)));
+  border-radius: var(--lg-radius-control);
+  background: rgb(var(--lg-edge) / 0.85);
+  box-shadow: 0 2px 8px rgb(var(--lg-shadow) / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.9);
+  transition: transform 320ms cubic-bezier(.34, 1.36, .64, 1);
+  z-index: -1;
+}
+[data-theme="dark"] .lg-segmented::after { background: rgb(255 255 255 / 0.16); }
+.lg-segment {
+  appearance: none; border: 0; background: none; color: inherit; font: inherit;
+  padding: 0.5em 1em; border-radius: var(--lg-radius-control); cursor: pointer;
+  transition: color 200ms ease;
+}
+.lg-segment[aria-selected="true"] { font-weight: 600; }
+
+/* Fallbacks: same shape, solid surface. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .lg-bar, .lg-panel, .lg-sheet, .lg-control, .lg-pill, .lg-segmented { background: var(--lg-solid); }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .lg-bar, .lg-panel, .lg-sheet, .lg-control, .lg-pill, .lg-segmented {
+    background: var(--lg-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .lg-bar::before, .lg-panel::before, .lg-sheet::before, .lg-control::before, .lg-segmented::before { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lg-segmented::after, .lg-control { transition: none; }
+}

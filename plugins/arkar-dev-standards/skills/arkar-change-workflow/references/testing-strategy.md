@@ -32,7 +32,7 @@ setup only) before relying on its tests.
 Laravel: Pest unit + feature tests. Django: pytest-django with the test
 client and factory_boy. FastAPI: pytest + TestClient. Flutter: unit tests
 for notifiers/repositories, widget tests for screens, a few integration
-tests (see `arkar-frontend-qa/references/mobile-qa.md`). Front-end logic in
+tests (see `arkar-ui-visual-qa/references/responsive-testing.md`). Front-end logic in
 React: Vitest for non-trivial hooks and utilities.
 
 ## 3. Tests every change needs

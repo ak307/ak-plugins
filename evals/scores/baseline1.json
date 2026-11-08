@@ -1,0 +1,83 @@
+[
+ {
+  "build": "build-hdkoe",
+  "run": "arkar-eval-ui-l-vague-brief-2-kxvx5lbx",
+  "round": "baseline1",
+  "model": "default",
+  "plugin": "none",
+  "overall": 6.1,
+  "scores": {
+   "visual": 7,
+   "layout": 6,
+   "functionality": 7,
+   "completeness": 5,
+   "responsiveness": 6,
+   "motion": 5,
+   "consistency": 8,
+   "originality": 5
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-izxpa",
+  "run": "arkar-eval-ui-l-vague-brief-1-ppq6atoi",
+  "round": "baseline1",
+  "model": "default",
+  "plugin": "none",
+  "overall": 6.4,
+  "scores": {
+   "visual": 7,
+   "layout": 6,
+   "functionality": 6,
+   "completeness": 5,
+   "responsiveness": 7,
+   "motion": 6,
+   "consistency": 7,
+   "originality": 7
+  },
+  "critical_failures": []
+ },
+ {
+  "build": "build-jqikm",
+  "run": "arkar-eval-ui-c-enterprise-admin-1-yaif8lt7",
+  "round": "baseline1",
+  "model": "default",
+  "plugin": "none",
+  "overall": 3.9,
+  "scores": {
+   "visual": 4,
+   "layout": 4,
+   "functionality": 5,
+   "completeness": 4,
+   "responsiveness": 2,
+   "motion": 3,
+   "consistency": 6,
+   "originality": 3
+  },
+  "critical_failures": [
+   "phone overflows horizontally",
+   "table trapped in short scroll area, huge empty field"
+  ]
+ },
+ {
+  "build": "build-yagwv",
+  "run": "arkar-eval-ui-c-enterprise-admin-2-6riyy58b",
+  "round": "baseline1",
+  "model": "default",
+  "plugin": "none",
+  "overall": 4.75,
+  "scores": {
+   "visual": 5,
+   "layout": 5,
+   "functionality": 6,
+   "completeness": 5,
+   "responsiveness": 4,
+   "motion": 3,
+   "consistency": 7,
+   "originality": 3
+  },
+  "critical_failures": [
+   "phone hides status/card/last-used columns"
+  ]
+ }
+]

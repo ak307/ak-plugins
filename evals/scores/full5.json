@@ -1,0 +1,81 @@
+[
+ {
+  "build": "build-bdlkd",
+  "run": "arkar-eval-ui-c-enterprise-admin-1-stzvboju",
+  "round": "full5",
+  "kind": "visual",
+  "scores": {
+   "visual": 7,
+   "layout": 7,
+   "functionality": 6,
+   "completeness": 7,
+   "responsiveness": 6,
+   "motion": 5,
+   "consistency": 7,
+   "originality": 6
+  },
+  "overall": 6.4,
+  "critical_failures": [
+   "bulk pill over header text",
+   "rows overlap mid-filter transition"
+  ]
+ },
+ {
+  "build": "build-wgoij",
+  "run": "arkar-eval-ui-s-rostering-1-xx9flwxz",
+  "round": "full5",
+  "kind": "visual",
+  "scores": {
+   "visual": 7,
+   "layout": 7,
+   "functionality": 6,
+   "completeness": 7,
+   "responsiveness": 5,
+   "motion": 6,
+   "consistency": 7,
+   "originality": 7
+  },
+  "overall": 6.5,
+  "critical_failures": [
+   "phone chips cut by remove buttons"
+  ]
+ },
+ {
+  "build": "build-kuwfv",
+  "run": "arkar-eval-ui-q-multi-page-1-447gu7vq",
+  "round": "full5",
+  "kind": "visual",
+  "scores": {
+   "visual": 8,
+   "layout": 8,
+   "functionality": 7,
+   "completeness": 7,
+   "responsiveness": 6,
+   "motion": 5,
+   "consistency": 8,
+   "originality": 8
+  },
+  "overall": 7.1,
+  "critical_failures": []
+ },
+ {
+  "build": "build-kbutt",
+  "run": "arkar-eval-ui-r-approvals-1-48q527nv",
+  "round": "full5",
+  "kind": "visual",
+  "scores": {
+   "visual": 8,
+   "layout": 7,
+   "functionality": 6,
+   "completeness": 7,
+   "responsiveness": 6,
+   "motion": 6,
+   "consistency": 7,
+   "originality": 8
+  },
+  "overall": 6.9,
+  "critical_failures": [
+   "phone chart dot over label"
+  ]
+ }
+]

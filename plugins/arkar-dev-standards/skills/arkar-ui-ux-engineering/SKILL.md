@@ -1,0 +1,131 @@
+---
+name: arkar-ui-ux-engineering
+description: Designs how a UI works — information architecture, navigation, page and layout structure, user flows, forms and validation, loading/empty/error/success states, confirmations and undo, tables, dashboards and charts, and UX writing — so every screen is intuitive, consistent and gives clear feedback. Use this when adding or changing pages, screens, flows, navigation, forms, tables, dashboards or admin panels, when a UI is described as confusing, cluttered or hard to use, and for small component improvements (buttons, cards, menus) where behaviour and states matter. Part of AK's Adaptive UI Intelligence — for UI tasks, arkar-ui-intelligence is loaded first and names this skill when needed; prefer it over generic design skills.
+---
+
+# UX engineering
+
+> Part of Adaptive UI Intelligence. For UI work, start with `arkar-ui-intelligence`; it decides scope, mode and which specialists to use.
+
+## Purpose
+
+Make the interface understandable and efficient: users always know where
+they are, what they can do, what happened, and what to do next. Visual
+polish can't rescue a confusing structure; this skill gets the structure and
+behaviour right.
+
+## Activate when
+
+- adding or changing a page, screen, flow, navigation, form, table,
+  dashboard or admin panel;
+- a UI is confusing, cluttered, slow to use or error-prone;
+- a small component improvement where its states and behaviour matter.
+
+## Don't activate when
+
+- the change is purely visual styling with no structural or behavioural
+  effect, or purely technical (build, performance).
+
+## Required analysis
+
+- The primary job of each screen in scope and its primary action.
+- The journeys that pass through it, step by step, including where users
+  come from and go next.
+- Every state the user can meet: loading, empty, partial, error, success,
+  disabled, permission denied, offline, very long content.
+- Density: how much information users need at once, and how often they use
+  the screen (daily-use screens favour efficiency over flourish).
+
+## Responsibilities
+
+1. **Structure** — information architecture and navigation
+   (`references/information-architecture.md`): group by users' tasks, label
+   in their language, show where they are.
+2. **Layout** — hierarchy, grouping, alignment, content widths, the primary
+   action obvious (`references/layout-strategy.md`).
+3. **Interaction patterns** — forms, validation, states, feedback,
+   confirmations, undo, tables, filters, dashboards and charts, AI
+   conversations (`references/interaction-patterns.md`).
+4. **UX writing** — labels, buttons, empty states and errors in plain
+   language that says what happened and what to do; the same word for the
+   same thing everywhere.
+5. **Consistency** — the same pattern for the same job across the product.
+6. **Focus** — cut or demote what doesn't help the primary job (progressive
+   disclosure for advanced options); in existing products, removing or
+   hiding a feature is a 🟠 proposal for AK. Make the interface disappear:
+   content first, controls quiet until needed.
+
+## Expected output
+
+For the screens in scope: the structure, the flow, every state and its
+content, the feedback for every action — implemented by
+`arkar-ui-implementation`, and summarised in the final message when the
+structure changed.
+
+## Quality criteria
+
+- Meets AK's premium standard (`arkar-ui-intelligence/references/premium-standard.md`): nothing basic, generic or unfinished — working is not enough.
+
+- One obvious primary action per screen; secondary actions look secondary.
+- Every action gets feedback within ~100 ms; long operations show progress
+  honestly.
+- Every state is designed; no dead ends — each state offers a way forward or
+  back.
+- Destructive actions confirm (naming what's affected) or offer undo.
+- Forms never lose the user's input and say exactly how to fix errors.
+- Users don't have to re-enter information they've already given (WCAG
+  3.3.7 Redundant Entry).
+- **No large blank areas waiting for input.** An empty detail panel or side
+  column shows something useful (what needs attention, recent items, a
+  short guide) or collapses until it has content — never a big empty box
+  with one icon.
+- **Notifications never hide what they talk about.** Toasts and snackbars
+  sit where they don't cover the item that just changed or the next thing
+  people need (and move clear of sticky bars on phones); the changed item
+  itself also shows the change (a brief highlight in place).
+- **Success is earned.** A form never shows success without validating:
+  required fields and formats are checked (inline, human messages), the
+  submit shows progress, then success — or a recoverable error.
+- **Fixed composers and footers reserve their space:** the scrolling area
+  ends above them (padding equal to their height), so the last message,
+  suggestion or row is never hidden behind them.
+- **Never reference a file that isn't there.** A missing logo, photo or
+  icon gets a designed stand-in (a typographic wordmark, an illustration
+  built in code) — not an `<img>` that 404s and hides itself on error.
+  Tell AK where the real file goes and what to change when it arrives.
+- **Every control answers.** Each click, filter or download gives visible
+  feedback (state change, highlight, toast or progress) — "only the counts
+  changed somewhere" is not feedback.
+- **One meaning, one encoding.** A status shown by colour, icon or bar uses
+  the same thresholds everywhere (a "low stock" item is never shown with a
+  "healthy" green bar).
+- **One number, one source.** A figure shown in more than one place (a
+  header count and a legend, a total and its rows) is computed from the same
+  data, so they can never disagree. One format per kind of value (times,
+  dates, money) across the whole product.
+- **Nothing prints over text.** Badges, counts, chart callouts, labels and
+  toasts get their own space; check each against its neighbours at every
+  size (a "72h" badge on a name chip, a callout on a legend, a toast on the
+  tabs are all defects).
+- **Columns end together.** A side column beside a long list is sticky, or
+  holds enough to match it, or its content moves into the flow — never a
+  short panel above a tall empty strip.
+- **Every chart answers a question.** If all values are equal or there is
+  one value, say it in a sentence or a number instead; label what the
+  axes and bars mean and show the values people compare.
+- **No placeholder data on a finished page.** No "[Street address]",
+  "555-0100", "example.com", "Your Town" or lorem ipsum. When a real fact is
+  missing, design the page without it (leave the element out or reshape the
+  section) and list it under **What I need from you** in the reply.
+- **Long lists stay manageable:** past a screen or two of rows, page, group
+  or virtualise them, and keep filters and the summary in reach — never one
+  5,000-pixel scroll.
+- Every page ends deliberately: a closing action or next step, not an
+  abrupt stop after the last section.
+
+## Dependencies
+
+Input from `arkar-ui-discovery`; visual language from
+`arkar-ui-art-direction` and `arkar-ui-design-system`; motion for
+transitions and feedback from `arkar-ui-motion-design`; accessibility
+requirements from `arkar-ui-accessibility`.

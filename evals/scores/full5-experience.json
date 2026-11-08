@@ -1,0 +1,88 @@
+[
+ {
+  "build": "build-bdlkd",
+  "run": "arkar-eval-ui-c-enterprise-admin-1-stzvboju",
+  "round": "full5",
+  "kind": "experience",
+  "scores": {
+   "feedback": 7,
+   "waiting": 7,
+   "success": 8,
+   "errors": 5,
+   "transitions": 7,
+   "information": 8,
+   "state": 6,
+   "touch_keyboard": 7,
+   "consistency": 7
+  },
+  "overall": 6.9,
+  "not_testable": [
+   "failed save unreachable: list never loads after retry"
+  ],
+  "critical_failures": [
+   "?fail=1 retry never recovers, no busy state"
+  ]
+ },
+ {
+  "build": "build-wgoij",
+  "run": "arkar-eval-ui-s-rostering-1-xx9flwxz",
+  "round": "full5",
+  "kind": "experience",
+  "scores": {
+   "feedback": 7,
+   "waiting": 8,
+   "success": 7,
+   "errors": 7,
+   "transitions": 7,
+   "information": 7,
+   "state": 7,
+   "touch_keyboard": 5,
+   "consistency": 7
+  },
+  "overall": 6.9,
+  "not_testable": [],
+  "critical_failures": []
+ },
+ {
+  "build": "build-kuwfv",
+  "run": "arkar-eval-ui-q-multi-page-1-447gu7vq",
+  "round": "full5",
+  "kind": "experience",
+  "scores": {
+   "feedback": 7,
+   "waiting": 6,
+   "success": 7,
+   "errors": 7,
+   "transitions": 5,
+   "information": 8,
+   "state": 7,
+   "touch_keyboard": 6,
+   "consistency": 7
+  },
+  "overall": 6.7,
+  "not_testable": [
+   "switches don't reach filter/search"
+  ],
+  "critical_failures": []
+ },
+ {
+  "build": "build-kbutt",
+  "run": "arkar-eval-ui-r-approvals-1-48q527nv",
+  "round": "full5",
+  "kind": "experience",
+  "scores": {
+   "feedback": 7,
+   "waiting": 7,
+   "success": 6,
+   "errors": 8,
+   "transitions": 7,
+   "information": 5,
+   "state": 8,
+   "touch_keyboard": 7,
+   "consistency": 7
+  },
+  "overall": 6.9,
+  "not_testable": [],
+  "critical_failures": []
+ }
+]

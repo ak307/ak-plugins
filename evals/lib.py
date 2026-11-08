@@ -18,10 +18,19 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 SKILL_KEYS = {
     "workflow": "arkar-change-workflow",
     "structure": "arkar-project-structure",
-    "design": "arkar-frontend-design",
-    "qa": "arkar-frontend-qa",
     "delivery": "arkar-delivery",
+    "ui": "arkar-ui-intelligence",
+    "discovery": "arkar-ui-discovery",
+    "art": "arkar-ui-art-direction",
+    "ux": "arkar-ui-ux-engineering",
+    "ds": "arkar-ui-design-system",
+    "motion": "arkar-ui-motion-design",
+    "responsive": "arkar-ui-responsive-design",
+    "a11y": "arkar-ui-accessibility",
+    "impl": "arkar-ui-implementation",
+    "vqa": "arkar-ui-visual-qa",
 }
+UI_SPECIALISTS = ("discovery", "art", "ux", "ds", "motion", "responsive", "a11y", "impl", "vqa")
 
 
 @dataclass
@@ -34,6 +43,7 @@ class Run:
     session_id: str | None = None
     guard_hits: int = 0
     raw: str = ""
+    ending: str = ""
 
     def loaded(self, key: str) -> bool:
         return any(skill.endswith(SKILL_KEYS[key]) for skill in self.skills)
@@ -53,13 +63,19 @@ def empty_plugin_dir() -> Path:
 
 def run_claude(prompt: str, cwd: Path, plugin_dir: Path, max_turns: int = 100, resume: str | None = None) -> Run:
     """Run one headless Claude Code session with the given plugin folder loaded."""
+    # EVAL_BRIEF_SUFFIX adds a requirement to the first message (e.g. a requested material or style).
+    if os.environ.get("EVAL_BRIEF_SUFFIX") and not resume:
+        prompt = f"{prompt} {os.environ['EVAL_BRIEF_SUFFIX']}"
     command = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose",
                "--dangerously-skip-permissions", "--max-turns", str(max_turns), "--plugin-dir", str(plugin_dir)]
     if resume:
         command += ["--resume", resume]
+    # EVAL_MODEL picks the model under test (default: the CLI's own default).
+    if os.environ.get("EVAL_MODEL"):
+        command += ["--model", os.environ["EVAL_MODEL"]]
     environment = {**os.environ, "IS_SANDBOX": "1"}
     process = subprocess.run(command, cwd=cwd, env=environment, stdin=subprocess.DEVNULL,
-                             capture_output=True, text=True, timeout=3600)
+                             capture_output=True, text=True, timeout=5400)
     run = Run(raw=process.stdout)
     for line in process.stdout.splitlines():
         try:
@@ -69,8 +85,10 @@ def run_claude(prompt: str, cwd: Path, plugin_dir: Path, max_turns: int = 100, r
         run.session_id = event.get("session_id") or run.session_id
         if event.get("type") == "result":
             run.final = event.get("result", "") or ""
+            # error_max_turns means the eval's turn cap cut the session short (no such cap in real use).
+            run.ending = f"{event.get('subtype', '?')} after {event.get('num_turns', '?')} turns"
             # Kept beside the workspace so a failed check can be read afterwards.
-            (cwd.parent / f"reply-{run.session_id}.md").write_text(run.final)
+            (cwd.parent / f"reply-{run.session_id}.md").write_text(run.final + f"\n\n<!-- session ended: {run.ending} -->\n")
         if event.get("type") != "assistant":
             continue
         for block in event.get("message", {}).get("content", []):

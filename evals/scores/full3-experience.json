@@ -1,0 +1,101 @@
+[
+ {
+  "build": "build-squep",
+  "run": "arkar-eval-ui-c-enterprise-admin-1-rznyrwcv",
+  "round": "full3",
+  "kind": "experience",
+  "scores": {
+   "feedback": 7,
+   "waiting": 7,
+   "success": 7,
+   "errors": 7,
+   "transitions": 6,
+   "information": 8,
+   "state": 4,
+   "touch_keyboard": 7,
+   "consistency": 7
+  },
+  "overall": 6.7,
+  "not_testable": [
+   "non-standard switches"
+  ],
+  "critical_failures": [
+   "deactivations lost on refresh",
+   "Back on phone leaves app"
+  ]
+ },
+ {
+  "build": "build-jnqxp",
+  "run": "arkar-eval-ui-r-approvals-1-38e1wuos",
+  "round": "full3",
+  "kind": "experience",
+  "scores": {
+   "feedback": 8,
+   "waiting": 6,
+   "success": 7,
+   "errors": 5,
+   "transitions": 7,
+   "information": 8,
+   "state": 7,
+   "touch_keyboard": 6,
+   "consistency": 7
+  },
+  "overall": 6.8,
+  "not_testable": [
+   "no URL switches"
+  ],
+  "critical_failures": [
+   "reason lost on Escape",
+   "reason lost on failure"
+  ]
+ },
+ {
+  "build": "build-cvwmc",
+  "run": "arkar-eval-ui-s-rostering-1-3amazeh9",
+  "round": "full3",
+  "kind": "experience",
+  "scores": {
+   "feedback": 7,
+   "waiting": 6,
+   "success": 8,
+   "errors": 7,
+   "transitions": 6,
+   "information": 8,
+   "state": 5,
+   "touch_keyboard": 5,
+   "consistency": 7
+  },
+  "overall": 6.6,
+  "not_testable": [
+   "non-standard switches"
+  ],
+  "critical_failures": [
+   "Back leaves app",
+   "focus lost to body"
+  ]
+ },
+ {
+  "build": "build-xozam",
+  "run": "arkar-eval-ui-q-multi-page-1-g83fgs70",
+  "round": "full3",
+  "kind": "experience",
+  "scores": {
+   "feedback": 7,
+   "waiting": 7,
+   "success": 7,
+   "errors": 6,
+   "transitions": 6,
+   "information": 6,
+   "state": 6,
+   "touch_keyboard": 7,
+   "consistency": 7
+  },
+  "overall": 6.6,
+  "not_testable": [
+   "non-standard switches"
+  ],
+  "critical_failures": [
+   "typed notes lost on refresh"
+  ]
+ }
+]

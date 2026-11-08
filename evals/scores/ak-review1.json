@@ -1,0 +1,21 @@
+{
+ "round": "cons4",
+ "reviewer": "AK",
+ "verdicts": [
+  "AK verdicts: 01 admin best(7.4)=Good, not premium",
+  "02 admin weakest(6.4)=Good, not premium",
+  "03 export best(7.6)=Looks good, but table and Recent exports part are boring and simple",
+  "04 export weakest(7.0)=Good, not premium",
+  "05 data story best(7.4)=Premium",
+  "06 data story weakest(6.75)=Boring / template",
+  "07 onboarding best(7.75)=Good, not premium",
+  "08 onboarding weakest(6.75)=Good, not premium",
+  "09 bakery best(7.3)=Good, not premium",
+  "10 bakery weakest(7.1)=Good, not premium",
+  "11 ops dashboard best(6.4)=Boring / template",
+  "12 ops dashboard weakest(6.0)=Boring / template",
+  "13 kopi best(6.8)=Boring / template",
+  "14 kopi weakest(6.0)=Boring / template"
+ ],
+ "summary": "1 premium (data story best 7.4), 8 good-not-premium (6.4\u20137.75), 5 boring/template (6.0\u20136.8, ops dashboard and kopi stall). Blind reviewer's ranking matches AK's: <=6.8 boring, ~7\u20137.75 good, premium seen at 7.4 with a strong data-story composition."
+}

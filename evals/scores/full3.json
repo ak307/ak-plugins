@@ -1,0 +1,76 @@
+[
+ {
+  "build": "build-squep",
+  "run": "arkar-eval-ui-c-enterprise-admin-1-rznyrwcv",
+  "round": "full3",
+  "kind": "visual",
+  "scores": {
+   "visual": 7,
+   "layout": 7,
+   "functionality": 7,
+   "completeness": 6,
+   "responsiveness": 6,
+   "motion": 4,
+   "consistency": 7,
+   "originality": 6
+  },
+  "overall": 6.25,
+  "critical_failures": []
+ },
+ {
+  "build": "build-jnqxp",
+  "run": "arkar-eval-ui-r-approvals-1-38e1wuos",
+  "round": "full3",
+  "kind": "visual",
+  "scores": {
+   "visual": 8,
+   "layout": 8,
+   "functionality": 8,
+   "completeness": 7,
+   "responsiveness": 7,
+   "motion": 7,
+   "consistency": 8,
+   "originality": 8
+  },
+  "overall": 7.63,
+  "critical_failures": []
+ },
+ {
+  "build": "build-cvwmc",
+  "run": "arkar-eval-ui-s-rostering-1-3amazeh9",
+  "round": "full3",
+  "kind": "visual",
+  "scores": {
+   "visual": 7,
+   "layout": 7,
+   "functionality": 6,
+   "completeness": 7,
+   "responsiveness": 6,
+   "motion": 5,
+   "consistency": 7,
+   "originality": 8
+  },
+  "overall": 6.63,
+  "critical_failures": [
+   "phone officers sheet hides roster by default"
+  ]
+ },
+ {
+  "build": "build-xozam",
+  "run": "arkar-eval-ui-q-multi-page-1-g83fgs70",
+  "round": "full3",
+  "kind": "visual",
+  "scores": {
+   "visual": 8,
+   "layout": 8,
+   "functionality": 7,
+   "completeness": 7,
+   "responsiveness": 7,
+   "motion": 7,
+   "consistency": 8,
+   "originality": 8
+  },
+  "overall": 7.63,
+  "critical_failures": []
+ }
+]

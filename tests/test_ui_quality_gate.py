@@ -214,3 +214,13 @@ def test_transcript_lines_with_raw_control_characters_are_read(tmp_path):
     result = subprocess.run([BASH, str(LAUNCHER)], input=json.dumps(hook_event), capture_output=True,
                             text=True, timeout=30)
     assert "arkar-ui-intelligence" in result.stdout
+
+
+def test_scratch_pages_outside_the_project_are_ignored(tmp_path):
+    outside = tmp_path.parent / "scratchpad-elsewhere" / "index.html"
+    assert run_gate(tmp_path, [tool_use("Write", file_path=str(outside), content="<button>x</button>")]) == ""
+
+
+def test_editing_a_skills_own_assets_is_not_product_ui(tmp_path):
+    asset = tmp_path / "plugins" / "kit" / "skills" / "arkar-ui-design-system" / "assets" / "liquid-glass.css"
+    assert run_gate(tmp_path, [tool_use("Write", file_path=str(asset), content=".lg-bar{}")]) == ""

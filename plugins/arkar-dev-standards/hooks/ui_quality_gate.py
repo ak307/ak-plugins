@@ -35,7 +35,9 @@ UI_FILE = re.compile(
     re.IGNORECASE,
 )
 MARKUP = re.compile(r"<(form|input|button|label|table|select|textarea|nav|header|main|section)\b[^>]*>", re.IGNORECASE)
-SKIP_PATH = re.compile(r"(^|/)(node_modules|vendor|dist|build|qa-screenshots|\.git)/|(^|/)tests?/|_test\.|\.test\.|\.spec\.")
+SKIP_PATH = re.compile(r"(^|/)(node_modules|vendor|dist|build|qa-screenshots|\.git)/|(^|/)tests?/|_test\.|\.test\.|\.spec\."
+                       # A skill's own assets and examples are a library being written, not a product's UI.
+                       r"|(^|/)skills/[^/]+/(assets|references|scripts)/")
 ORCHESTRATOR = "arkar-ui-intelligence"
 VISUAL_QA = "arkar-ui-visual-qa"
 # New products and redesigns load every specialist (the orchestrator's required minimum sets).
@@ -119,6 +121,18 @@ def relative(path: str, cwd: Path) -> str:
         return Path(path).as_posix()
 
 
+def inside(path: str, cwd: Path) -> bool:
+    """Only the project's own files count: scratch pages written to /tmp or elsewhere are not its UI."""
+    candidate = Path(path)
+    if not candidate.is_absolute():
+        return True
+    try:
+        candidate.resolve().relative_to(cwd.resolve())
+        return True
+    except (ValueError, OSError):
+        return False
+
+
 def loaded(skills: set[str], name: str) -> bool:
     return any(skill == name or skill.endswith(":" + name) for skill in skills)
 
@@ -195,6 +209,7 @@ def decide(event: dict) -> str | None:
     cwd = Path(event.get("cwd") or ".")
     ui_edits = [path for path in edited
                 if (UI_FILE.search(path) or path.endswith("#markup"))
+                and inside(path[:-7] if path.endswith("#markup") else path, cwd)
                 and not SKIP_PATH.search(relative(path[:-7] if path.endswith("#markup") else path, cwd))]
     if not ui_edits:
         return None

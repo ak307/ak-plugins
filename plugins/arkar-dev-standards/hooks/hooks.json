@@ -15,7 +15,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash|Read|mcp__.*",
+        "matcher": "Bash|Read|Grep|mcp__.*",
         "hooks": [
           {
             "type": "command",

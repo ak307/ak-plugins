@@ -41,15 +41,21 @@ ALWAYS_BLOCK = [
      "it rolls back every migration of an app"),
     (r"\balembic\s+downgrade\b",
      "it rolls back the database schema"),
-    (r"\bgit\s+push\b[^\n;&|]*\s(--force|--force-with-lease|-f)\b",
+    (r"\bgit\s+push\b[^\n;&|]*\s(--force|--force-with-lease|-f\b|\+\S)",
      "a force push rewrites shared history"),
     (r"\bgit\s+reset\b[^\n;&|]*--hard\b",
      "it discards work irreversibly"),
     (r"\bgit\s+clean\s+-[a-z]*f",
      "it deletes untracked files irreversibly"),
-    (r"\brm\s+-[a-z]*r[a-z]*\s+(/|~|\$home|\.\.|\.|\*)(\s|$|/\s|/$)",
+    # Flags may be joined or separate (-rf, -r -f, --recursive); the target may be quoted.
+    (r"\brm\s+(?=(?:-\S+\s+)*(?:-[a-z]*r|--recursive))(?:-\S+\s+)+[\"']?(/|~|\$home|\$\{home\}|\.\.|\.|\*)/?\*?[\"']?(\s|$|[)`;&|])",
      "a recursive delete of the whole project, home folder or system"),
 ]
+
+# Commands that only search or record text: a dangerous command quoted in them
+# ("grep 'git push --force'", a commit message) is text, not something that runs.
+TEXT_ONLY_COMMAND = re.compile(r"^(grep|egrep|fgrep|rg|ag|ack|git\s+(grep|log|commit|tag|notes|show))\b")
+QUOTED_TEXT = re.compile(r"\"[^\"]*\"|'[^']*'")
 
 # SQL that destroys data. Checked only when the command talks to a database
 # client, so searching code for the words "DROP TABLE" is still allowed.
@@ -240,10 +246,25 @@ def command_segments(text: str):
             yield segment
 
 
+def without_quoted_text(segment: str) -> str:
+    """Blank quoted text in a search or commit command; keep any that runs a command substitution."""
+    if not TEXT_ONLY_COMMAND.match(segment):
+        return segment
+
+    def blank(match: re.Match) -> str:
+        quoted = match.group(0)
+        if "$(" in quoted or "`" in quoted:
+            return quoted
+        return '""'
+
+    return QUOTED_TEXT.sub(blank, segment)
+
+
 def check_bash(command: str, cwd: Path):
     lowered = without_file_contents(command).lower()
+    runnable = "\n".join(without_quoted_text(segment) for segment in command_segments(lowered))
     for pattern, why in ALWAYS_BLOCK:
-        if re.search(pattern, lowered):
+        if re.search(pattern, runnable):
             return "deny", f"{GUARD_NAME}: blocked because {why}. If it is really needed, AK runs it himself after a backup."
     if re.search(DATABASE_CLIENTS, lowered):
         for pattern, why in DESTRUCTIVE_SQL:
@@ -270,11 +291,22 @@ def check_bash(command: str, cwd: Path):
     return None
 
 
-def check_read(file_path: str):
+def is_env_file(file_path: str) -> bool:
     name = Path(file_path).name.lower()
-    if name == ".env" or (name.startswith(".env.") and name != ".env.example"):
+    return name == ".env" or (name.startswith(".env.") and name != ".env.example")
+
+
+def check_read(file_path: str):
+    if is_env_file(file_path):
         return "deny", (f"{GUARD_NAME}: don't read a whole .env file (it holds passwords and keys). "
                         f"To see where the project points, run: {SAFE_ENV_HINT}")
+    return None
+
+
+def check_grep(tool_input: dict):
+    """Searching a .env file with the Grep tool prints its secrets just like reading it."""
+    if is_env_file(tool_input.get("path") or "") or is_env_file(tool_input.get("glob") or ""):
+        return check_read(".env")
     return None
 
 
@@ -296,6 +328,8 @@ def decide(event: dict):
         return check_bash(tool_input.get("command", ""), cwd)
     if tool_name == "Read":
         return check_read(tool_input.get("file_path", ""))
+    if tool_name == "Grep":
+        return check_grep(tool_input)
     if tool_name.startswith("mcp__"):
         return check_mcp_tool(tool_name, cwd)
     return None

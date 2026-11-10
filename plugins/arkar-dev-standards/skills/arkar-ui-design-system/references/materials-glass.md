@@ -19,11 +19,16 @@ is a material, never a reason for products to resemble iOS or each other.
 
 ## When it doesn't
 
-- Dense work tools without a visual canvas (a table page, a form): glass on
-  their content gains nothing; at most the top bar or a floating action
-  uses it. A dashboard built around a map, floor plan or site view is the
-  exception — floating glass panels over it can be the whole idea.
-- Over flat, empty backgrounds (glass over nothing is just grey).
+- On the working content of dense pages (the table, the form, long text):
+  glass there gains nothing, so that content stays solid. This is about the
+  content only — in AK's business systems the floating layer around it
+  (sidebar, top bar, filter and tab bars, sheets, menus) is still glass,
+  even on a table page (business-systems.md). A dashboard built around a
+  map, floor plan or site view goes further — floating glass panels over
+  it can be the whole idea.
+- Over flat, empty backgrounds (glass over nothing is just grey): put a
+  rich field beneath (`.lg-field` in the kit, or the product's canvas)
+  rather than dropping the glass.
 - Kiosks or low-end devices where blur would cost frame rate.
 
 ## Rules

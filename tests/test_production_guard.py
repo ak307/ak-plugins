@@ -169,6 +169,41 @@ def test_reading_env_file_is_blocked_but_example_is_allowed(tmp_path):
     assert allowed is None
 
 
+def test_grep_tool_on_env_file_is_blocked(tmp_path):
+    folder = project(tmp_path, LOCAL_ENVS["laravel_local"])
+    for tool_input in ({"pattern": ".", "path": str(folder / ".env")}, {"pattern": "KEY", "glob": ".env.production"}):
+        decision = run_guard({"tool_name": "Grep", "tool_input": tool_input, "cwd": str(folder)})
+        assert decision and decision["permissionDecision"] == "deny"
+    assert run_guard({"tool_name": "Grep", "tool_input": {"pattern": "DB_HOST", "path": "src"}, "cwd": str(folder)}) is None
+
+
+@pytest.mark.parametrize("command", [
+    'rm -rf "$HOME"',
+    "rm -r -f /",
+    "rm -rf /*",
+    "git push origin +main",
+    'bash -c "git reset --hard HEAD~1"',
+    'git commit -m "notes" && git reset --hard',
+    'grep "$(rm -rf ~)" notes.txt',
+])
+def test_disguised_destructive_commands_are_blocked(tmp_path, command):
+    folder = project(tmp_path, LOCAL_ENVS["laravel_local"])
+    decision = run_guard(bash_event(command, folder))
+    assert decision and decision["permissionDecision"] == "deny"
+
+
+@pytest.mark.parametrize("command", [
+    'grep -rn "git push --force" .',
+    "rg 'migrate:fresh' docs/",
+    'git commit -m "Guard: block rm -rf . and git reset --hard"',
+    "rm -rf ./build node_modules",
+    "git push origin ui-intelligence",
+])
+def test_searching_or_committing_text_about_dangerous_commands_is_allowed(tmp_path, command):
+    folder = project(tmp_path, LOCAL_ENVS["laravel_local"])
+    assert run_guard(bash_event(command, folder)) is None
+
+
 def test_boost_tinker_asks_in_production(tmp_path):
     folder = project(tmp_path, PRODUCTION_ENVS["app_env"])
     decision = run_guard({"tool_name": "mcp__laravel-boost__tinker", "tool_input": {}, "cwd": str(folder)})

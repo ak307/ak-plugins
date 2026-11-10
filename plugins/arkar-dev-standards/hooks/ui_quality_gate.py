@@ -189,7 +189,9 @@ MAX_BLOCKS = 3
 
 def blocks_so_far(session_id: str, add: bool = False) -> int:
     """How many times the gate has stopped this session (kept in the temp folder)."""
-    counter = Path(tempfile.gettempdir()) / f"arkar-ui-gate-{re.sub(r'[^\w-]', '', session_id)[:64]}"
+    # Built outside the f-string: a backslash inside one is a syntax error before Python 3.12.
+    safe_id = re.sub(r"[^\w-]", "", session_id)[:64]
+    counter = Path(tempfile.gettempdir()) / f"arkar-ui-gate-{safe_id}"
     count = int(counter.read_text() or 0) if counter.exists() else 0
     if add:
         counter.write_text(str(count + 1))

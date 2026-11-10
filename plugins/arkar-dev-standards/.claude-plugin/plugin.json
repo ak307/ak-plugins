@@ -1,6 +1,6 @@
 {
   "name": "arkar-dev-standards",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "AK's always-on coding rules, production guard, project templates, delivery, the clean/secure change workflow, and Adaptive UI Intelligence (ten arkar-ui-* skills for design, motion, UX, accessibility, implementation and visual QA)",
   "author": {
     "name": "AK"

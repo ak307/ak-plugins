@@ -100,10 +100,26 @@ export const view = {
       if (value === null || value === undefined || value === "") next.delete(name); else next.set(name, value);
     }
     const url = `${location.pathname}${next.toString() ? `?${next}` : ""}${location.hash}`;
-    history[push ? "pushState" : "replaceState"]({ ...history.state, scroll: scrollY }, "", url);
+    if (push) {
+      // Remember where the user was on the view they are leaving, so Back returns there.
+      history.replaceState({ ...history.state, scroll: scrollY }, "");
+      history.pushState({ scroll: 0 }, "", url);
+    } else {
+      history.replaceState({ ...history.state, scroll: scrollY }, "", url);
+    }
   },
   onChange(render) {
+    // The kit restores scroll itself (after render, when the content is back), so
+    // the browser's own restore doesn't jump first; each view's scroll is kept as
+    // the user scrolls, so Back and Forward both land where they left it.
+    history.scrollRestoration = "manual";
+    let saving;
+    addEventListener("scroll", () => {
+      clearTimeout(saving);
+      saving = setTimeout(() => history.replaceState({ ...history.state, scroll: scrollY }, ""), 150);
+    }, { passive: true });
     addEventListener("popstate", (event) => {
+      clearTimeout(saving);
       render(view.read());
       if (event.state && typeof event.state.scroll === "number") requestAnimationFrame(() => scrollTo(0, event.state.scroll));
     });

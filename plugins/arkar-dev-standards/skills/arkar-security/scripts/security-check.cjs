@@ -7,7 +7,8 @@
 // Usage (from the project folder; local URLs only):
 //   node <path-to>/security-check.cjs <url> [<url> ...] [--steps <step> ...] [--code=<folder>] [--json]
 // Steps run on the first URL before storage and the URL are inspected (same
-// syntax as record.cjs: click=<selector> type=<selector>=<text> press=<key> wait=<ms>),
+// syntax as record.cjs: click=<selector> type=<selector>=<text> press=<key> wait=<ms>; a field can
+// also be named by its label: type=label:Full name=Mei Ling),
 // so a form can be filled to see what the page keeps.
 // --code=<folder> also lists source lines to review (raw HTML output, eval,
 // inline handlers, tokens in storage, public env variables with secret-like names).
@@ -138,8 +139,12 @@ async function perform(page, raw) {
   else if (action === "press") await page.keyboard.press(value);
   else if (action === "wait") await page.waitForTimeout(Number(value));
   else if (action === "type") {
-    const [selector, ...text] = value.split("=");
-    await page.locator(selector).first().fill(text.join("="));
+    // type=<selector>=<text>: the text follows the last "=", so selectors may contain "=";
+    // label:<visible label> finds a field by its label.
+    const split = value.lastIndexOf("=");
+    const selector = value.slice(0, split);
+    const field = selector.startsWith("label:") ? page.getByLabel(selector.slice(6)) : page.locator(selector);
+    await field.first().fill(value.slice(split + 1), { timeout: 5000 });
   }
 }
 

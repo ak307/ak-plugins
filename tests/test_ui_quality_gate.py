@@ -22,6 +22,7 @@ COMPLETE_DESIGN = ("# Design\n## Direction\nData-centric\n## Build sheet — cla
 REVIEWER = {"type": "assistant", "message": {"content": [
     {"type": "tool_use", "name": "Agent", "input": {"description": "Independent review"}}]}}
 COMPLETE_RECORD = ("# Premium pass\n## Verify\n- Motion (filmstrips: load, open card): eased, quick\n"
+                   "- Interaction probe: no hover 3→0, no focus 1→0\n"
                    "- Experience walk (record.cjs): happy, fail+retry, keyboard, phone → retry kept input\n"
                    "## Independent review\nCritical 0 · major 2 (fixed) · minor 3\n")
 
@@ -342,3 +343,10 @@ def test_a_self_review_instead_of_the_subagent_is_sent_back(tmp_path):
 def test_a_cold_review_counts_when_there_is_no_agent_tool(tmp_path):
     record = COMPLETE_RECORD + "Cold review: no Agent tool in this session.\n"
     assert run_gate(tmp_path, skills(*ALL_NINE) + write_project(tmp_path, COMPLETE_DESIGN, record)) == ""
+
+
+def test_a_record_without_the_interaction_probe_is_sent_back(tmp_path):
+    # Seen in eval runs: the probe was skipped while everything else was recorded.
+    record = COMPLETE_RECORD.replace("- Interaction probe: no hover 3→0, no focus 1→0\n", "")
+    events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, COMPLETE_DESIGN, record)
+    assert "interaction probe" in json.loads(run_gate(tmp_path, events))["reason"]

@@ -212,6 +212,10 @@ def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> l
         if not (re.search(r"film", record, re.IGNORECASE) and re.search(r"motion", record, re.IGNORECASE)):
             problems.append("premium-pass.md has no motion review from filmstrips — film the main flows with "
                             "arkar-ui-visual-qa/scripts/film.cjs and judge them by eye (Verify)")
+        if not re.search(r"interaction.probe|interaction-probe", record, re.IGNORECASE):
+            problems.append("premium-pass.md has no interaction probe results — run "
+                            "arkar-ui-visual-qa/scripts/interaction-probe.cjs on each changed page (hover, focus, "
+                            "press feedback, transitions, target sizes) and record before → after (Verify)")
         if not re.search(r"experience (walk|test)|record\.cjs", record, re.IGNORECASE):
             problems.append("premium-pass.md has no experience walk — record the main flows at real speed with "
                             "arkar-ui-visual-qa/scripts/record.cjs (happy path, errors and retry, cancel/undo, "

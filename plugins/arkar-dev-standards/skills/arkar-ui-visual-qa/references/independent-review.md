@@ -36,8 +36,10 @@ it replaced by the cold review below.
   quick; check each fix yourself (re-shoot, re-film or re-walk that moment).
   Fixes stay within the build sheet's decisions; if one needs a different
   decision, change the sheet first.
-- **A second review only if the first found a critical defect** — with a
-  fresh subagent and new evidence, to confirm the critical ones are gone.
+- **A second review is required when the first found any critical
+  defect** — a fresh subagent with new evidence confirms the critical ones
+  are gone ("fixed, so not needed" doesn't count). No critical → no second
+  review.
   Never a third, and never a review just to raise a score.
 - Scores are recorded, not chased. For a new product or redesign the target
   is overall ≥ 8 with nothing below 7; if it's short after the fixes, say

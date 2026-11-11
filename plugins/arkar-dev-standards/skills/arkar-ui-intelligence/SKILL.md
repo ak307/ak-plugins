@@ -261,8 +261,9 @@ change runs through all seven in minutes.
    with that product and the craft of every state, a new product or
    redesign also on distinctiveness. It returns defects ranked critical /
    major / minor, plus rubric scores as a diagnostic. Fix every critical and
-   major defect and check each fix yourself. A second review happens **only
-   if the first found a critical defect** (a broken flow, an unreadable
+   major defect and check each fix yourself. **If the first found any
+   critical defect, a second fresh review is required** to confirm the
+   critical ones are gone; otherwise there is none (a broken flow, an unreadable
    screen, lost work, or — for a new product or redesign — a screen it
    calls generic or a template, which is recomposed within the brief). There
    is no score target to loop on; never rebuild to chase a number. Record

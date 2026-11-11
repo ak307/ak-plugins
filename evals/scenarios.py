@@ -982,7 +982,10 @@ def ui_t_existing_feature(root: Path, plugin: Path):
         check("build sheet lists the code-entry states (wrong, expired, locked, verifying)",
               all(re.search(word, design, re.I) for word in ("wrong|incorrect", "expir", "lock", "verif"))),
         check("no design variations built to compare", not variants, variants),
-        check("existing look kept (no new identity)", not re.search(r"##\s*(palette|typography|identity)\b", design, re.I)),
+        check("existing look kept (no new stylesheet, fonts or identity)",
+              not [path for path in workspace.rglob("*") if path.suffix in (".css", ".woff2", ".woff")
+                   and "qa-screenshots" not in path.parts and ".venv" not in path.parts]
+              and not re.search(r"##\s*(palette|typography)\b", design, re.I)),
         review_check(run, workspace),
         premium_pass_check(run, workspace=workspace),
     ]

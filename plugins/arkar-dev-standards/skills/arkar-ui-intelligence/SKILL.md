@@ -226,7 +226,8 @@ change runs through all seven in minutes.
    the sheet's decisions. Record a `## Verify` table in
    `qa-screenshots/premium-pass.md` (sheet item → evidence → result → fix).
 6. **Independent review — once.** For new screens, page sets, products and
-   redesigns, start one fresh subagent (foreground) with
+   redesigns, start one fresh subagent (foreground) — AK asks for this
+   review on every such task, so it is never skipped as unrequested — with
    `arkar-ui-visual-qa/references/independent-review.md`: it sees the
    screenshots and filmstrips, uses the running app, and judges the build
    **against its mode and build sheet** — an existing product on consistency

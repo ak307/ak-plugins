@@ -47,8 +47,21 @@ needs its row, not "just in case".
   genuinely open and AK is present, propose at most two directions in text
   and let him pick before the sheet is finished. Never build two versions to
   compare.
-- **Complete before code.** Every row that applies is filled. "TBD" means the
-  decision isn't made yet — make it.
+- **Complete before code.** Every row is answered — when a row doesn't
+  change anything, say so and why ("Composition: follows the claim form's
+  single-column layout"; "Motion: none in this product — press feedback and
+  busy state only"). "TBD" means the decision isn't made yet — make it.
+- **States of the real feature, not only of the mock.** List what the real
+  system will do — slow and failed requests, limits and lockouts, expiry,
+  permission, conflicts, partial success — even when the mock can't produce
+  them yet; give each its look and wording, and build the ones the mock can
+  show.
+- **Keeping a product's look never drops the experience.** "Keep the
+  existing look" preserves its visual system; press feedback, busy states
+  that stop double submits, specific errors with recovery, focus handling and
+  comfortable touch targets are behaviour, and are built to the experience
+  standard within that look. If the look itself can't reach the standard,
+  say so and propose the redesign — don't lower the experience to match it.
 - **Changes update the sheet.** If implementing shows a decision was wrong,
   change the sheet first, then the code, so the record stays true.
 - **Acceptance checks are concrete:** "wrong code → field shakes, message
@@ -58,22 +71,26 @@ needs its row, not "just in case".
 ## Small example (an existing admin system)
 
 ```
-## Build sheet — two-factor sign-in
-Job: staff signing in; first question "what do I type?"; the code field first.
-Direction: existing AdminLTE theme and its tokens; no new identity.
-Composition: one centred card, six-digit field as the hero; obvious layout kept
-  (it is the expected pattern) — the craft goes into the field and its states.
-Components: existing card, button, alert; new OTP field (6 boxes, paste-aware).
-Data & latency: verify request 200 ms–3 s; "Verifying…" in the field at once.
-States: idle · typing · verifying · wrong code (tries left) · expired · locked
-  (until 10:42, contact IT) · success → dashboard · server error + retry.
-Interactions: auto-advance, paste fills all, Backspace steps back, Enter submits,
-  disabled submit explains why; focus on first box on load and after an error.
-Motion: field shake on wrong code (L2), check draws on success then hand-off;
-  reduced motion → colour and message only.
-Copy: "Enter the 6-digit code from your authenticator app" · errors as above.
-Responsive: phone — numeric keyboard, boxes ≥ 44 px, card full width.
-Accessibility: one labelled group, errors announced, contrast AA on the alert.
-Acceptance: each state seen at 390 and 1440; flows filmed; keyboard-only walk;
-  audit clean; fail switch → retry keeps nothing typed lost.
+## Build sheet — leave request form
+Job: staff applying for leave; first question "how many days do I have left?" —
+  the balance is noticed first, then the dates.
+Direction: existing AdminLTE theme, its card, form and alert components; no new identity.
+Composition: obvious layout kept (form in a card) — the balance sits beside the dates
+  and updates as they change; that is the moment the craft goes into.
+Components: existing card, date inputs, select, button, alert; new balance meter as a
+  library component (variants: enough / low / over).
+Data & latency: balance load 200 ms–2 s (skeleton in the meter only); submit 300 ms–3 s.
+States: loading balance · balance unavailable + retry · over balance (why, how many) ·
+  overlapping request · public holiday inside range · submitting · submitted (reference,
+  approver named) · server error with the form kept · session expired (draft kept).
+Interactions: busy Submit (no double submit), dates validate on blur, Enter submits,
+  disabled Submit says why; focus to the first problem; Escape on the confirm dialog.
+Motion: meter fills to the new value (L2); success replaces the form in place;
+  reduced motion → instant value and colour change.
+Copy: "You have 9 days left" · "This takes 3 days — 6 left after approval" · errors as above.
+Responsive: phone — dates stacked, native date pickers, Submit sticky above the keyboard.
+Accessibility: balance announced politely when it changes, labels on every field,
+  contrast AA on the low/over colours, targets ≥ 44 px.
+Acceptance: each state seen at 390 and 1440; flows recorded; keyboard-only walk;
+  audit clean; ?fail=1 → retry keeps the dates and reason.
 ```

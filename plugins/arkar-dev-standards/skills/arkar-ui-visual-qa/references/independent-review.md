@@ -11,6 +11,11 @@ mode and build sheet — not a scoring loop to rebuild against.
 After Verify, for new screens, page sets, new products and redesigns. Small
 component changes don't need it (their premium pass is enough).
 
+This review is AK's standing request for every such task: starting the
+subagent for it is asked for, not optional — don't skip it as something
+"only done when the user asks". Only when the Agent tool isn't available is
+it replaced by the cold review below.
+
 ## How
 
 1. Prepare the evidence: the screenshots and filmstrips `design-critic.md`

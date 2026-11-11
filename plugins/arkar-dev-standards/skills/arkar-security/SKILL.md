@@ -52,8 +52,9 @@ approval list (step 3) with the cleanup and related-bug items.
    - who may do what to which record (and how it's enforced on the server);
    - what the URL may carry and what the browser may store (IDs and filters
      only; no tokens or personal data — `frontend.md` §2–3);
-   - sign-in, reset and lockout wording that doesn't reveal whether an
-     account exists (`frontend.md` §4);
+   - sign-in, reset and lockout wording — and rate limits — that don't
+     reveal whether an account exists; reset tokens out of the address bar
+     and storage (`frontend.md` §4);
    - the checks Verify will run.
 3. **Build — secure by default.** Escaped output; parameterised queries;
    validated input at the server; authorisation on every action; CSRF on
@@ -66,8 +67,9 @@ approval list (step 3) with the cleanup and related-bug items.
    - **Review** your diff and the code paths it touches against
      `backend.md` and `frontend.md` (`mobile.md` for apps) — authorisation and
      logic are found by reading, not by scanners.
-   - **Security tests** for each new action: owner, another user, not logged
-     in; each status transition; validation rejects bad input.
+   - **Security tests** for every new endpoint or action: owner, another
+     user, not logged in; every allowed and every refused status transition;
+     validation rejects bad input.
    - **Dependency audit** — `composer audit`, `npm audit --omit=dev`,
      `pip-audit`, `flutter pub outdated`: new advisories appear after any
      model's training date, so this needs the live database.

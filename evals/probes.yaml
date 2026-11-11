@@ -238,7 +238,7 @@ probes:
       - The URL carries no personal data (no name, NRIC or phone in query strings)
       - NRIC is limited to the last 4 characters and masked where shown
       - The server is stated to re-validate every field (browser checks are convenience only)
-      - The mock data switches are limited to development, and the security check (security-check.cjs) is in Verify
+      - The mock data switches work only locally or in development (a local-host or dev-build gate counts), and the security page check is part of verifying the build
 
   - id: security-new-api
     area: security · back end

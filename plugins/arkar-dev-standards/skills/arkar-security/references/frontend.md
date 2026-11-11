@@ -72,6 +72,13 @@ wrong, because they tell an attacker which accounts exist.
   reset your password") without confirming the account exists.
 - Two-factor: "That code didn't work" with attempts left is fine (the user
   is already identified by the password step).
+- Rate limits and lockouts behave the same for unknown emails: the same
+  message, status code and timing — a limit counted per email must not
+  reveal which emails exist.
+- Reset links: the token in the URL fragment (`#token=…`) or exchanged at
+  once for a short server session and removed from the address bar with
+  `history.replaceState`; single-use, short expiry; never kept in browser
+  storage. The email typed on reset screens isn't stored either.
 - Show/hide password toggle and paste allowed; never block password managers.
 
 ## 5. Sessions, tokens and CSRF

@@ -282,7 +282,8 @@ def decide(event: dict) -> str | None:
                         "on the real rendered UI before reporting")
     # DESIGN.md written whole = a new identity (new product, page set or redesign); a small edit
     # to an existing one (a token, a note) is ordinary work and needs only the two checks above.
-    design_rewritten = any(Path(path).name == "DESIGN.md" for path in written)
+    design_rewritten = any(Path(path).name == "DESIGN.md" and not SKIP_PATH.search(relative(path, cwd))
+                           for path in written)
     if design_rewritten:
         not_loaded = [name for name in ALL_SPECIALISTS if name != VISUAL_QA and not loaded(skills, name)]
         if not_loaded:

@@ -367,3 +367,7 @@ def test_test_fixtures_are_not_product_ui(tmp_path):
               tool_use("Write", file_path=str(fixture / "DESIGN.md"), content="# Design")]
     assert run_gate(tmp_path, events) == ""
     assert run_before_write(tmp_path, [], "Write", file_path=str(fixture / "index.html"), content="<main/>") is None
+    # A real UI edit in the same session doesn't turn the fixture's DESIGN.md into a redesign.
+    events += skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + [
+        tool_use("Edit", file_path=str(tmp_path / "src" / "Button.tsx"))]
+    assert run_gate(tmp_path, events) == ""

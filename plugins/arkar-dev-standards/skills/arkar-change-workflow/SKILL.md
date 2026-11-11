@@ -118,6 +118,9 @@ you couldn't run, and propose a local test database.
   place where this kind of logic lives? Would this be a second or third copy
   of something? Does the layout follow `arkar-project-structure` for this
   stack? Note where the feature *should* go if the code were clean.
+- **Security:** if the change handles sign-in, permissions, input, personal
+  data, uploads, APIs, queries, configuration or dependencies, load
+  `arkar-security` now (it scales to the change; copy/CSS edits need none).
 - **UI work** (anything users see — web pages, components, Flutter / React
   Native / desktop screens): load `arkar-ui-intelligence` now, so its
   classification and discovery happen here and any UI improvements beyond
@@ -156,8 +159,8 @@ Collect everything you'd change in existing code, beyond what the feature
   chain that appears in more than one place, propose one small class per type
   behind a shared interface (strategy), not just moving the chain into a
   function. "OOP" is defined in that guide.
-- **Security weaknesses** you found in that code — see
-  `references/review-checklist.md`.
+- **Security weaknesses** you found in that code — `arkar-security`
+  (its checklists and labels; this approval rule is its most important rule).
 - **Related bugs** found while reviewing the workflow (bug reports only) — see
   `references/bug-hunt-guide.md`.
 
@@ -216,19 +219,20 @@ ends with `arkar-ui-visual-qa`.
   reusing what exists rather than adding parallel code.
 - Follow the always-on coding standards and `references/cleanup-guide.md`:
   one way to do one job, small focused functions, classes for real concepts.
-- Write it securely (`references/review-checklist.md`): validated input,
-  parameterised queries, escaped output, authorisation on every action
-  (*this* user, *this* record), status changes locked in one transaction, no
-  secrets in code or logs. For new routes, pages, cookies, headers, uploads
-  or dependencies, also check `references/vapt-checklist.md` — what the
-  company's VAPT (OWASP ZAP) scans flag.
+- Write it securely by following `arkar-security` (front end and back end):
+  validated input, parameterised queries, escaped output, authorisation on
+  every action (*this* user, *this* record), status changes locked in one
+  transaction, no secrets in code, logs or the front-end bundle, nothing
+  personal in URLs or browser storage. For new routes, pages, cookies,
+  headers, uploads or dependencies, its VAPT checklist says what the
+  company's scans flag.
 - Add tests for the new behaviour — including the permission cases (owner,
   another user, not logged in) and every status transition it touches; see
   `references/testing-strategy.md`.
 
 ### 6. Check, then finish clean
 
-Run, per stack (`references/scanners.md`):
+Run, per stack (`arkar-security` step 4 — its scanner guide has the commands):
 
 1. **Tests** — the baseline again plus the new tests; all must pass.
 2. **Code scan** — e.g. bandit / ruff `S` (Python), Larastan (PHP).
@@ -261,8 +265,8 @@ Record decisions that should outlast the session:
 - **`ARCHITECTURE.md`** (template `references/architecture-md-template.md`):
   update when the structure changed or a new concept was added; keep "Open
   proposals" and "Known debt" current (skipped cleanup goes to known debt).
-- **`SECURITY.md`** (template `references/security-md-template.md`): open,
-  skipped, fixed and accepted security items.
+- **`SECURITY.md`** (template in `arkar-security`): open, skipped, fixed and
+  accepted security items.
 
 Don't re-propose items AK already skipped unless the code around them changed
 materially — then say why you're raising it again.

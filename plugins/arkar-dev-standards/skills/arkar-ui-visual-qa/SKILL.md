@@ -33,6 +33,7 @@ Premium pass
 - Motion metrics (scripts/motion-metrics.cjs on the main flows, incl. one interruption and --reduced, before → after):
   slow responses <a→b>, linear/slow movement <a→b>, popped in / vanished <a→b>, jumps <a→b>, low fps <a→b>, reduced motion ignored <a→b>
 - States seen (every state in the sheet): <which>
+- Security check (arkar-security/scripts/security-check.cjs, before → after): <findings in new code → fixed> · existing-code proposals: <🟢 / 🟠 list or "none">
 - Experience walk (record.cjs videos, experience-standard.md): <flows × paths walked (happy, invalid,
   failure+retry, cancel/back/undo, refresh, keyboard, phone)> → moments fixed: <list> · still weak: <list>
 - First-time-user walkthrough: <flows walked> → hesitations found and fixed: <list>

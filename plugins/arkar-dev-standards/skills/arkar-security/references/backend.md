@@ -1,8 +1,10 @@
-# Security review checklist
+# Backend security checklist — server-side code
 
 Basic, solid practice (OWASP Top 10 basics), organised by what the code does.
-Use it while writing new code and when reviewing a change and the code paths
-it touches. Each item: what to check, the usual fix per stack.
+The server is where security is enforced: anything the browser or app checks
+is convenience and is checked again here. Use it while writing new code and
+when reviewing a change and the code paths it touches; the browser side is
+`frontend.md`, mobile apps `mobile.md`. Each item: what to check, the usual fix per stack.
 
 ## Contents
 1. Input and validation

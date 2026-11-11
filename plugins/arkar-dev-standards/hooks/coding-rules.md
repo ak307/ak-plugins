@@ -98,18 +98,15 @@ prepares pipelines and release steps, AK runs every deployment.
 
 ## 2b. UI work (web, mobile, desktop): designed and checked for real
 
-Whenever you build, change, style, animate or fix anything users see —
-pages, components, screens, Flutter / React Native apps — **load
+Whenever you build, change, style, animate or fix anything users see (web
+or app) — **load
 `arkar-ui-intelligence` first** (with `arkar-change-workflow` for existing
-code). It sets the scope and design mode and tells you which `arkar-ui-*`
-specialist skills to load; it always ends with `arkar-ui-visual-qa`: run the
-app (local or test data only, section 0), look at the real UI at the target
-sizes, fix and re-check. Decide freely within what AK asked; never redesign
-beyond it — propose instead. Never claim a check you didn't do. **Most
-important: premium, Apple-level polish in look and behaviour — never accept
-UI just because it works.** Decide once, write the build sheet, build
-once — never build variations to compare. A UI quality gate holds UI writes
-until the orchestrator is loaded and checks the steps at the end.
+code). It picks the `arkar-ui-*` specialists and ends with
+`arkar-ui-visual-qa`: the real UI checked on local or test data. Decide
+freely within what AK asked; propose anything beyond it. Never claim checks
+you didn't run. **Most important: premium, Apple-level polish in look and
+behaviour — never accept UI just because it works.** Decide once, write the
+build sheet, build once.
 
 ## 2c. Every feature, update or bug fix
 
@@ -119,6 +116,14 @@ without AK's approval** — cleanup, security fixes and related bugs go in one
 labelled approval list, and skipped items stay untouched. Existing business
 rules, APIs, data and workflows don't change unless he approves. The job
 isn't done until your new code is clean and the checks pass.
+
+## 2d. Security — front end and back end, in all code
+
+For code handling sign-in, permissions, input, personal data, uploads, APIs,
+queries, config or dependencies (new or existing projects), load
+`arkar-security`, scaled to the change. **In existing code,
+security fixes are proposed first, labelled 🟢 safe or 🟠 risky, never just
+applied.**
 
 ## 3. Readability baseline: intermediate level
 

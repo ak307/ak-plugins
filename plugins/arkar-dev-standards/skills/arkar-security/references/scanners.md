@@ -1,7 +1,12 @@
 # Security checks per stack
 
-Run the project's own tests first (baseline), then the scanners that fit the
-change. Run tools with `uvx` / `npx` so nothing is added to the project's
+Why tools at all: Claude reviews the code (authorisation, logic, injection,
+output) — that is most of the work. Two things need a tool: **known-vulnerable
+package versions** (new advisories appear daily, after any model's training
+date — the package managers' built-in audits check the live database) and
+**secrets across the whole repository** (an exhaustive pattern scan in
+seconds, no tokens). Run the project's own tests first (baseline), then the
+checks that fit the change. Run tools with `uvx` / `npx` so nothing is added to the project's
 dependencies, with a version range so a surprise major release doesn't
 change what runs. If a tool can't run (not installed, no network), say so in the
 report and continue with the others.
@@ -13,7 +18,7 @@ report and continue with the others.
 4. JavaScript / TypeScript front-ends
 5. Flutter / Dart
 6. Secrets (any project)
-7. Multi-language (when available)
+7. Optional extra pass
 8. Reading the results
 
 ## 1. Tests (always — after Rule 0 confirms they point at a local or test database)
@@ -76,19 +81,20 @@ Also check by reading: no keys, passwords, tokens or connection strings in
 code, config committed to git, logs or front-end bundles; `.env` is in
 `.gitignore`; `.env.example` has placeholders only.
 
-## 7. Multi-language (when available)
+## 7. Optional extra pass
+
+Claude's own review (`backend.md`, `frontend.md`) covers what pattern
+scanners look for, in context. Use these only as an extra pass on a large or
+sensitive change, never instead of the review:
 
 ```
-uvx --from 'semgrep>=1.100,<2' semgrep scan --config p/default --metrics=off <changed files>
+uvx --from 'semgrep>=1.100,<2' semgrep scan --config p/owasp-top-ten --metrics=off <changed files>
 ```
 
-Use a named ruleset (`p/default`, `p/owasp-top-ten`), not `--config auto`,
-which needs metrics turned on — never turn metrics on. Semgrep downloads its
-rules from semgrep.dev; on networks that block it, skip it and say so. `osv-scanner` (if installed) checks lockfiles for any
-language: `osv-scanner scan source -r .`
-
-Claude Code's built-in `/security-review` command can also be used as an
-extra pass over the pending changes.
+Use a named ruleset, not `--config auto` (it needs metrics on — never turn
+metrics on); if semgrep.dev is blocked, skip it and say so. Claude Code's
+built-in `/security-review` command is another optional pass over pending
+changes. Don't install other tools on AK's machines for this.
 
 ## 8. Reading the results
 

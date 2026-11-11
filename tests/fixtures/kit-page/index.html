@@ -1,0 +1,14 @@
+<!doctype html><html><head><title>Kit test</title></head><body>
+<textarea id="note"></textarea><textarea id="plain"></textarea>
+<script type="module">
+  import { request, keepDraft, clearAppStorage } from "./experience-kit.js";
+  window.kitResult = (async () => {
+    let failed = false;
+    try { await request("save card", () => "ok"); } catch { failed = true; }
+    keepDraft(document.getElementById("note"), "visitor", { sensitive: true });
+    keepDraft(document.getElementById("plain"), "comment");
+    return { failed };
+  })();
+  window.clearAppStorage = clearAppStorage;
+</script>
+</body></html>

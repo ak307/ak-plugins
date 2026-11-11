@@ -1,5 +1,5 @@
 {
-  "description": "Always-on coding rules (including Rule 0: production safety) for sessions and subagents, the production guard that checks commands before they run, and the UI quality gate that makes UI work load its skills before the first UI file is written and checks the required steps before finishing.",
+  "description": "Always-on coding rules (including Rule 0: production safety) for sessions and subagents, the production guard that checks commands before they run, and the UI quality gate that makes UI work load its skills before the first UI file is written and checks the required steps before finishing, and the security gate that makes code changes go through arkar-security before finishing.",
   "hooks": {
     "SessionStart": [
       {
@@ -52,6 +52,11 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/ui_quality_gate.sh\"",
+            "timeout": 20
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/security_gate.sh\"",
             "timeout": 20
           }
         ]

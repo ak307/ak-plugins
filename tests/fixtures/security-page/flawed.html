@@ -1,0 +1,13 @@
+<!doctype html><html><head><title>Flawed</title>
+<script src="http://127.0.0.2:9/cdn-lib.js"></script>
+<script src="app.js"></script>
+</head><body>
+<button id="save" onclick="save()">Save</button>
+<input id="nric" value="">
+<script>
+  function save() {}
+  localStorage.setItem("auth_token", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.abcdefghij");
+  localStorage.setItem("walkin-draft", JSON.stringify({ name: "Test Person", nric: "S1234567D" }));
+  history.replaceState(null, "", "?email=someone%40example.com&tab=open");
+</script>
+</body></html>

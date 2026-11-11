@@ -74,5 +74,8 @@ reply so the decision is visible.
 - New projects also have: `/health/live` and `/health/ready`, JSON logs with
   a request ID in production, error tracking wired (GlitchTip/Sentry SDK, no
   personal data), a test-database guard, and a CI file from `arkar-delivery`.
+- Security from the first commit (`arkar-security`): its plan lines, secure
+  defaults, and its checks — dependency audit, secret scan, security tests,
+  and the running-page check for web apps.
 - New tables follow `data-and-api.md` section 7 (types, constraints,
   indexes, audit trail where people's records change).

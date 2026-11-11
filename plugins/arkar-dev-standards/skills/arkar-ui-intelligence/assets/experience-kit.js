@@ -13,8 +13,16 @@
 // It is mechanics only — the product's own design styles the toast etc.
 // In React/Vue/Svelte, keep the same behaviour with the framework's router,
 // stores and components; the switches and persistence rules are identical.
+// Security (arkar-security frontend.md): the test switches work only on a
+// local or .test host; the URL carries IDs and filters, never personal data;
+// drafts of forms with personal data use { sensitive: true } (sessionStorage);
+// clearAppStorage() on sign-out. Mock data is invented — never real people.
 
 const params = () => new URLSearchParams(location.search);
+// ?latency and ?fail are development tools: ignored anywhere but a local host, so they
+// can't become a way to break or slow a deployed app.
+const localHost = () => location.protocol === "file:" || /^(localhost|127\.0\.0\.1|\[::1\])$|\.(test|localhost)$/.test(location.hostname);
+const switches = () => (localHost() ? params() : new URLSearchParams());
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ---- Mock server ---------------------------------------------------------
@@ -27,12 +35,12 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const attempts = new Map();
 
 export async function request(operation, run) {
-  const latency = params().get("latency");
+  const latency = switches().get("latency");
   const ms = latency === "slow" ? 3000 + Math.random() * 5000
     : latency === "fast" ? 0
       : 200 + Math.random() * 1000 * (Math.random() < 0.1 ? 2.5 : 1);
   await wait(ms);
-  const fail = params().get("fail");
+  const fail = switches().get("fail");
   const tries = (attempts.get(operation) || 0) + 1;
   attempts.set(operation, tries);
   if (fail === "always" || (fail === "1" && tries === 1)) {
@@ -45,6 +53,7 @@ export async function request(operation, run) {
 
 // A persistent mock table: seed data plus the user's changes, kept in
 // localStorage so refresh shows what the user did. reset() for a demo menu.
+// Mock data only — real records come from the server and aren't cached here.
 export function createStore(name, seed) {
   const key = `mock:${name}`;
   const load = () => {
@@ -128,15 +137,28 @@ export const view = {
 
 // ---- Drafts ---------------------------------------------------------------
 
-// keepDraft(field, key) → restores and autosaves a field's text; returns
-// clear() to call after a successful submit. hasDraft(field) helps decide
-// whether closing should ask "Discard your note?".
-export function keepDraft(field, key) {
+// keepDraft(field, key, { sensitive }) → restores and autosaves a field's
+// text; returns clear() to call after a successful submit. hasDraft(field)
+// helps decide whether closing should ask "Discard your note?".
+// sensitive: true for fields with personal data (names, NRIC, contact details,
+// amounts tied to a person) — kept only until the tab closes (sessionStorage),
+// so nothing personal stays on a shared computer. Never use it for passwords.
+export function keepDraft(field, key, { sensitive = false } = {}) {
   const storageKey = `draft:${key}`;
-  try { const saved = localStorage.getItem(storageKey); if (saved && !field.value) field.value = saved; } catch { /* ignore */ }
-  const store = () => { try { field.value ? localStorage.setItem(storageKey, field.value) : localStorage.removeItem(storageKey); } catch { /* ignore */ } };
+  const storage = () => (sensitive ? sessionStorage : localStorage);
+  try { const saved = storage().getItem(storageKey); if (saved && !field.value) field.value = saved; } catch { /* ignore */ }
+  const store = () => { try { field.value ? storage().setItem(storageKey, field.value) : storage().removeItem(storageKey); } catch { /* ignore */ } };
   field.addEventListener("input", store);
-  return () => { try { localStorage.removeItem(storageKey); } catch { /* ignore */ } };
+  return () => { try { storage().removeItem(storageKey); } catch { /* ignore */ } };
+}
+
+// clearAppStorage() → call on sign-out: removes drafts and mock data from both stores.
+export function clearAppStorage() {
+  for (const store of [localStorage, sessionStorage]) {
+    try {
+      Object.keys(store).filter((key) => key.startsWith("draft:") || key.startsWith("mock:")).forEach((key) => store.removeItem(key));
+    } catch { /* blocked */ }
+  }
 }
 export const hasDraft = (field) => Boolean(field.value && field.value.trim());
 

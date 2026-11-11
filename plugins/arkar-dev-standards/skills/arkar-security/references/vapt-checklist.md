@@ -1,6 +1,6 @@
-# VAPT checklist — what OWASP ZAP scans usually flag
+# VAPT checklist — what the company's VAPT scans usually flag
 
-Basic hardening so CBM apps pass VAPT scans. Check the items that relate to
+Basic hardening so CBM apps pass VAPT scans (the auditors' OWASP ZAP alert names are used, so findings match their report; `scripts/security-check.cjs` checks these on the running local app — no scanner to install). Check the items that relate to
 the change (a new route, page, cookie, upload, dependency…). Findings on
 existing configuration are proposals with the label shown — some "simple"
 headers can break pages.
@@ -32,7 +32,7 @@ headers can break pages.
 | Hidden File Found (`.env`, `.git`, backups) | Serve only the `public/` (or static) folder; block dotfiles; remove backups from web root | 🟢 |
 | Re-examine Cache-control Directives (authenticated pages) | `Cache-Control: no-store` on pages with personal data | 🟢 |
 | Private IP Disclosure / Suspicious Comments / Timestamp Disclosure | Remove internal IPs and sensitive comments from responses; timestamps are usually false positives | 🟢 / note |
-| Cross Site Scripting (Reflected/Persistent), SQL Injection (active scan) | See `review-checklist.md` sections 2–3 | 🟢 when the fix only escapes/parameterises |
+| Cross Site Scripting (Reflected/Persistent), SQL Injection (active scan) | See `backend.md` sections 2–3 and `frontend.md` | 🟢 when the fix only escapes/parameterises |
 | Session ID in URL Rewrite | Cookie-only sessions | 🟢 |
 
 ## 2. Where to set headers per stack

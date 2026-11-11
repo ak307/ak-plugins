@@ -95,7 +95,7 @@ Steps for AK:
 
 - Laravel: PHP via FastCGI in IIS, site root `public\`, URL Rewrite rules
   from Laravel's `web.config`; `web.config` also removes `X-Powered-By` and
-  the `Server` header (see `arkar-change-workflow/references/vapt-checklist.md`).
+  the `Server` header (see `arkar-security/references/vapt-checklist.md`).
 - Python: IIS as a reverse proxy (URL Rewrite + ARR) to the app running as
   a Windows service (e.g. NSSM running `uv run …` / waitress / uvicorn), or
   `HttpPlatformHandler`.

@@ -80,12 +80,22 @@ Tests for the guard and the read-only tool:
   🟠 CHANGES BEHAVIOUR), apply only approved items, build the feature cleanly
   and securely, run tests + code scan + dependency audit + secret scan, and
   record decisions in `ARCHITECTURE.md` and `SECURITY.md`. Includes a cleanup
-  guide (what "OOP" means here) and a VAPT (OWASP ZAP) checklist.
+  guide (what "OOP" means here); security comes from `arkar-security`.
   For bug reports: reproduce with a failing test, fix the reported bug, then
   review the whole connected workflow (first step to last, scope chosen per
   project) for hidden or related bugs, test safely (never production), and
   report findings as 🐞 RELATED BUG (confirmed / suspected) for approval;
   they're recorded under "Known bugs" in `ARCHITECTURE.md`.
+
+- **`arkar-security` skill** — front-end and back-end security at every
+  stage: classify the data, Security lines in the plan, secure defaults,
+  checks (code review, security tests, dependency audit, secret scan, and
+  `scripts/security-check.cjs` on the running local page for the VAPT
+  findings plus personal data in URLs and browser storage), an independent
+  review for sensitive features, `SECURITY.md`. Its most important rule: in
+  existing code, security fixes are proposed first, labelled 🟢 safe or 🟠
+  risky, never just applied. A security gate (Stop hook) sends a session back
+  — at most twice — when code changed without the skill.
 
 Design ideas adapted from Anthropic's frontend-design and canvas-design
 skills and from UI/UX Pro Max (MIT, Next Level Builder).

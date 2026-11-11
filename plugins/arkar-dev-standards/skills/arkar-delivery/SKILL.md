@@ -64,7 +64,10 @@ Use `references/deploy-and-release.md`:
    per `arkar-project-structure/references/data-and-api.md` section 4, SQL
    shown, 🟠 items approved); a **backup taken and its restore tested**
    recently; release notes; rollback plan written; quiet time chosen for
-   risky changes; feature flags for anything that should launch dark.
+   risky changes; feature flags for anything that should launch dark;
+   front-end build hygiene (`arkar-security`): no source maps or debug
+   output served, mock data and test switches off, no secrets in public env
+   variables, security headers and cookie flags per its VAPT checklist.
 2. **Deploy** with the recipe for the server type (Linux + nginx,
    Windows IIS, Docker Compose) — as steps for AK.
 3. **After:** `/health/ready`, a smoke test of the main journeys, the error

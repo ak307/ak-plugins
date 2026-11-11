@@ -110,6 +110,10 @@ seen and tested:
   failed, say what's wrong and how to fix it in human words, appear when
   useful (on blur or submit, not on the first keystroke), and clear as soon
   as it's fixed. Focus moves to the first problem.
+- **One exception — sign-in, password reset and lockout:** wording that
+  never reveals whether an account exists ("That email and password don't
+  match"; "If an account exists, we've sent a link"), still kind and with the
+  next step (`arkar-security`, frontend checklist §4).
 - **Failures keep the user's work:** nothing typed is lost; the action can be
   retried in place; partial success says exactly what succeeded and what
   didn't (and offers to retry only the failures).

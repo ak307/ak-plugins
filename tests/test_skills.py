@@ -90,3 +90,13 @@ def test_ui_ecosystem_complete():
 def test_skill_body_size(skill_dir):
     lines = (skill_dir / "SKILL.md").read_text().count("\n")
     assert lines < 500, f"{skill_dir.name}: {lines} lines — move detail into references/"
+
+
+def test_cross_skill_file_references_exist():
+    # e.g. `arkar-security/scripts/security-check.cjs` named from the UI skills.
+    missing = []
+    for doc in list(SKILLS.rglob("*.md")) + [PLUGIN / "hooks" / "coding-rules.md"]:
+        for skill, rest in re.findall(r"`(arkar-[a-z-]+)/((?:references|scripts|assets)/[\w./-]+)`", doc.read_text()):
+            if not (SKILLS / skill / rest).exists():
+                missing.append(f"{doc.relative_to(PLUGIN)} → {skill}/{rest}")
+    assert not missing, missing

@@ -17,8 +17,8 @@ two ends of it:
      redesign) → all nine UI specialists must have been loaded.
   3. It created or rewrote DESIGN.md, or wrote a build sheet into it → the
      evidence must exist: a `## Build sheet` section in DESIGN.md, and
-     `premium-pass.md` with the Verify record (films, and the experience walk
-     with its videos)
+     `premium-pass.md` with the Verify record (films, the experience walk
+     with its videos, the security check)
      and the `## Independent review`.
 
 When something is missing at the end it blocks the stop with a reason that
@@ -238,6 +238,10 @@ def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> l
             problems.append("the experience walk has no videos — step screenshots can't show timing; record the "
                             "main flows at real speed with arkar-ui-visual-qa/scripts/record.cjs (or say in "
                             "premium-pass.md why recording couldn't run)")
+        if not re.search(r"security.check", record, re.IGNORECASE):
+            problems.append("premium-pass.md has no security check — run arkar-security/scripts/security-check.cjs "
+                            "on the changed pages (and --code on the source); fix findings in new code, and list "
+                            "existing-code findings as 🟢 / 🟠 proposals for AK (Verify)")
         if not re.search(r"independent review|cold review|independent critique|cold read", record, re.IGNORECASE):
             problems.append("premium-pass.md has no `## Independent review` — one fresh subagent reviews the look "
                             "and the use for defects (arkar-ui-visual-qa/references/independent-review.md)")
@@ -277,8 +281,11 @@ def is_project_ui(path: str, cwd: Path) -> bool:
 def decide(event: dict) -> str | None:
     """The reason to keep going, or None when Claude may stop."""
     session_id = str(event.get("session_id") or "")
-    # Insist a few times, never forever: after MAX_BLOCKS the session may stop and report what's missing.
-    if event.get("stop_hook_active") and (not session_id or blocks_so_far(session_id) >= MAX_BLOCKS):
+    # Insist a few times per session, never forever — counted across turns, not only within one stop,
+    # so a false alarm or a step AK chose to skip can't block every later reply in the session.
+    if session_id and blocks_so_far(session_id) >= MAX_BLOCKS:
+        return None
+    if event.get("stop_hook_active") and not session_id:
         return None
     transcript_path = event.get("transcript_path")
     if not transcript_path or not Path(transcript_path).exists():

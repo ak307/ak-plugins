@@ -235,7 +235,12 @@ change runs through all seven in minutes.
    double submit, confirm or undo, keyboard path, focus moves) · **Motion**
    (level and choreography per main action; reduced motion) · **Copy**
    (final words) · **Responsive** (what changes per size) ·
-   **Accessibility** · **Acceptance checks** (what Verify will tick).
+   **Accessibility** · **Security** (`arkar-security`: the data shown or
+   collected and how sensitive it is; what the URL may carry and the browser
+   may store — IDs and filters only, personal-data drafts in sessionStorage,
+   no tokens; sign-in / reset / lockout wording that doesn't reveal whether
+   an account exists; the server re-checks every permission and field) ·
+   **Acceptance checks** (what Verify will tick).
    The **Motion** row covers each of these the surface has, with duration
    and easing, never "smooth animations": **micro** — one line per control
    type the surface uses (button, link, field, toggle, tab, row, chip…), each
@@ -290,6 +295,8 @@ change runs through all seven in minutes.
      route every data change, overlay and step through it; frameworks use
      their layout animations (in testing, builds using the kit scored about
      1.5 points higher on motion than hand-made effects);
+   - the test switches (`?latency`, `?fail`) and mock data run only in local
+     or development builds, and are removed when the real API is wired in;
    - plain web builds with mock data copy `assets/experience-kit.js`:
      `createStore`/`request` (variable latency, the standard `?latency=slow`
      and `?fail=1` switches on every request, the user's changes persisted
@@ -321,7 +328,11 @@ change runs through all seven in minutes.
    that job — use or extend the component (a `link` or `icon` variant, say);
    no raw colour, shadow or radius outside the tokens; the audit's rendered
    counts within ≤ 6 radii, ≤ 5 shadows (inset highlights count),
-   ≤ 14 font sizes. Each miss is a defect. **Fix
+   ≤ 14 font sizes. Each miss is a defect. Run
+   `arkar-security/scripts/security-check.cjs <url> --code=<src>` on the
+   changed pages (with `--steps` that fill a form when the surface collects
+   personal data): findings in the new code are defects, findings in
+   existing code are 🟢 / 🟠 proposals for AK — never applied unasked. **Fix
    defects; don't redesign.** Anything that feels ordinary is fixed within
    the sheet's decisions. Record a `## Verify` table in
    `qa-screenshots/premium-pass.md` (sheet item → evidence → result → fix).

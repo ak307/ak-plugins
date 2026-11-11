@@ -25,6 +25,7 @@ REVIEWER = {"type": "assistant", "message": {"content": [
 COMPLETE_RECORD = ("# Premium pass\n## Verify\n- Motion (filmstrips: load, open card): eased, quick\n"
                    "- Interaction probe: no hover 3→0, no focus 1→0\n"
                    "- Experience walk (record.cjs): happy, fail+retry, keyboard, phone → retry kept input\n"
+                   "- Security check (security-check.cjs): storage 1→0 · proposals: none\n"
                    "## Independent review\nCritical 0 · major 2 (fixed) · minor 3\n")
 
 
@@ -126,6 +127,22 @@ def test_insists_up_to_three_times_then_lets_go(tmp_path):
     for attempt in range(5):
         hook_event = {"transcript_path": str(transcript), "cwd": str(tmp_path), "session_id": session,
                       "stop_hook_active": attempt > 0}
+        result = subprocess.run([BASH, str(LAUNCHER)], input=json.dumps(hook_event), capture_output=True,
+                                text=True, timeout=30)
+        decisions.append(bool(result.stdout.strip()))
+    assert decisions == [True, True, True, False, False]
+
+
+def test_the_limit_counts_across_turns_not_only_within_one_stop(tmp_path):
+    # Seen live: the limit reset on every new message, so one false alarm blocked every later reply.
+    import uuid
+    transcript = tmp_path / "session.jsonl"
+    transcript.write_text(json.dumps(tool_use("Edit", file_path=str(tmp_path / "index.html"))))
+    session = f"test-{uuid.uuid4()}"
+    decisions = []
+    for _ in range(5):  # five separate turns: stop_hook_active is false each time
+        hook_event = {"transcript_path": str(transcript), "cwd": str(tmp_path), "session_id": session,
+                      "stop_hook_active": False}
         result = subprocess.run([BASH, str(LAUNCHER)], input=json.dumps(hook_event), capture_output=True,
                                 text=True, timeout=30)
         decisions.append(bool(result.stdout.strip()))
@@ -388,3 +405,9 @@ def test_a_walk_without_videos_passes_when_the_record_says_why(tmp_path):
     events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, COMPLETE_DESIGN, record)
     (tmp_path / "app" / "qa-screenshots" / "walk-checkin.mp4").unlink()
     assert run_gate(tmp_path, events) == ""
+
+
+def test_a_record_without_the_security_check_is_sent_back(tmp_path):
+    record = COMPLETE_RECORD.replace("- Security check (security-check.cjs): storage 1→0 · proposals: none\n", "")
+    events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, COMPLETE_DESIGN, record)
+    assert "security check" in json.loads(run_gate(tmp_path, events))["reason"]

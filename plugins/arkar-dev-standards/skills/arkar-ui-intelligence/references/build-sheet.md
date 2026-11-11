@@ -67,6 +67,7 @@ needs its row, not "just in case".
 | **Copy** | Headings, labels, errors, toasts, confirmations — final words, not placeholders | ux-engineering |
 | **Responsive** | What changes at phone / tablet / desktop (not "it stacks") | responsive-design |
 | **Accessibility** | Names, roles, focus order, contrast risks, touch targets, announcements | accessibility |
+| **Security** | The data shown or collected and how sensitive it is; what the URL may carry and the browser may store; sign-in / reset / lockout wording that doesn't reveal accounts; which permissions and fields the server re-checks | arkar-security |
 | **Acceptance checks** | The list Verify will tick: each state seen, each flow walked, each check run | visual-qa |
 
 ## Rules
@@ -129,6 +130,8 @@ Copy: "You have 9 days left" · "This takes 3 days — 6 left after approval" ·
 Responsive: phone — dates stacked, native date pickers, Submit sticky above the keyboard.
 Accessibility: balance announced politely when it changes, labels on every field,
   contrast AA on the low/over colours, targets ≥ 44 px.
+Security: own leave balance only (server checks the user); URL carries the request id
+  only; reason draft in sessionStorage; dates and balance re-validated on the server.
 Acceptance: each state seen at 390 and 1440; flows recorded; keyboard-only walk;
   audit clean; ?fail=1 → retry keeps the dates and reason.
 ```

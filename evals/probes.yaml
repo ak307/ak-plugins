@@ -52,7 +52,7 @@ probes:
       - Includes at least one product-specific signature component
       - Screens are described as composed from the planned components, not designed one by one
       - Avoids a speculative library — components are tied to what the screens need (a components page for checking states is expected, not speculative)
-      - Shadows, radii and type sizes come from a small named token set (roughly ≤ 6 radii, ≤ 5 shadows, one type scale)
+      - Shadows, radii and type sizes come from a small named token set (roughly ≤ 6 radii, ≤ 5 shadows, one type scale of up to ~10 steps)
     must: ["(?i)component plan"]
 
   - id: real-feature-states
@@ -65,7 +65,7 @@ probes:
       - Lists states the real system will have even if the mock can't produce them — wrong code with attempts left, lockout after too many attempts, code expired, session expired
       - Each state has its exact wording, not placeholders
       - Includes the busy state on verify that blocks a double submit, and paste of a whole code
-      - Follows the existing portal's look (no new identity) while keeping the experience standard (focus moves, specific errors, touch targets)
+      - Follows the portal's look; since it has almost none, stays restrained (no new brand identity, any tokens marked provisional) and proposes the identity to AK as a 🟠 proposal — while keeping the experience standard (focus moves, specific errors, touch targets)
       - Acceptance checks are concrete (what you'd see), not "error state works"
     must: ["(?i)lock"]
 

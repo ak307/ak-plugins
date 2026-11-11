@@ -36,6 +36,9 @@ RESULTS = HERE / "results"
 PROBE_SUFFIX = (" — Planning step only: work as you normally would (load the skills you need, read the project), "
                 "then reply with the complete build sheet for this task (component plan, then every row for each "
                 "surface). Don't create or edit any files and don't write UI code; the build happens later.")
+CODE_SUFFIX = (" — Planning step only: work as you normally would (load the skills you need, read the project), "
+               "then reply with your complete plan: what you'll build and where, its Security lines, the tests and "
+               "checks you'll run, and any proposals for existing code. Don't create or edit any files yet.")
 GRADER_MODEL = "sonnet"
 
 
@@ -91,15 +94,20 @@ def grade(probe: dict, reply: str) -> list[dict]:
 def run_probe(probe: dict, attempt: int, plugin: Path) -> dict:
     root = Path(tempfile.mkdtemp(prefix=f"arkar-probe-{probe['id']}-{attempt}-"))
     workspace = make_workspace(probe, root)
-    run = run_claude(probe["prompt"] + PROBE_SUFFIX, workspace, plugin, max_turns=probe.get("max_turns", 40))
+    suffix = CODE_SUFFIX if probe.get("kind") == "code" else PROBE_SUFFIX
+    run = run_claude(probe["prompt"] + suffix, workspace, plugin, max_turns=probe.get("max_turns", 40))
     reply = run.final
-    checks = [
+    checks = [] if probe.get("kind") == "code" else [
         {"criterion": "orchestrator loaded (arkar-ui-intelligence)", "passed": any(
-            skill.endswith("arkar-ui-intelligence") for skill in run.skills), "evidence": ", ".join(run.skills)[:300]},
+            skill.endswith("arkar-ui-intelligence") for skill in run.skills), "evidence": ", ".join(run.skills)[:300]}]
+    checks += [
         {"criterion": "stopped at the plan (no UI files written)", "passed": not subprocess.run(
             ["git", "status", "--porcelain"], cwd=workspace, capture_output=True, text=True).stdout.strip(),
          "evidence": "workspace unchanged"},
     ]
+    for skill in probe.get("skills_must", []):
+        checks.append({"criterion": f"{skill} loaded", "passed": any(name.endswith(skill) for name in run.skills),
+                       "evidence": ", ".join(run.skills)[:300]})
     for pattern in probe.get("must", []):
         checks.append({"criterion": f"mentions /{pattern}/", "passed": bool(re.search(pattern, reply)), "evidence": ""})
     for pattern in probe.get("must_not", []):

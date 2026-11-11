@@ -192,3 +192,65 @@ probes:
       - Offline and failure states are designed, with retry and the RSVP kept
       - Platform conventions and Semantics (screen reader labels) are covered
       - Reduced motion (MediaQuery.disableAnimations) is respected
+
+  # ---- security (arkar-security) --------------------------------------------------
+
+  - id: security-existing-proposal
+    area: security · the approval rule
+    kind: code
+    fixture: orders-api
+    prompt: add an endpoint GET /orders/{id} that returns one order, 404 when it doesn't exist.
+    skills_must: [arkar-security]
+    must: ["🟢"]
+    rubric:
+      - Finds the SQL built from the customer filter in the existing list_orders endpoint as a security weakness
+      - Labels that fix 🟢 SAFE SECURITY FIX with why it's safe (same results for every valid filter) and proposes parameterising it
+      - Does not apply the existing-code fix — it is listed as a proposal waiting for AK's approval
+      - Notes the API has no authentication as 🟠 (changes behaviour, needs a decision) rather than adding it
+      - The new endpoint is planned securely (parameterised query, typed id, 404 for unknown ids)
+      - Security tests are planned for the new endpoint, and the dependency audit and secret scan are in the checks
+
+  - id: security-auth-screens
+    area: security · sign-in and reset
+    fixture: claims-ui
+    prompt: >-
+      add a forgot-password flow to the claims portal: staff request a reset link by email, open it, and set a new
+      password. mock it for now.
+    skills_must: [arkar-security]
+    rubric:
+      - The reset request always shows the same message whether or not the account exists ("If an account exists…")
+      - Sign-in or reset errors never reveal whether an email has an account
+      - The reset link's token is single-use and expires, and repeated requests are rate-limited on the server
+      - The email address and the token are kept out of URLs after use and out of browser storage
+      - Password fields use autocomplete="new-password" and allow paste and password managers
+      - States and wording still meet the experience standard (expired link, weak password, success) with the next step
+
+  - id: security-sensitive-form
+    area: security · personal data in the browser
+    prompt: >-
+      new product: visitor pre-registration for building receptions — a visitor fills in their name, the last 4
+      characters of their NRIC, phone number, the person they're visiting and their car plate; the form keeps a
+      draft if they leave halfway. web, plain HTML/CSS/JS with mock data.
+    skills_must: [arkar-security]
+    rubric:
+      - The data is classified as personal / sensitive in the plan
+      - Drafts with personal data are kept only for the tab (sessionStorage) or not at all — never localStorage
+      - The URL carries no personal data (no name, NRIC or phone in query strings)
+      - NRIC is limited to the last 4 characters and masked where shown
+      - The server is stated to re-validate every field (browser checks are convenience only)
+      - The mock data switches are limited to development, and the security check (security-check.cjs) is in Verify
+
+  - id: security-new-api
+    area: security · back end
+    kind: code
+    prompt: >-
+      new FastAPI service: staff submit expense claims with a receipt upload (image or PDF); their manager approves
+      or rejects them; staff see only their own claims. folder claims-service.
+    skills_must: [arkar-security, arkar-project-structure]
+    rubric:
+      - Object-level authorisation — staff see and change only their own claims; managers act only on their team's (no IDOR)
+      - Uploads are validated by content type and size, stored outside the web root with generated names
+      - Approve / reject checks the current status and the user's right in one transaction, and nobody approves their own claim
+      - Security tests are planned for owner, another user and not logged in, and for each status transition
+      - The dependency audit and secret scan are part of the checks
+      - Personal and financial data is kept out of logs and error messages

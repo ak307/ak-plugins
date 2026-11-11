@@ -63,6 +63,7 @@ def write_project(tmp_path: Path, design: str | None, record: str | None) -> lis
     if record is not None:
         (tmp_path / "app" / "qa-screenshots").mkdir(exist_ok=True)
         (tmp_path / "app" / "qa-screenshots" / "premium-pass.md").write_text(record)
+        (tmp_path / "app" / "qa-screenshots" / "walk-checkin.mp4").write_bytes(b"")
     return events
 
 
@@ -246,6 +247,8 @@ def test_build_sheet_added_to_an_existing_design_doc_needs_verify_and_review(tmp
     assert "arkar-ui-discovery" not in reason  # not a redesign: the nine-specialist rule doesn't apply
     (tmp_path / "qa-screenshots").mkdir()
     (tmp_path / "qa-screenshots" / "premium-pass.md").write_text(COMPLETE_RECORD)
+    (tmp_path / "qa-screenshots" / "journeys").mkdir()
+    (tmp_path / "qa-screenshots" / "journeys" / "mfa.webm").write_bytes(b"")
     assert run_gate(tmp_path, events + [REVIEWER]) == ""
 
 
@@ -370,4 +373,18 @@ def test_test_fixtures_are_not_product_ui(tmp_path):
     # A real UI edit in the same session doesn't turn the fixture's DESIGN.md into a redesign.
     events += skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + [
         tool_use("Edit", file_path=str(tmp_path / "src" / "Button.tsx"))]
+    assert run_gate(tmp_path, events) == ""
+
+
+def test_an_experience_walk_without_videos_is_sent_back(tmp_path):
+    # Seen in eval runs: flows walked with step screenshots only, so timing was never seen.
+    events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, COMPLETE_DESIGN, COMPLETE_RECORD)
+    (tmp_path / "app" / "qa-screenshots" / "walk-checkin.mp4").unlink()
+    assert "no videos" in json.loads(run_gate(tmp_path, events))["reason"]
+
+
+def test_a_walk_without_videos_passes_when_the_record_says_why(tmp_path):
+    record = COMPLETE_RECORD + "Experience walk: couldn't record video (no browser video support here).\n"
+    events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, COMPLETE_DESIGN, record)
+    (tmp_path / "app" / "qa-screenshots" / "walk-checkin.mp4").unlink()
     assert run_gate(tmp_path, events) == ""

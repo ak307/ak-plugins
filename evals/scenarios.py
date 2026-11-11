@@ -366,7 +366,7 @@ def premium_pass_check(run, rounds_needed: int = 1, workspace: Path | None = Non
         record = "".join(path.read_text(errors="ignore") for path in workspace.rglob("premium-pass.md"))
     final = run.final + "\n" + record
     has_block = re.search(r"premium pass", final, re.I) and re.search(r"probe", final, re.I)
-    against_sheet = re.search(r"build sheet", final, re.I)
+    against_sheet = re.search(r"build sheet|^##\s*Verify", final, re.I | re.M)
     return check("premium pass reported against the build sheet (interaction probe)",
                  bool(has_block and against_sheet), final[-700:])
 
@@ -416,9 +416,11 @@ def review_check(run, workspace: Path) -> dict:
     recorded = re.search(r"##\s*Independent (review|critique)", record, re.I)
     used_agent = any(tool in ("Agent", "Task") for tool in run.tools)
     # A "generic / template" verdict must lead to a new composition, never be left standing.
-    refused = [line.strip() for line in record.splitlines()
+    # Only the review's own findings count: "was a generic message" in a Verify row is a fixed error text.
+    review_part = record[recorded.start():] if recorded else ""
+    refused = [line.strip() for line in review_part.splitlines()
                if re.search(r"generic|template", line, re.I)
-               and re.search(r"not changed|not done|proposal|partly|\bkept\b", line, re.I)
+               and re.search(r"not changed|not done|proposal|partly|kept as is|left as is", line, re.I)
                and not re.search(r"(→|->)\s*(fixed|re-?composed|redesigned)", line, re.I)]
     # The workflow allows a second review only after a critical defect; a third means it looped.
     looped = bool(re.search(r"(review|critique)\s*(round\s*)?(3|4|three|four)\b|round\s*[34]\b", record, re.I))
@@ -689,9 +691,13 @@ def ui_f_premium_motion(root: Path, plugin: Path):
 # The briefs are deliberately unlike A–F so the skills are tested on new ground.
 # ---------------------------------------------------------------------------
 
-def new_product_checks(run, project: Path, workspace: Path) -> list:
-    """The checks every new product shares: full process, evidence, layout, motion."""
+def new_product_checks(run, project: Path, workspace: Path, source: str | None = None) -> list:
+    """The checks every new product shares: full process, evidence, layout, motion.
+
+    `source` is the hand-written code for framework builds, whose minified bundle loses names and strings.
+    """
     problems = layout_problems(project)
+    code = source if source is not None else site_code(project)
     return [
         premium_pass_check(run, workspace=workspace),
         structure_check(project, workspace),
@@ -700,10 +706,10 @@ def new_product_checks(run, project: Path, workspace: Path) -> list:
         experience_check(workspace),
         motion_review_check(run, workspace),
         check("choreography built with the motion kit or a framework's layout animations",
-              has(site_code(project), r"motion-kit|\bflip\(|layoutId|TransitionGroup|animate:flip|startViewTransition")),
+              has(code, r"motion-kit|\bflip\(|layoutId|TransitionGroup|animate:flip|startViewTransition")),
         loaded_check(run, {"ui", "discovery", "art", "ux", "ds", "motion", "responsive", "a11y", "impl", "vqa"}),
         check("standard ?latency=slow and ?fail=1 switches exist",
-              has(site_code(project), r"latency") and has(site_code(project), r"['\"]fail['\"]|fail=")),
+              has(code, r"latency") and has(code, r"['\"]fail['\"]|fail=")),
         check("no layout problems at phone, tablet, desktop", not problems, problems),
     ] + motion_checks(run, project) + audit_checks(project)
 
@@ -1021,6 +1027,18 @@ def changed_files(workspace: Path) -> list[str]:
     return [line for line in (tracked + untracked).splitlines() if line.strip()]
 
 
+def added_lines(workspace: Path, names: list[str]) -> str:
+    """The lines added to these files since the baseline commit (whole content for new files)."""
+    added = []
+    for name in names:
+        diff = subprocess.run(["git", "diff", "-U0", "HEAD", "--", name], cwd=workspace, capture_output=True, text=True).stdout
+        if diff:
+            added += [line[1:] for line in diff.splitlines() if line.startswith("+") and not line.startswith("+++")]
+        elif (workspace / name).exists():
+            added.append((workspace / name).read_text(errors="ignore"))
+    return "\n".join(added)
+
+
 def ui_u_react_feature(root: Path, plugin: Path):
     """U — new screens in an existing, styled React product: reuse its components and tokens, compose screens from them."""
     workspace = workspace_from("opsdesk-react", root / "workspace")
@@ -1038,9 +1056,10 @@ def ui_u_react_feature(root: Path, plugin: Path):
     raw_primitives = re.findall(PRIMITIVE_TAGS, page_code)
     lookalikes = [name for name in changed if re.search(r"(^|/)(Button|Badge|Modal|Dialog|Table|Card|Tabs|Toast|Field|Select)"
                                                         r"\w*\.(jsx|tsx)$", name) and not name.startswith("src/components/ui/")]
-    new_css = "".join((workspace / name).read_text(errors="ignore") for name in changed
-                      if name.endswith(".css") and not name.endswith("tokens.css") and (workspace / name).exists())
+    new_css = added_lines(workspace, [name for name in changed if name.endswith(".css") and not name.endswith("tokens.css")])
     raw_colours = re.findall(r"#[0-9a-fA-F]{3,8}\b|rgba?\(", new_css)
+    new_logic = "".join((workspace / name).read_text(errors="ignore") for name in changed
+                        if name.startswith("src/") and name.endswith((".js", ".ts", ".jsx", ".tsx")) and (workspace / name).exists())
     return [
         check("production build succeeds", built, build_output),
         check("orchestrator loaded before the first UI write", orchestrator_before_first_ui_write(run)),
@@ -1052,7 +1071,7 @@ def ui_u_react_feature(root: Path, plugin: Path):
         check("no look-alike components outside the library", not lookalikes, lookalikes),
         check("new styles use tokens (no raw colours outside tokens.css)", not raw_colours, raw_colours[:6]),
         check("contractor view lives in the URL (router params or search params)",
-              has(page_code, r"useSearchParams|useParams")),
+              has(new_logic, r"useSearchParams|useParams")),
         check("saving shows a busy state that blocks a second save", has(page_code, r"\bbusy[=\s{]")),
         check("compliance expiry is flagged (expired / within 30 days)", has(page_code + "".join(
             path.read_text(errors="ignore") for path in source_files(workspace)), r"30") and has(page_code, r"expir")),
@@ -1074,18 +1093,23 @@ def ui_v_react_new_product(root: Path, plugin: Path):
     components = [path for path in sources if "components" in path.parts and path.suffix in (".jsx", ".tsx")]
     screens = [path for path in sources if path.suffix in (".jsx", ".tsx") and path not in components]
     screen_code = "".join(path.read_text(errors="ignore") for path in screens)
-    raw_primitives = re.findall(r"<(button|dialog|select)\b", screen_code)
+    component_code = "".join(path.read_text(errors="ignore") for path in components)
+    all_code = "".join(path.read_text(errors="ignore") for path in sources)
+    # A raw control in a screen that reuses a library class name is a hand-made copy of a component.
+    library_classes = set(re.findall(r'className=["`{]*["`]?([a-z][\w-]*)', component_code))
+    copies = [match.group(0)[:80] for match in re.finditer(r'<(button|dialog|select|input)\b[^>]*className=["`{]*["`]?([a-z][\w-]*)',
+                                                          screen_code) if match.group(2) in library_classes]
     dist = project / "dist"
     checks = [
         check("production build succeeds", built, build_output),
         check("a component foundation exists (≥ 6 shared components)", len(components) >= 6,
               [path.name for path in components]),
-        check("screens composed from the components (few hand-built primitives in screens)",
-              len(raw_primitives) <= 3, raw_primitives[:8]),
-        check("view state in the router (URL)", has(screen_code, r"useSearchParams|useParams|useNavigate|createBrowserRouter")),
+        check("screens composed from the components (no hand-made copies of library controls)", not copies, copies[:6]),
+        check("view state in the URL (router or history)",
+              has(all_code, r"useSearchParams|useParams|createBrowserRouter|history\.(push|replace)State")),
     ]
     if built and (dist / "index.html").exists():
-        checks += new_product_checks(run, dist, workspace)
+        checks += new_product_checks(run, dist, workspace, source=all_code)
     else:
         checks.append(check("built app could be graded", False, "no dist/index.html"))
     return checks

@@ -272,7 +272,14 @@ change runs through all seven in minutes.
    interaction probe, the main flows filmed with `film.cjs` and judged by
    eye, the experience walked at real speed with `record.cjs` (happy path,
    invalid input, failure and retry, cancel/back/undo, refresh mid-task,
-   keyboard only, phone) to `references/experience-standard.md`. **Fix
+   keyboard only, phone) to `references/experience-standard.md` — as
+   video, because timing can't be judged from step screenshots. Check the
+   system was really used: no button, field, dialog or library class name
+   (`btn`, `link-button`…) hand-written in a screen when a component does
+   that job — use or extend the component (a `link` or `icon` variant, say);
+   no raw colour, shadow or radius outside the tokens; the audit's rendered
+   counts within ≤ 6 radii, ≤ 5 shadows (inset highlights count),
+   ≤ 14 font sizes. Each miss is a defect. **Fix
    defects; don't redesign.** Anything that feels ordinary is fixed within
    the sheet's decisions. Record a `## Verify` table in
    `qa-screenshots/premium-pass.md` (sheet item → evidence → result → fix).

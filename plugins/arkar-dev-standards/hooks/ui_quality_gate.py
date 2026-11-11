@@ -17,7 +17,8 @@ two ends of it:
      redesign) → all nine UI specialists must have been loaded.
   3. It created or rewrote DESIGN.md, or wrote a build sheet into it → the
      evidence must exist: a `## Build sheet` section in DESIGN.md, and
-     `premium-pass.md` with the Verify record (films and the experience walk)
+     `premium-pass.md` with the Verify record (films, and the experience walk
+     with its videos)
      and the `## Independent review`.
 
 When something is missing at the end it blocks the stop with a reason that
@@ -189,6 +190,15 @@ def find_files(roots: list[Path], name: str) -> list[Path]:
     return found
 
 
+def has_videos(records: list[Path]) -> bool:
+    """A recorded journey (record.cjs writes .mp4, or .webm without ffmpeg) beside a premium-pass record."""
+    for record in records:
+        for suffix in ("*.mp4", "*.webm"):
+            if next(record.parent.rglob(suffix), None) is not None:
+                return True
+    return False
+
+
 def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> list[str]:
     """What a new product, page set or redesign still lacks."""
     # Shell writes give relative paths (often after a `cd`), so find those DESIGN.md files in the project.
@@ -224,6 +234,10 @@ def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> l
             problems.append("premium-pass.md has no experience walk — record the main flows at real speed with "
                             "arkar-ui-visual-qa/scripts/record.cjs (happy path, errors and retry, cancel/undo, "
                             "refresh, keyboard, phone) and judge every moment (Verify)")
+        elif not has_videos(records) and not re.search(r"could(n't| not) record|no video", record, re.IGNORECASE):
+            problems.append("the experience walk has no videos — step screenshots can't show timing; record the "
+                            "main flows at real speed with arkar-ui-visual-qa/scripts/record.cjs (or say in "
+                            "premium-pass.md why recording couldn't run)")
         if not re.search(r"independent review|cold review|independent critique|cold read", record, re.IGNORECASE):
             problems.append("premium-pass.md has no `## Independent review` — one fresh subagent reviews the look "
                             "and the use for defects (arkar-ui-visual-qa/references/independent-review.md)")

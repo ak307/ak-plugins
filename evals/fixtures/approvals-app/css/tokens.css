@@ -1,0 +1,140 @@
+/* Design tokens — the only place raw colours, sizes and timings live.
+   Components in app.css use the semantic names below. */
+
+@font-face { font-family: "Bricolage Grotesque"; src: url("../fonts/bricolage-grotesque.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: "Geist"; src: url("../fonts/geist.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("../fonts/geist-mono.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+
+:root {
+  color-scheme: light;
+
+  /* Type */
+  --font-display: "Bricolage Grotesque", "Geist", system-ui, sans-serif;
+  --font-ui: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --text-xs: 0.8125rem;   /* 13 — secondary labels */
+  --text-sm: 0.875rem;    /* 14 — dense rows */
+  --text-md: 1rem;        /* 16 */
+  --text-lg: 1.25rem;     /* 20 */
+  --text-xl: 1.75rem;     /* 28 */
+  --text-hero: clamp(1.75rem, 1.1rem + 2.2vw, 2.75rem);
+
+  /* Space (4 px grid) */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px;
+
+  /* Shape */
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px; --radius-xl: 22px; --radius-pill: 999px;
+
+  /* Canvas (the deep field the glass sits on) */
+  --canvas: #0b1a22;
+  --canvas-teal: #0f4c4a;
+  --canvas-indigo: #23306e;
+  --canvas-copper: #7a3f1c;
+  --on-canvas: #f4f1ea;
+  --on-canvas-2: #c9d3d6;
+  --on-canvas-3: #9fb0b5;
+  --accent: #f08a4b;            /* copper: brand moment and key figures on the canvas */
+  --accent-strong: #ffb27e;
+
+  /* Paper (working surfaces) */
+  --paper: #fbfaf7;
+  --paper-2: #f3f1eb;
+  --paper-3: #e9e5db;
+  --line: #e1dccf;
+  --line-strong: #c9c2b1;
+  --ink: #141a21;
+  --ink-2: #434b56;
+  --ink-3: #5f6772;
+  --select: #eef2fe;
+
+  /* Status — one meaning, one colour everywhere */
+  --ok: #0a7a52;      --ok-soft: #e1f3ea;   --ok-mark: #3ddc97;
+  --warn: #965400;    --warn-soft: #fcefd9; --warn-mark: #ffb547;
+  --bad: #b42318;     --bad-soft: #fde7e4;  --bad-mark: #ff6b5e;
+  --info: #2353c2;    --info-soft: #e5edfc; --info-mark: #7aa5ff;
+  --neutral-soft: #ecebe6;
+
+  --primary: #0a7a52;           /* Approve */
+  --primary-hover: #086645;
+  --on-primary: #ffffff;
+  --focus: #3f7cff;
+  --highlight: rgba(255, 181, 71, 0.28);
+
+  /* Veils: light layers on the dark canvas and glass */
+  --veil-1: rgba(255, 255, 255, 0.06);
+  --veil-2: rgba(255, 255, 255, 0.1);
+  --veil-3: rgba(255, 255, 255, 0.13);
+  --veil-line: rgba(255, 255, 255, 0.22);
+  --veil-strong: rgba(255, 255, 255, 0.35);
+  --segment-indicator: rgba(255, 255, 255, 0.85);
+  --scrim: rgba(3, 10, 16, 0.58);
+  --late-zone-a: rgba(255, 107, 94, 0.16);
+  --late-zone-b: rgba(255, 107, 94, 0.04);
+  --accent-veil: rgba(240, 138, 75, 0.16);
+  --hover-neutral: rgba(127, 127, 127, 0.14);
+  --mark-edge: rgba(11, 26, 34, 0.55);
+  --mark-shadow: rgba(0, 0, 0, 0.5);
+  --chip-on-canvas: rgba(10, 22, 30, 0.7);
+  --chip-on-canvas-hover: rgba(30, 50, 62, 0.9);
+  --on-status: #ffffff;
+
+  /* Elevation */
+  --shadow-1: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --shadow-2: 0 6px 18px -6px rgba(15, 23, 42, 0.22);
+  --shadow-3: 0 24px 60px -18px rgba(3, 10, 18, 0.55);
+
+  /* Layers */
+  --z-sticky: 10; --z-bulk: 50; --z-menu: 60; --z-sheet: 70; --z-toast: 1000;
+
+  /* Motion */
+  --motion-fast: 140ms;
+  --motion-base: 240ms;
+  --motion-slow: 420ms;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --ease-spring: cubic-bezier(.34, 1.36, .64, 1);
+
+  /* Liquid Glass theme (see liquid-glass.css) */
+  --lg-tint: 16 34 44;
+  --lg-tint-alpha: 0.5;
+  --lg-panel-alpha: 0.72;
+  --lg-edge: 255 255 255;
+  --lg-shadow: 2 8 14;
+  --lg-text: var(--on-canvas);
+  --lg-solid: #13262f;
+  --lg-field-a: var(--canvas-teal);
+  --lg-field-b: var(--canvas-indigo);
+  --lg-field-c: var(--canvas-copper);
+  --lg-field-base: var(--canvas);
+}
+
+/* Dark theme: the canvas stays; working surfaces turn to deep slate. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #121a21; --paper-2: #18222a; --paper-3: #22303a;
+    --line: #26343e; --line-strong: #3a4a55;
+    --ink: #eef1f3; --ink-2: #c2cad0; --ink-3: #9aa6ae;
+    --select: #1a2a44;
+    --ok: #4fd69c; --ok-soft: #10301f; --warn: #ffbe5c; --warn-soft: #3a2a0e;
+    --bad: #ff8a7e; --bad-soft: #3b1714; --info: #8fb2ff; --info-soft: #142446;
+    --neutral-soft: #222c33;
+    --primary: #0b8457; --primary-hover: #0a7550;
+    --highlight: rgba(255, 181, 71, 0.18);
+    --lg-tint: 10 20 26; --lg-solid: #0e1a21;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #121a21; --paper-2: #18222a; --paper-3: #22303a;
+  --line: #26343e; --line-strong: #3a4a55;
+  --ink: #eef1f3; --ink-2: #c2cad0; --ink-3: #9aa6ae;
+  --select: #1a2a44;
+  --ok: #4fd69c; --ok-soft: #10301f; --warn: #ffbe5c; --warn-soft: #3a2a0e;
+  --bad: #ff8a7e; --bad-soft: #3b1714; --info: #8fb2ff; --info-soft: #142446;
+  --neutral-soft: #222c33;
+  --primary: #0b8457; --primary-hover: #0a7550;
+  --highlight: rgba(255, 181, 71, 0.18);
+  --lg-tint: 10 20 26; --lg-solid: #0e1a21;
+}

@@ -210,9 +210,17 @@ change runs through all seven in minutes.
    - **No speculative library:** plan what the screens need; extract a
      pattern into a component when it genuinely repeats during
      implementation, rather than designing every possible component up front.
-   Then, per screen, answer **every one of these rows** — screens are
+   Then, per **surface**, answer **every one of these rows** — screens are
    composed from the planned components, not designed one by one (example
-   and detail in `references/build-sheet.md`):
+   and detail in `references/build-sheet.md`). A surface is every place the
+   work happens, not only the page: the detail panel or sheet a list opens,
+   a form, a dialog, the moment of decision, the success, empty and error
+   states. Each gets its own Composition with a hero moment and at least one
+   visual that isn't just text (a journey track instead of status boxes, an
+   amount set against its context, a chart of what the numbers mean), built
+   from the same identity as the screen it opens from — never a fallback
+   white card. A detail view that reads like a printed form or invoice is
+   the template look, and is rejected on paper:
    **Job** (who, the question they bring, what's noticed first) ·
    **Direction** (the design system followed, or the chosen direction) ·
    **Composition** (layout from the content, hero moment; the obvious layout
@@ -225,6 +233,8 @@ change runs through all seven in minutes.
    (final words) · **Responsive** (what changes per size) ·
    **Accessibility** · **Acceptance checks** (what Verify will tick).
    Three rules make the sheet production-ready:
+   - **Every surface is designed, not only the first screen.** Calm means
+     no noise — never plain.
    - **Every row is answered.** A row that changes nothing says so and why
      ("Motion: none in this product — press feedback and busy state only").
    - **States of the real feature, not only of the mock.** List what the
@@ -270,7 +280,9 @@ change runs through all seven in minutes.
    tool) and run its premium pass: on local/test data, tick every
    acceptance check — every state seen at the target sizes, the audit and
    interaction probe, the main flows filmed with `film.cjs` and judged by
-   eye, the experience walked at real speed with `record.cjs` (happy path,
+   eye and measured with `motion-metrics.cjs` (real presses: response time,
+   timing and easing, frame pacing, pop-ins and jumps, one action
+   interrupted mid-animation with `@<ms>`, and `--reduced`), the experience walked at real speed with `record.cjs` (happy path,
    invalid input, failure and retry, cancel/back/undo, refresh mid-task,
    keyboard only, phone) to `references/experience-standard.md` — as
    video, because timing can't be judged from step screenshots. Check the

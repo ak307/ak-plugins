@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Approvals</title>
+  <meta name="description" content="Purchase-request approvals: queues for managers, Finance and Directors, and request tracking for requesters.">
+  <link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/liquid-glass.css">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="lg-field">
+  <a class="skip-link" href="#main">Skip to the requests</a>
+
+  <header class="topbar lg-bar">
+    <a class="brand" href="./" aria-label="Approvals — home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="28" height="28"><rect x="3" y="3" width="26" height="26" rx="7" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M10 16.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="brand-name">Approvals</span>
+    </a>
+
+    <div class="persona">
+      <button class="persona-button lg-control" id="personaButton" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="personaMenu">
+        <span class="avatar avatar-sm" id="personaAvatar" aria-hidden="true"></span>
+        <span class="persona-text"><span class="persona-label">Viewing as</span> <strong id="personaName">…</strong></span>
+        <svg class="chevron" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <div class="menu lg-sheet" id="personaMenu" role="menu" aria-label="Switch view" hidden></div>
+    </div>
+
+    <label class="search lg-control" for="search">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="sr-only">Search requests</span>
+      <input id="search" type="search" placeholder="Search ID, vendor, requester…" autocomplete="off" spellcheck="false">
+      <kbd class="search-key" aria-hidden="true">/</kbd>
+    </label>
+
+    <button class="icon-button lg-control" id="resetButton" type="button" title="Reset the demo data">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="sr-only">Reset the demo data</span>
+    </button>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="hero" id="hero" aria-labelledby="heroTitle">
+      <p class="eyebrow" id="heroEyebrow"></p>
+      <h1 class="hero-title" id="heroTitle">Loading your requests…</h1>
+      <p class="hero-sub" id="heroSub"></p>
+      <div class="hero-visual" id="heroVisual"></div>
+    </section>
+
+    <div class="controls">
+      <div class="tabs lg-segmented" id="tabs" role="tablist" aria-label="Views" hidden></div>
+      <div class="toolbar" id="toolbar"></div>
+    </div>
+
+    <div class="workspace" id="workspace">
+      <section class="board" id="board" aria-live="off"></section>
+      <aside class="detail lg-sheet" id="detail" aria-label="Request details" hidden></aside>
+    </div>
+
+    <p class="policy-note" id="policyNote"></p>
+  </main>
+
+  <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+
+  <div class="bulkbar lg-bar" id="bulkbar" role="region" aria-label="Selected requests" hidden></div>
+
+  <dialog class="dialog lg-sheet" id="dialog" aria-labelledby="dialogTitle"></dialog>
+
+  <script src="js/kits/motion-kit.js"></script>
+  <script src="js/kits/experience-kit.js"></script>
+  <script src="js/policy.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/ui-common.js"></script>
+  <script src="js/ui-views.js"></script>
+  <script src="js/ui-detail.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

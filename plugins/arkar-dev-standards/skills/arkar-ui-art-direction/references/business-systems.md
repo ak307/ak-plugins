@@ -21,6 +21,13 @@ for *this* job. These are principles to compose from, not a layout to copy
    panel that keeps the list in view) or grows from it; edit inline; act on
    many at once with a bulk bar that appears where the selection is.
    Destructive actions confirm with what will happen and offer undo.
+   **The detail is where the work is done, so it is the most designed
+   surface, not the plainest:** the same identity as the list, a hero for
+   the decision it serves (the amount against its budget and history, the
+   journey as a track with "you are here", the deadline as a countdown),
+   and the action bar designed as the moment of decision. A detail that
+   reads like a printed form or invoice fails, however tidy. Calm means no
+   noise — never plain.
 4. **Built for the fiftieth hour, not the first minute.** Keyboard
    shortcuts and a command palette for frequent actions, saved views and
    filters that persist, density that suits daily users (compact rows,

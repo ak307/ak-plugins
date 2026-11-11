@@ -26,6 +26,35 @@ Don't claim an animation works without seeing it run.
 - **Mobile:** run on an emulator/device; toggle the system "remove
   animations"/Reduce Motion setting and check the app still works.
 
+## The six motion areas — test the ones the product has
+
+Judge each by eye on film and video, and measure it with
+`scripts/motion-metrics.cjs` (real interactions):
+
+1. **Micro-interactions** — press, hover, focus, toggles, input focus,
+   validation feedback, dropdowns, tooltips: response ≤ 100 ms, 100–200 ms,
+   nothing instant where a state changes, focus always visible.
+2. **Transitions** — screens, dialogs and sheets, shared elements,
+   expanding cards, navigation: each change shows where things came from
+   and went; enter and exit both designed; 200–400 ms; no pop-in or vanish.
+3. **Transactions** — submit, processing, success, failure, balance or
+   count updates, the new item arriving in history, confirmation: the busy
+   state appears at once and holds the button's size; success and failure
+   are distinct moments; numbers count to their new value; the new item
+   slides into place, not appears.
+4. **Loading and async** — skeleton to content (crossfade, no layout
+   jump), progress, slow responses (`?latency=slow`), optimistic updates
+   and their rollback, cancel, retry.
+5. **Data and layout** — charts, counters, sort, filter, insert, delete,
+   reorder, expand: items move to their new place (FLIP or layout
+   animation) instead of re-rendering in place; no layout shift.
+6. **Gesture and physics** — swipe, drag, pull to refresh, scroll,
+   springs, momentum: follows the finger, can be interrupted and reversed
+   mid-way (`<step>@<ms>`) without a snap, settles naturally.
+
+Every area: interruptible without jumps; `--reduced` replaces movement
+with fades or instant changes; nothing moves just to decorate.
+
 ## Check against the motion acceptance criteria
 
 | Criterion | Look for |

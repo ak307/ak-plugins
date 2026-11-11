@@ -44,13 +44,18 @@ and redesigns.
 > system's look, mark them down for anything plain, inconsistent or
 > unfinished within it.
 >
-> Read each screenshot (Read tool) and for each screen answer:
+> Read each screenshot (Read tool) and for each **surface** answer — every
+> detail panel, sheet, dialog, form and state is judged on its own, at phone
+> and desktop, as strictly as the first screen (users spend their time
+> there):
 > 1. Three-second test: what catches the eye first? "Wow" or merely "fine"?
 > 2. Boring signals present: muted/monochrome palette with no vivid moment;
 >    low contrast range; no hero moment; flat (no depth/layering); text and
 >    icons only (no visual); identical rows/cards top to bottom; template
 >    page structure (hero → three equal cards → CTA band; KPI tiles over a
->    long table); large empty areas.
+>    long table); a detail or form that reads like a printed document
+>    (label–value stacks, a plain table, the product's identity dropped);
+>    large empty areas.
 > 3. Craft: typography (scale, character, rhythm), colour (conviction,
 >    tinted neutrals), spacing and alignment, component polish, state
 >    design, detail.
@@ -81,7 +86,8 @@ and redesigns.
 > Return, most severe first, a list of **defects** — each as: severity
 > (**critical**: visibly broken, covered, blank, unreadable, a missing core
 > state, or — for a new product or redesign — a screen that looks like a
-> generic template; **major**: clearly below premium for its mode;
+> generic template, including a detail panel, sheet or form that reads
+> like a printed document; **major**: clearly below premium for its mode;
 > **minor**: polish) · screen/section · what's wrong · a concrete fix within
 > the brief (not a copy of any existing product). Then the scores (overall
 > = mean of the dimensions) and section scores, as a diagnostic.

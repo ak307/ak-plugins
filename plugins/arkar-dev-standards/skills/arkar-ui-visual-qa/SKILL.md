@@ -30,6 +30,8 @@ Premium pass
 - Interaction probe (scripts/interaction-probe.cjs, before → after):
   no hover <a→b>, no focus <a→b>, no transition <a→b>, under 24px <a→b>
 - Motion (filmstrips: load + <flows filmed>): <what moved well · what felt abrupt, slow, decorative or confusing → fixed> · reduced motion filmed: <yes/no>
+- Motion metrics (scripts/motion-metrics.cjs on the main flows, incl. one interruption and --reduced, before → after):
+  slow responses <a→b>, linear/slow movement <a→b>, popped in / vanished <a→b>, jumps <a→b>, low fps <a→b>, reduced motion ignored <a→b>
 - States seen (every state in the sheet): <which>
 - Experience walk (record.cjs videos, experience-standard.md): <flows × paths walked (happy, invalid,
   failure+retry, cancel/back/undo, refresh, keyboard, phone)> → moments fixed: <list> · still weak: <list>
@@ -151,7 +153,13 @@ or moment the sheet missed is added to the sheet and built.
    destructive action, open and close a menu; `--span=3000` for longer
    sequences, `--reduced` once with reduced motion) and **look at every
    strip** — motion is judged by eye, like layout, against the sheet's
-   choreography.
+   choreography. Then measure the same flows with
+   `scripts/motion-metrics.cjs <url> <steps>` — real presses, not previews:
+   response time, each animation's timing and easing, frame pacing, things
+   that pop in or vanish, jumps; interrupt one action mid-animation
+   (`<step>@120`) and run once with `--reduced`. Cover the six motion areas
+   in `references/motion-testing.md` that the product has. Each finding is
+   checked against the film, then fixed or justified in the record.
 4. **Experience walk** to
    `arkar-ui-intelligence/references/experience-standard.md`: record each
    main flow at real speed with `scripts/record.cjs <url> <out.mp4> --cursor

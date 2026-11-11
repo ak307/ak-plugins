@@ -1,0 +1,19 @@
+<!doctype html><html><head><title>MM test</title><style>
+body{font:16px sans-serif;margin:0}
+#panel{position:fixed;right:0;top:0;width:320px;height:100vh;background:#eee;transform:translateX(100%);transition:transform 260ms cubic-bezier(.2,.8,.2,1)}
+#panel.open{transform:none}
+#slow{width:100px;height:40px;background:#c00;transition:transform 900ms linear}
+#slow.go{transform:translateX(300px)}
+</style></head><body>
+<button id="open" onclick="panel.classList.toggle('open')">Open</button>
+<button id="toast" onclick="const t=document.createElement('div');t.style.cssText='position:fixed;bottom:0;left:0;width:300px;height:80px;background:#333';t.className='toast';document.body.append(t)">Toast</button>
+<button id="move" onclick="slow.classList.toggle('go')">Move</button>
+<button id="teleport" onclick="slow.style.transition='none';slow.style.transform='translateX(500px)'">Teleport</button>
+<div id="slow"></div><div id="panel" role="dialog"><button id="close" onclick="panel.remove()">x</button></div>
+</body></html>
+<script>
+// A script animation that snaps back to the start when interrupted.
+const box=document.createElement('div');box.id='js';box.style.cssText='width:60px;height:60px;background:#06c;position:absolute;top:200px;left:0';document.body.append(box);
+let raf;function run(){cancelAnimationFrame(raf);const t0=performance.now();box.style.transform='translateX(0px)';(function f(t){const p=Math.min((t-t0)/400,1);box.style.transform=`translateX(${p*400}px)`;if(p<1)raf=requestAnimationFrame(f)})(t0)}
+const b=document.createElement('button');b.id='js-go';b.textContent='JS';b.onclick=run;document.body.prepend(b);
+</script>

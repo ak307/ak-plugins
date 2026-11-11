@@ -42,7 +42,13 @@ Rules:
   properties, consistent, responsive, accessible, every state designed,
   tokens only — so every screen built from them inherits it.
 
-## What it contains — per screen
+## What it contains — per surface
+
+A surface is every place the work happens, not only the page: the detail
+panel or sheet a list opens, a form, a dialog, the moment of decision, the
+success, empty and error states. Each one gets these rows; a detail view
+that reads like a printed form or invoice is the template look, rejected
+here on paper.
 
 Each specialist fills the rows it owns; load a specialist because the sheet
 needs its row, not "just in case".

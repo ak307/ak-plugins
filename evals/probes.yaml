@@ -1,0 +1,194 @@
+# Decision probes: short sessions that stop at the build sheet.
+#
+# Almost every quality decision is made on paper before any code, so judging
+# the sheet judges most of the skill — in minutes, not hours. Each probe runs
+# a real Claude Code session with the plugin, asks for the build sheet in the
+# reply (no files, no code), then a grader scores it against the rubric.
+# `files` creates a small project to work in; `fixture` copies one from
+# evals/fixtures/. `must` / `must_not` are regex checks on the reply.
+
+probes:
+  - id: detail-surface
+    area: composition
+    prompt: >-
+      new product: an approvals app for a finance approver at a facilities company — a queue of purchase
+      requests waiting for them, and the request detail they open to approve, send back or reject (amount,
+      requester, vendor, line items, the approval route manager → finance, how long it has waited). web, plain
+      HTML/CSS/JS with mock data.
+    rubric:
+      - The request detail (panel or sheet) has its own composition, not only the queue screen
+      - The detail has a named hero moment built around the decision the approver makes
+      - The detail uses at least one visual that is not just text — e.g. the approval route as a journey or track with "you are here", or the amount set against budget, history or a limit
+      - The detail keeps the product's identity (same materials/direction as the queue), not a plain white card
+      - The approve / send back / reject actions are designed as the moment of decision (busy state, confirmation or undo, consequence shown)
+      - The phone layout of the detail is designed for the phone (not the desktop panel squeezed)
+      - Explicitly rejects a document- or invoice-style detail (label–value stacks and a plain table) or explains how the detail avoids it
+    must: ["(?i)component plan"]
+
+  - id: existing-feature-reuse
+    area: component-plan
+    fixture: opsdesk-react
+    prompt: >-
+      add a Contractors section to Ops Desk: the contractors we use with their trade, compliance (insurance and
+      licence expiry — flag expired and expiring within 30 days) and rating; open one to see details and recent
+      work orders; and a way to add a contractor. mock data like the work orders. keep Ops Desk's look.
+    rubric:
+      - The component plan names existing components from src/components/ui that will be reused
+      - New needs are met by extending existing components (a variant or property) rather than near-copies
+      - Any genuinely new component is specified with variants, properties, states, keyboard and tokens
+      - No new visual identity, palette or fonts — the existing design system is followed
+      - States of the real feature are listed (loading, empty, failed save with retry, expired / expiring flags, validation, duplicate)
+      - Selected contractor and filters live in the URL (router search params)
+    must: ["(?i)component plan", "(?i)reuse"]
+
+  - id: new-product-foundation
+    area: component-plan
+    prompt: >-
+      build a visitor management app for building receptions, in React with Vite: reception sees today's
+      expected visitors, checks them in (badge printing placeholder, host notified), registers walk-ins, and sees
+      who is on site now and checks them out. mock data.
+    rubric:
+      - The plan establishes a foundation first — tokens, then shared primitives (buttons, fields, rows, badges, dialogs or sheets, toasts, empty / error / skeleton states)
+      - Includes at least one product-specific signature component
+      - Screens are described as composed from the planned components, not designed one by one
+      - Avoids a speculative library — components are tied to what the screens need
+      - Shadows, radii and type sizes are limited to a small token set
+    must: ["(?i)component plan"]
+
+  - id: real-feature-states
+    area: states
+    fixture: claims-ui
+    prompt: >-
+      add two-factor sign-in to the claims portal: after the password, staff enter a 6-digit code from their
+      authenticator app, with an option to use a backup code. mock it for now.
+    rubric:
+      - Lists states the real system will have even if the mock can't produce them — wrong code with attempts left, lockout after too many attempts, code expired, session expired
+      - Each state has its exact wording, not placeholders
+      - Includes the busy state on verify that blocks a double submit, and paste of a whole code
+      - Follows the existing portal's look (no new identity) while keeping the experience standard (focus moves, specific errors, touch targets)
+      - Acceptance checks are concrete (what you'd see), not "error state works"
+    must: ["(?i)lock"]
+
+  # ---- motion and interaction: one probe per area ----------------------------------
+
+  - id: motion-micro
+    area: motion · micro-interactions
+    prompt: >-
+      new settings screen for an internal ops tool: notification toggles, a timezone dropdown, a profile form with
+      inline validation, help tooltips, and a save button. web, plain HTML/CSS/JS.
+    rubric:
+      - Press, hover and focus feedback are specified per control with durations (about 100–200 ms)
+      - Toggle, dropdown open/close and tooltip motion are specified (what moves, origin, easing)
+      - Validation feedback is specified — when it appears (blur / submit), how it animates, and that it doesn't shift the layout
+      - Response to input is immediate (feedback within ~100 ms; nothing waits for the network to acknowledge a press)
+      - Reduced-motion behaviour is stated
+      - Says how the motion will be checked on real interactions (not only previews)
+
+  - id: motion-transitions
+    area: motion · transitions
+    prompt: >-
+      new product: a project portfolio web app — a grid of project cards that expand into a full project page,
+      a filter drawer, and a modal to create a project. React.
+    rubric:
+      - The card → project page transition is a shared-element / layout transition with origin and destination named
+      - Enter and exit are both specified for the drawer and the modal (and where focus goes)
+      - Durations and easing are given per transition (roughly 200–400 ms, eased, not linear)
+      - Transitions can be interrupted (e.g. Back during the expand) without snapping
+      - Navigation keeps context (scroll position or the card returns to its place on Back)
+      - Reduced motion replaces movement with fades or instant changes
+
+  - id: motion-transactions
+    area: motion · transactions
+    prompt: >-
+      new feature: staff submit an expense reimbursement and see their reimbursement balance and history. the
+      submit goes through processing (2–6 s), can succeed or fail. web, plain HTML/CSS/JS with mock data.
+    rubric:
+      - The submit button shows a busy state at once that keeps its size and blocks a second submit
+      - Processing has a designed wait (progress or steps) with a slow-state message after a threshold
+      - Success and failure are distinct moments with their own motion and wording; failure keeps the user's input and offers retry
+      - The balance counts or transitions to its new value rather than jumping
+      - The new item is inserted into the history with motion (slides into place), not just appearing
+      - Confirmation feedback is placed by the action and can be undone or followed up
+
+  - id: motion-async
+    area: motion · loading and async
+    prompt: >-
+      new dashboard for a cleaning-operations manager: today's jobs by site, staff on shift, and incidents; data
+      loads from three APIs that can be slow or fail independently. web, React.
+    rubric:
+      - Skeletons match the layout of the content they replace, and the swap to content is a crossfade without layout jump
+      - Each panel loads, fails and retries independently (partial success designed)
+      - A slow state appears after a stated threshold with honest wording
+      - Optimistic updates are used where safe, with a designed rollback when the server refuses
+      - Cancel and retry are specified
+      - Timeouts and stale data on refresh are handled
+
+  - id: motion-data
+    area: motion · data and layout
+    prompt: >-
+      new screen: a work-order board with a sortable, filterable table of jobs, a counter of overdue jobs, and a
+      chart of jobs per day; jobs can be added, completed (removed) and re-prioritised. web, plain HTML/CSS/JS.
+    rubric:
+      - Sorting and filtering move rows to their new places (FLIP / layout animation) instead of re-rendering in place
+      - Insert and delete animate (enter, exit, collapse of the gap)
+      - Reordering by priority is animated and keyboard-accessible
+      - The counter and chart transition between values (count, morph) rather than jumping
+      - No layout shift around the table while data changes
+      - Large data changes stay fast (motion skipped or simplified for many rows)
+
+  - id: motion-gestures
+    area: motion · gesture and physics
+    files:
+      pubspec.yaml: "name: field_ops\ndependencies:\n  flutter:\n    sdk: flutter\n"
+      lib/theme/app_theme.dart: "import 'package:flutter/material.dart';\n\nfinal appTheme = ThemeData(colorSchemeSeed: const Color(0xFF0E6E5C), useMaterial3: true);\n"
+      lib/widgets/app_button.dart: "import 'package:flutter/material.dart';\n\nclass AppButton extends StatelessWidget {\n  const AppButton({super.key, required this.label, this.onPressed, this.busy = false});\n  final String label;\n  final VoidCallback? onPressed;\n  final bool busy;\n  @override\n  Widget build(BuildContext context) => FilledButton(onPressed: busy ? null : onPressed, child: busy ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : Text(label));\n}\n"
+    prompt: >-
+      add a jobs inbox to this Flutter app for field technicians: swipe a job right to accept and left to decline,
+      pull to refresh, and drag to reorder today's jobs by priority.
+    rubric:
+      - Swipe follows the finger, with a stated threshold, a spring back below it and a committed animation above it
+      - Gestures can be interrupted and reversed mid-way without snapping
+      - Pull to refresh and drag-to-reorder have physics (momentum, settle) and clear feedback
+      - Every gesture has a non-gesture alternative (buttons or menu) for accessibility
+      - Haptics and platform conventions (iOS / Android) are considered
+      - Reduced motion (MediaQuery.disableAnimations) is respected
+      - Reuses the app's AppButton and theme rather than new copies
+
+  # ---- AK's other stacks (can't be built in this workspace; planned here) ------------
+
+  - id: stack-livewire
+    area: stack · Laravel Livewire
+    files:
+      composer.json: "{\"require\": {\"laravel/framework\": \"^11.0\", \"livewire/livewire\": \"^3.5\"}}"
+      resources/views/components/button.blade.php: "@props(['variant' => 'primary'])\n<button {{ $attributes->class(['btn', 'btn-'.$variant]) }}>{{ $slot }}</button>\n"
+      resources/views/components/card.blade.php: "<div {{ $attributes->class('card') }}>{{ $slot }}</div>\n"
+      resources/views/components/badge.blade.php: "@props(['tone' => 'neutral'])\n<span class=\"badge badge-{{ $tone }}\">{{ $slot }}</span>\n"
+      resources/css/app.css: "@import 'tailwindcss';\n:root { --brand: #1f4e79; --radius: 10px; }\n"
+      app/Livewire/WorkOrders.php: "<?php\nnamespace App\\Livewire;\nuse Livewire\\Component;\nclass WorkOrders extends Component { public string $search = ''; public function render() { return view('livewire.work-orders'); } }\n"
+    prompt: >-
+      add a Defects screen to this Laravel Livewire app: engineers log a defect with photos and a priority, see
+      the list of open defects filtered by site and priority, and close one with a note.
+    rubric:
+      - Reuses the app's Blade components (x-button, x-card, x-badge) and extends them rather than new copies
+      - Uses Livewire idioms for state and feedback — wire:loading / wire:target busy states, wire:model.live with debounce, wire:dirty or similar, filters in the URL (#[Url])
+      - Motion uses Alpine transitions (x-transition) or wire:transition, with reduced motion considered
+      - Photo upload states are designed (progress, too large, wrong type, failed upload with retry)
+      - Closing a defect has confirmation or undo and keeps the list position
+      - States of the real feature (validation errors from the server, permission, conflict) are listed
+
+  - id: stack-flutter
+    area: stack · Flutter
+    files:
+      pubspec.yaml: "name: shwe\ndependencies:\n  flutter:\n    sdk: flutter\n"
+      lib/theme/app_theme.dart: "import 'package:flutter/material.dart';\n\nfinal appTheme = ThemeData(colorSchemeSeed: const Color(0xFF7A1F5C), useMaterial3: true);\n"
+      lib/widgets/app_card.dart: "import 'package:flutter/material.dart';\n\nclass AppCard extends StatelessWidget {\n  const AppCard({super.key, required this.child});\n  final Widget child;\n  @override\n  Widget build(BuildContext context) => Card(child: Padding(padding: const EdgeInsets.all(16), child: child));\n}\n"
+    prompt: >-
+      add an events screen to this Flutter community app: upcoming community events as a list, tap one to see its
+      details and RSVP; RSVP can fail offline.
+    rubric:
+      - Uses the app's theme (ThemeData / ColorScheme tokens) and AppCard rather than hard-coded values or copies
+      - The list → detail transition is a Hero or shared-axis transition, specified
+      - Implicit animations (AnimatedSwitcher, AnimatedContainer…) are named for state changes like RSVP
+      - Offline and failure states are designed, with retry and the RSVP kept
+      - Platform conventions and Semantics (screen reader labels) are covered
+      - Reduced motion (MediaQuery.disableAnimations) is respected

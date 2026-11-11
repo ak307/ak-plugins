@@ -1,0 +1,18 @@
+# Surface builds: one surface built or redesigned on a ready-made app, then
+# shot at phone and desktop (before and after) and measured with
+# motion-metrics.cjs on real interactions. ~15–30 minutes each instead of a
+# whole product. The shots go on a contact sheet for AK's verdict.
+#
+# open: steps that bring the surface on screen (motion-metrics.cjs syntax).
+# motion: steps measured for motion quality (include one @<ms> interruption).
+
+surfaces:
+  - id: approvals-detail
+    fixture: approvals-app
+    prompt: >-
+      the request detail in this approvals app (the panel on desktop, the sheet on phone) is very boring — it
+      reads like a printed invoice. redesign the request detail so it's as designed as the queue. keep the queue
+      and everything else as it is.
+    url: "index.html?latency=fast"
+    open: ["click=.row-main >> nth=0", "wait=1200"]
+    motion: ["click=.row-main >> nth=0", "press=Escape", "click=.row-main >> nth=1", "click=.row-main >> nth=2@120"]

@@ -237,15 +237,18 @@ change runs through all seven in minutes.
    (final words) · **Responsive** (what changes per size) ·
    **Accessibility** · **Acceptance checks** (what Verify will tick).
    The **Motion** row covers each of these the surface has, with duration
-   and easing, never "smooth animations": **micro** — hover, press and
-   focus per control (100–200 ms), toggles, dropdown and tooltip origin,
+   and easing, never "smooth animations": **micro** — one line per control
+   type the surface uses (button, link, field, toggle, tab, row, chip…), each
+   giving its hover, press *and* focus change with duration (100–200 ms;
+   focus ring instant), toggles, dropdown and tooltip origin,
    validation that appears without shifting the layout, feedback within
    100 ms of input · **transitions** — enter *and* exit, origin, duration
    and easing, what happens when interrupted (reverses from where it is) ·
    **transactions** — busy at once, the wait, distinct success and failure,
    values counting to their new number, the new item moving into place ·
    **async** — skeleton to content crossfade with no shift, slow-state
-   threshold, cancel, retry, optimistic update with rollback where there is
+   threshold, a Cancel the user can press on anything slow they started
+   (a long load, search, upload, export or submit), retry, optimistic update with rollback where there is
    a write · **data** — sort/filter/insert/delete moved into place (FLIP),
    counters and charts that transition, motion skipped above a row count ·
    **gestures** — follows the finger, threshold, spring back, interrupt and
@@ -282,7 +285,8 @@ change runs through all seven in minutes.
    wrong, change the sheet first, then the code.
    Motion and the experience are built in from the start, not added at the
    end:
-   - plain web builds copy `arkar-ui-motion-design/assets/motion-kit.js` and
+   - plain web builds (not Blade/Livewire — see below) copy
+     `arkar-ui-motion-design/assets/motion-kit.js` and
      route every data change, overlay and step through it; frameworks use
      their layout animations (in testing, builds using the kit scored about
      1.5 points higher on motion than hand-made effects);
@@ -293,8 +297,9 @@ change runs through all seven in minutes.
      URL and history), `keepDraft`, `toast` (next to the action, one at a
      time, with undo) and `roving`/`keepFocus` (keyboard); frameworks keep
      the same behaviour with their router and stores;
-   - Laravel Blade / Livewire: Alpine `x-transition` (or `wire:transition`)
-     for enter and exit, `wire:loading` + `wire:target` for busy states,
+   - Laravel Blade / Livewire: motion is written with Alpine — `x-transition`
+     (or `wire:transition`) for every enter and exit, `x-collapse` for
+     expanding — not the plain-web motion kit; `wire:loading` + `wire:target` for busy states,
      `wire:dirty` for unsaved changes, `wire:model.live.debounce` for search,
      `#[Url]` for filters and the selected item, and the motion kit's `flip`
      only where Alpine can't (reordering lists); Flutter: theme tokens, Hero

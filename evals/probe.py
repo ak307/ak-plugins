@@ -72,12 +72,16 @@ def grade(probe: dict, reply: str) -> list[dict]:
         'Answer with JSON only: [{"line": 1, "pass": true, "evidence": "short quote or why it fails"}, ...]')
     command = ["claude", "-p", prompt, "--model", GRADER_MODEL, "--max-turns", "1", "--tools", "",
                "--plugin-dir", str(empty_plugin_dir())]
-    output = subprocess.run(command, capture_output=True, text=True, timeout=600, stdin=subprocess.DEVNULL).stdout
-    match = re.search(r"\[.*\]", output, re.S)
-    try:
-        marks = json.loads(match.group(0)) if match else []
-    except json.JSONDecodeError:
-        marks = []
+    marks: list = []
+    for _ in range(2):  # one retry: a grader that answers in prose would count as a fail of the skill
+        output = subprocess.run(command, capture_output=True, text=True, timeout=600, stdin=subprocess.DEVNULL).stdout
+        match = re.search(r"\[.*\]", output, re.S)
+        try:
+            marks = json.loads(match.group(0)) if match else []
+        except json.JSONDecodeError:
+            marks = []
+        if marks:
+            break
     by_line = {mark.get("line"): mark for mark in marks if isinstance(mark, dict)}
     return [{"criterion": line, "passed": bool(by_line.get(index + 1, {}).get("pass")),
              "evidence": str(by_line.get(index + 1, {}).get("evidence", "grader gave no mark"))[:300]}

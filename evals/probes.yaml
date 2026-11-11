@@ -51,8 +51,8 @@ probes:
       - The plan establishes a foundation first — tokens, then shared primitives (buttons, fields, rows, badges, dialogs or sheets, toasts, empty / error / skeleton states)
       - Includes at least one product-specific signature component
       - Screens are described as composed from the planned components, not designed one by one
-      - Avoids a speculative library — components are tied to what the screens need
-      - Shadows, radii and type sizes are limited to a small token set
+      - Avoids a speculative library — components are tied to what the screens need (a components page for checking states is expected, not speculative)
+      - Shadows, radii and type sizes come from a small named token set (roughly ≤ 6 radii, ≤ 5 shadows, one type scale)
     must: ["(?i)component plan"]
 
   - id: real-feature-states
@@ -108,7 +108,7 @@ probes:
       - Success and failure are distinct moments with their own motion and wording; failure keeps the user's input and offers retry
       - The balance counts or transitions to its new value rather than jumping
       - The new item is inserted into the history with motion (slides into place), not just appearing
-      - Confirmation feedback is placed by the action and can be undone or followed up
+      - Confirmation is placed where the user's attention is (by the action or in the same sheet) and offers a follow-up (undo, withdraw or a next step)
 
   - id: motion-async
     area: motion · loading and async
@@ -119,7 +119,7 @@ probes:
       - Skeletons match the layout of the content they replace, and the swap to content is a crossfade without layout jump
       - Each panel loads, fails and retries independently (partial success designed)
       - A slow state appears after a stated threshold with honest wording
-      - Optimistic updates are used where safe, with a designed rollback when the server refuses
+      - Refreshes and late data don't disrupt what the user is reading (new data arrives without jumping the view or stealing focus)
       - Cancel and retry are specified
       - Timeouts and stale data on refresh are handled
 

@@ -42,7 +42,7 @@ UI_FILE = re.compile(
     re.IGNORECASE,
 )
 MARKUP = re.compile(r"<(form|input|button|label|table|select|textarea|nav|header|main|section)\b[^>]*>", re.IGNORECASE)
-SKIP_PATH = re.compile(r"(^|/)(node_modules|vendor|dist|build|qa-screenshots|\.git)/|(^|/)tests?/|_test\.|\.test\.|\.spec\."
+SKIP_PATH = re.compile(r"(^|/)(node_modules|vendor|dist|build|qa-screenshots|\.git)/|(^|/)(tests?|fixtures?|__fixtures__)/|_test\.|\.test\.|\.spec\."
                        # A skill's own assets and examples are a library being written, not a product's UI.
                        r"|(^|/)skills/[^/]+/(assets|references|scripts)/")
 ORCHESTRATOR = "arkar-ui-intelligence"

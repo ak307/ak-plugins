@@ -358,3 +358,12 @@ def test_a_build_sheet_without_a_component_plan_is_sent_back(tmp_path):
     design = COMPLETE_DESIGN.replace("Component plan: reuse Button, Field; extend Badge (overdue); new QueueRow\n", "")
     events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, design, COMPLETE_RECORD)
     assert "component plan" in json.loads(run_gate(tmp_path, events))["reason"]
+
+
+def test_test_fixtures_are_not_product_ui(tmp_path):
+    # Building a sample app under evals/fixtures/ for tests is test data, not a product to design.
+    fixture = tmp_path / "evals" / "fixtures" / "opsdesk-react"
+    events = [tool_use("Write", file_path=str(fixture / "src" / "App.jsx"), content="<main></main>"),
+              tool_use("Write", file_path=str(fixture / "DESIGN.md"), content="# Design")]
+    assert run_gate(tmp_path, events) == ""
+    assert run_before_write(tmp_path, [], "Write", file_path=str(fixture / "index.html"), content="<main/>") is None

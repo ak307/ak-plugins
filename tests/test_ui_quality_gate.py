@@ -18,6 +18,7 @@ LAUNCHER = HOOKS / "ui_quality_gate.sh"
 BASH = shutil.which("bash")
 
 COMPLETE_DESIGN = ("# Design\n## Direction\nData-centric\n## Build sheet — claims queue\n"
+                   "Component plan: reuse Button, Field; extend Badge (overdue); new QueueRow\n"
                    "Job: ...\nStates: loading · empty · error + retry · success\nAcceptance: ...\n")
 REVIEWER = {"type": "assistant", "message": {"content": [
     {"type": "tool_use", "name": "Agent", "input": {"description": "Independent review"}}]}}
@@ -234,7 +235,8 @@ def test_editing_a_skills_own_assets_is_not_product_ui(tmp_path):
 
 def test_build_sheet_added_to_an_existing_design_doc_needs_verify_and_review(tmp_path):
     # New screens in an existing product: the sheet goes into DESIGN.md by an edit, not a rewrite.
-    (tmp_path / "DESIGN.md").write_text("# Design\n## Build sheet — two-factor sign-in\nStates: ...\n")
+    (tmp_path / "DESIGN.md").write_text("# Design\n## Build sheet — two-factor sign-in\n"
+                                        "Component plan: reuse Field, Button\nStates: ...\n")
     events = skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + [
         tool_use("Edit", file_path=str(tmp_path / "DESIGN.md"), old_string="x",
                  new_string="## Build sheet — two-factor sign-in\nStates: ..."),
@@ -350,3 +352,9 @@ def test_a_record_without_the_interaction_probe_is_sent_back(tmp_path):
     record = COMPLETE_RECORD.replace("- Interaction probe: no hover 3→0, no focus 1→0\n", "")
     events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, COMPLETE_DESIGN, record)
     assert "interaction probe" in json.loads(run_gate(tmp_path, events))["reason"]
+
+
+def test_a_build_sheet_without_a_component_plan_is_sent_back(tmp_path):
+    design = COMPLETE_DESIGN.replace("Component plan: reuse Button, Field; extend Badge (overdue); new QueueRow\n", "")
+    events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, design, COMPLETE_RECORD)
+    assert "component plan" in json.loads(run_gate(tmp_path, events))["reason"]

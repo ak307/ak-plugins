@@ -203,6 +203,10 @@ def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> l
                         "per screen the job, direction, composition, components, data and latency, every state, "
                         "interactions, motion, copy, responsive, accessibility and acceptance checks "
                         "(arkar-ui-intelligence/references/build-sheet.md)")
+    elif not re.search(r"component plan", design_text, re.IGNORECASE):
+        problems.append("the build sheet has no component plan — before the screens, list the components reused, "
+                        "extended and new (variants, properties, states, interactions, tokens), and compose the "
+                        "screens from them (arkar-ui-intelligence/references/build-sheet.md)")
     records = find_files(sorted(roots), "premium-pass.md")
     record = "".join(path.read_text(errors="ignore") for path in records)
     if not records:

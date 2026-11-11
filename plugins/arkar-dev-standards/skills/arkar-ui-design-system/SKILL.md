@@ -17,6 +17,7 @@ sake.
 ## Activate when
 
 - a new product (Mode C) or a modernization (Mode B);
+- a feature whose component plan extends existing components or adds new ones;
 - the UI is inconsistent (spacing, colours, type, components drift);
 - adding dark mode, themes, or a component library;
 - defining or cleaning up tokens.
@@ -36,6 +37,15 @@ sake.
 
 ## Responsibilities
 
+0. **Component-first architecture.** Write the build sheet's component plan
+   (`arkar-ui-intelligence/references/build-sheet.md`) before any screen:
+   what is reused, what is extended, what is new — with variants,
+   properties, states, interactions and tokens. Reuse existing components
+   before building; extend before forking; for a new product, build the
+   foundation (tokens and shared primitives) before composing screens;
+   extract repeated patterns as they emerge, never a speculative library.
+   Screens are compositions of these components, so every screen shares one
+   design language and interaction pattern.
 1. **Tokens** (`references/design-tokens.md`): a primitive layer (raw
    values) and a semantic layer (roles components use) for colour, type,
    spacing, sizing, radius, shadow/elevation, border, layering (z-index),

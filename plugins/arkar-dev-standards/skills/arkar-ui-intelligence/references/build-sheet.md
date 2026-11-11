@@ -16,6 +16,32 @@ instead of into rebuild loops.
 - Small component change: a short sheet (five to eight lines covering the
   rows that apply) in your reply before you edit — no DESIGN.md section.
 
+## It starts with the component plan
+
+Think in components and systems, not isolated pages: every screen should
+share one design language and interaction pattern, and stay flexible where
+a screen genuinely needs something of its own. Before any screen, from the
+requirements and the existing design system:
+
+| Part | What to write |
+|---|---|
+| **Reuse** | Existing components and tokens the feature uses, by name (and the library they come from) |
+| **Extend** | Existing components that need a new variant, property or state — and why the existing ones don't cover it |
+| **New** | Each new component: purpose · variants · properties · states (default, hover, focus, active, disabled, loading, error, empty, selected — the ones that apply) · interactions and keyboard · responsive behaviour · accessibility (role, name, announcements) · tokens used |
+| **Foundation** (new product or redesign) | Tokens, then the shared primitives the screens need — buttons, fields and selects, surfaces and panels, list or table rows, badges, tabs or segmented controls, dialogs and sheets, toasts, empty / error / skeleton states — and the product's signature components |
+
+Rules:
+- **Reuse before you build.** Search the codebase and the component library
+  first; a second component doing the job of an existing one is a defect.
+- **Extend before you fork.** A new variant or property on an existing
+  component beats a near-copy.
+- **Plan what the screens need, no more.** Extract a pattern when it really
+  repeats during implementation (the second or third time), and add it to
+  the plan; don't build a speculative library.
+- **Components carry the quality.** Modular, configurable through
+  properties, consistent, responsive, accessible, every state designed,
+  tokens only — so every screen built from them inherits it.
+
 ## What it contains — per screen
 
 Each specialist fills the rows it owns; load a specialist because the sheet
@@ -26,7 +52,7 @@ needs its row, not "just in case".
 | **Job** | Who uses it, the question they bring, what must be noticed first | ux-engineering |
 | **Direction** | Existing product: the design system and patterns it follows (named). New product / redesign: the one chosen direction and why | discovery / art-direction |
 | **Composition** | The layout, built from the content; the hero moment; the visual that isn't just text and icons. Name the obvious layout and say why it was kept or rejected — on paper, never as built variations | art-direction |
-| **Components** | Existing components reused (by name); new ones and their variants and states; tokens used — no one-off styles | design-system |
+| **Components** | Which planned components the screen is composed of; anything screen-specific (and why it isn't a shared component) — no one-off styles | design-system |
 | **Figma** | The Figma frames it implements, if AK provided a design (the design wins) | Figma skills |
 | **Data & latency** | What loads, from where; fast / noticeable / long / timeout handling; refresh and stale responses | ux-engineering |
 | **States** | Every state, each with its exact look and wording: loading, slow, empty, partial, error, failure + retry, success, disabled (with why), permission, offline, conflict — the ones that can happen | ux-engineering |
@@ -72,6 +98,12 @@ needs its row, not "just in case".
 
 ```
 ## Build sheet — leave request form
+Component plan:
+  Reuse: AdminLTE card, form group, date input, select, primary button, alert, modal.
+  Extend: primary button — add `busy` state (spinner, width held, blocks re-press).
+  New: BalanceMeter — props: total, used, requested; variants: enough / low / over;
+    states: loading (skeleton), unavailable (retry); role="meter" with label; tokens:
+    success / warning / danger, radius-sm. Used here and later on the dashboard.
 Job: staff applying for leave; first question "how many days do I have left?" —
   the balance is noticed first, then the dates.
 Direction: existing AdminLTE theme, its card, form and alert components; no new identity.

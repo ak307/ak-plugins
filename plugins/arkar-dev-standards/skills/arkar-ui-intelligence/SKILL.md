@@ -17,8 +17,9 @@ AI-native products. They set the bar; they are never templates to copy.
 
 **Operating philosophy:** understand before designing · preserve what works ·
 think before implementing · design with purpose · create with craftsmanship ·
-animate with intelligence · engineer with discipline · decide once, build
-once · verify with evidence · fix until excellent.
+animate with intelligence · engineer with discipline · think in components
+and systems, not isolated pages · decide once, build once · verify with
+evidence · fix until excellent.
 
 ## 0. The most important rule — End-to-End Product Craftsmanship & Experience Excellence
 
@@ -144,7 +145,7 @@ any other specialist the task clearly touches
 | Task | Load at least |
 |---|---|
 | Small component change | ux-engineering → implementation → visual-qa (a short build sheet in the reply, then the premium pass is still the definition of done: before/after shots at phone and desktop, the interaction probe on the changed control, its states filmed — minutes, not a redesign) |
-| New screens or a feature in an existing product (web or mobile) | ux-engineering → motion → responsive → accessibility → implementation → visual-qa (+ discovery if the product is unfamiliar) |
+| New screens or a feature in an existing product (web or mobile) | ux-engineering → motion → responsive → accessibility → implementation → visual-qa (+ discovery if the product is unfamiliar; + design-system when the component plan extends or adds components) |
 | Existing site or page improvement (A) | discovery → art-direction → ux-engineering → implementation → visual-qa (+ motion / responsive / accessibility for what you change) |
 | Modernization or redesign (B) — including whenever AK calls a UI dated, old, plain, boring, ugly, outdated or "not good" | all nine |
 | New product (C) — any new app, site, dashboard or admin panel | all nine: discovery → art-direction → ux-engineering → design-system → motion → responsive → accessibility → implementation → visual-qa |
@@ -187,11 +188,31 @@ change runs through all seven in minutes.
      still bring the strongest idea in where it doesn't slow the job (a band
      that shows the whole data set in the product's own terms, the panel's
      centrepiece, the empty state).
-3. **Build sheet (required before UI code)** — new screens, page sets,
-   products and redesigns: a `## Build sheet — <feature>` section in
-   `DESIGN.md`; a small component change: a few lines in your reply. Per
-   screen, answer **every one of these rows** (example and detail in
-   `references/build-sheet.md`):
+3. **Build sheet (required before UI code) — components first, then
+   screens.** New screens, page sets, products and redesigns: a
+   `## Build sheet — <feature>` section in `DESIGN.md`; a small component
+   change: a few lines in your reply. It opens with the **component plan**,
+   worked out from the requirements and the existing design system before
+   any screen is designed:
+   - **Reuse** — the existing components and tokens the feature uses, by
+     name. Reusing comes first; never build a second component for a job one
+     already does.
+   - **Extend** — existing components that need a new variant, property or
+     state (and why).
+   - **New** — components the feature truly needs: purpose, variants,
+     properties, every state, interactions (keyboard included), responsive
+     behaviour, accessibility, and the tokens they use.
+   - **New product or redesign:** the foundation first — tokens plus the
+     shared primitives the screens will need (buttons, fields and selects,
+     surfaces and panels, list or table rows, badges, tabs or segmented
+     controls, dialogs and sheets, toasts, empty / error / skeleton states,
+     and the product's own signature components).
+   - **No speculative library:** plan what the screens need; extract a
+     pattern into a component when it genuinely repeats during
+     implementation, rather than designing every possible component up front.
+   Then, per screen, answer **every one of these rows** — screens are
+   composed from the planned components, not designed one by one (example
+   and detail in `references/build-sheet.md`):
    **Job** (who, the question they bring, what's noticed first) ·
    **Direction** (the design system followed, or the chosen direction) ·
    **Composition** (layout from the content, hero moment; the obvious layout
@@ -219,10 +240,17 @@ change runs through all seven in minutes.
      redesign — never lower the experience to match it.
    Each specialist you loaded fills its rows — that is what it was loaded
    for.
-4. **Implement — once, to the sheet.** Follow the project's architecture and
-   conventions, reuse its components and dependencies, keep functionality
-   intact (implementation; the change workflow's steps for existing code).
-   If a decision turns out wrong, change the sheet first, then the code.
+4. **Implement — once, to the sheet: components, then screens.** Build or
+   extend the planned components first, each with all its variants and
+   states, using only tokens; for a new product, put them on one components
+   page (or the framework's equivalent) so their states can be checked
+   together. Then compose each screen from them — a screen adds layout and
+   content, not its own versions of buttons, fields, cards or dialogs. When
+   the same markup appears a second or third time, extract it and update
+   the sheet. Follow the project's architecture and conventions, reuse its
+   components and dependencies, keep functionality intact (implementation;
+   the change workflow's steps for existing code). If a decision turns out
+   wrong, change the sheet first, then the code.
    Motion and the experience are built in from the start, not added at the
    end:
    - plain web builds copy `arkar-ui-motion-design/assets/motion-kit.js` and

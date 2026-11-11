@@ -394,8 +394,9 @@ def build_sheet_check(project: Path) -> dict:
     design = design_doc(project)
     section = re.search(r"##\s*Build sheet(.*?)(?=\n## (?!Build sheet)|\Z)", design, re.S | re.I)
     body = section.group(1).lower() if section else ""
-    ok = bool(section) and "state" in body and "acceptance" in body and ("hero" in body or "composition" in body)
-    return check("DESIGN.md has a build sheet (composition, every state, acceptance checks)",
+    ok = bool(section) and "state" in body and "acceptance" in body and ("hero" in body or "composition" in body) \
+        and "component plan" in body
+    return check("DESIGN.md has a build sheet (component plan, composition, every state, acceptance checks)",
                  ok, body[:400] or "no Build sheet section")
 
 
@@ -991,6 +992,105 @@ def ui_t_existing_feature(root: Path, plugin: Path):
     ]
 
 
+# ---------------------------------------------------------------------------
+# React (the front end AK uses with Inertia): component-first work in a framework
+# ---------------------------------------------------------------------------
+
+PRIMITIVE_TAGS = r"<(button|table|dialog|select|input|textarea)\b"
+
+
+def npm_build(project: Path) -> tuple[bool, str]:
+    """Install and build a Vite project; True when the production build succeeds."""
+    for command in (["npm", "install", "--no-audit", "--no-fund", "--loglevel=error"], ["npm", "run", "build"]):
+        result = subprocess.run(command, cwd=project, capture_output=True, text=True, timeout=600)
+        if result.returncode != 0:
+            return False, (result.stdout + result.stderr)[-600:]
+    return True, "built"
+
+
+def source_files(project: Path, *, inside: str = "src") -> list[Path]:
+    return [path for path in (project / inside).rglob("*") if path.is_file()
+            and path.suffix in (".jsx", ".tsx", ".js", ".ts", ".css") and "node_modules" not in path.parts]
+
+
+def changed_files(workspace: Path) -> list[str]:
+    """Files added or changed since the fixture's baseline commit."""
+    tracked = subprocess.run(["git", "diff", "--name-only", "HEAD"], cwd=workspace, capture_output=True, text=True).stdout
+    untracked = subprocess.run(["git", "ls-files", "--others", "--exclude-standard"], cwd=workspace,
+                               capture_output=True, text=True).stdout
+    return [line for line in (tracked + untracked).splitlines() if line.strip()]
+
+
+def ui_u_react_feature(root: Path, plugin: Path):
+    """U — new screens in an existing, styled React product: reuse its components and tokens, compose screens from them."""
+    workspace = workspace_from("opsdesk-react", root / "workspace")
+    subprocess.run(["npm", "install", "--no-audit", "--no-fund", "--loglevel=error"], cwd=workspace,
+                   capture_output=True, timeout=600)
+    run = run_claude("add a Contractors section to Ops Desk: the contractors we use with their trade, compliance "
+                     "(insurance and licence expiry dates — flag expired and expiring within 30 days) and rating; open "
+                     "a contractor to see their details and recent work orders; and a way to add a contractor. mock "
+                     "data like the work orders. keep Ops Desk's look.", workspace, plugin, max_turns=250)
+    built, build_output = npm_build(workspace)
+    changed = changed_files(workspace)
+    new_ui = [workspace / name for name in changed if name.startswith("src/") and not name.startswith("src/components/ui/")
+              and name.endswith((".jsx", ".tsx"))]
+    page_code = "".join(path.read_text(errors="ignore") for path in new_ui if path.exists())
+    raw_primitives = re.findall(PRIMITIVE_TAGS, page_code)
+    lookalikes = [name for name in changed if re.search(r"(^|/)(Button|Badge|Modal|Dialog|Table|Card|Tabs|Toast|Field|Select)"
+                                                        r"\w*\.(jsx|tsx)$", name) and not name.startswith("src/components/ui/")]
+    new_css = "".join((workspace / name).read_text(errors="ignore") for name in changed
+                      if name.endswith(".css") and not name.endswith("tokens.css") and (workspace / name).exists())
+    raw_colours = re.findall(r"#[0-9a-fA-F]{3,8}\b|rgba?\(", new_css)
+    return [
+        check("production build succeeds", built, build_output),
+        check("orchestrator loaded before the first UI write", orchestrator_before_first_ui_write(run)),
+        build_sheet_check(workspace),
+        check("screens built from the shared components (imports components/ui)",
+              bool(new_ui) and "components/ui" in page_code, [str(path.relative_to(workspace)) for path in new_ui]),
+        check("no hand-built primitives in the new screens (buttons, tables, dialogs, fields come from the library)",
+              len(raw_primitives) <= 1, raw_primitives[:6]),
+        check("no look-alike components outside the library", not lookalikes, lookalikes),
+        check("new styles use tokens (no raw colours outside tokens.css)", not raw_colours, raw_colours[:6]),
+        check("contractor view lives in the URL (router params or search params)",
+              has(page_code, r"useSearchParams|useParams")),
+        check("saving shows a busy state that blocks a second save", has(page_code, r"\bbusy[=\s{]")),
+        check("compliance expiry is flagged (expired / within 30 days)", has(page_code + "".join(
+            path.read_text(errors="ignore") for path in source_files(workspace)), r"30") and has(page_code, r"expir")),
+        review_check(run, workspace),
+        premium_pass_check(run, workspace=workspace),
+    ]
+
+
+def ui_v_react_new_product(root: Path, plugin: Path):
+    """V — a new product in React: a component foundation first, screens composed from it, framework motion and state."""
+    workspace = workspace_from(None, root / "workspace")
+    run = run_claude("build a visitor management app for building receptions, in React with Vite: reception sees "
+                     "today's expected visitors, checks them in (badge printing as a placeholder, host notified), "
+                     "registers walk-ins, and sees who is on site now and checks them out. mock data. folder "
+                     "visitors.", workspace, plugin, max_turns=300)
+    project = workspace / "visitors"
+    built, build_output = npm_build(project) if (project / "package.json").exists() else (False, "no package.json")
+    sources = source_files(project) if (project / "src").exists() else []
+    components = [path for path in sources if "components" in path.parts and path.suffix in (".jsx", ".tsx")]
+    screens = [path for path in sources if path.suffix in (".jsx", ".tsx") and path not in components]
+    screen_code = "".join(path.read_text(errors="ignore") for path in screens)
+    raw_primitives = re.findall(r"<(button|dialog|select)\b", screen_code)
+    dist = project / "dist"
+    checks = [
+        check("production build succeeds", built, build_output),
+        check("a component foundation exists (≥ 6 shared components)", len(components) >= 6,
+              [path.name for path in components]),
+        check("screens composed from the components (few hand-built primitives in screens)",
+              len(raw_primitives) <= 3, raw_primitives[:8]),
+        check("view state in the router (URL)", has(screen_code, r"useSearchParams|useParams|useNavigate|createBrowserRouter")),
+    ]
+    if built and (dist / "index.html").exists():
+        checks += new_product_checks(run, dist, workspace)
+    else:
+        checks.append(check("built app could be graded", False, "no dist/index.html"))
+    return checks
+
+
 def ui_p_tiny_phone(root: Path, plugin: Path):
     """P — a dense task on a 320px phone: a shift-swap request with a calendar."""
     workspace = workspace_from(None, root / "workspace")
@@ -1161,6 +1261,8 @@ SCENARIOS = {
     "ui-r-approvals": ("ui business", ui_r_approvals),
     "ui-s-rostering": ("ui business", ui_s_rostering),
     "ui-t-existing-feature": ("ui business", ui_t_existing_feature),
+    "ui-u-react-feature": ("ui frameworks", ui_u_react_feature),
+    "ui-v-react-new-product": ("ui frameworks", ui_v_react_new_product),
     "new-fastapi": ("new projects", new_project("fastapi")),
     "new-django": ("new projects", new_project("django")),
     "delivery": ("delivery", delivery),

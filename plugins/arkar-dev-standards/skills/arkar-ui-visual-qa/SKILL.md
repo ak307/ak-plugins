@@ -173,6 +173,13 @@ or moment the sheet missed is added to the sheet and built.
    plain", default type, flat grey surfaces and unstyled states are premium
    failures — in an existing product, judged within its design system.
 
+7. **One system, not separate pages:** the same kind of control looks and
+   behaves the same on every screen (one button family, one field style,
+   one dialog, one toast); no screen carries its own copy of a shared
+   component; the audit's spread of radii, shadows and font sizes stays
+   small. A duplicate or drifting component is a defect — fold it back into
+   the shared one.
+
 Record a `## Verify` table in the record (sheet item or moment → what
 happens → result → fix) and fix every defect it shows, re-checking each fix.
 Then run the **independent review** (`references/independent-review.md`)

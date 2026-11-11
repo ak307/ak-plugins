@@ -19,6 +19,8 @@ BASH = shutil.which("bash")
 
 COMPLETE_DESIGN = ("# Design\n## Direction\nData-centric\n## Build sheet — claims queue\n"
                    "Job: ...\nStates: loading · empty · error + retry · success\nAcceptance: ...\n")
+REVIEWER = {"type": "assistant", "message": {"content": [
+    {"type": "tool_use", "name": "Agent", "input": {"description": "Independent review"}}]}}
 COMPLETE_RECORD = ("# Premium pass\n## Verify\n- Motion (filmstrips: load, open card): eased, quick\n"
                    "- Experience walk (record.cjs): happy, fail+retry, keyboard, phone → retry kept input\n"
                    "## Independent review\nCritical 0 · major 2 (fixed) · minor 3\n")
@@ -102,7 +104,7 @@ def test_redesign_missing_review_motion_and_walk_is_blocked(tmp_path):
 
 
 def test_complete_redesign_passes(tmp_path):
-    events = skills(*ALL_NINE) + write_project(
+    events = skills(*ALL_NINE) + [REVIEWER] + write_project(
         tmp_path, COMPLETE_DESIGN, COMPLETE_RECORD)
     assert run_gate(tmp_path, events) == ""
 
@@ -241,13 +243,13 @@ def test_build_sheet_added_to_an_existing_design_doc_needs_verify_and_review(tmp
     assert "arkar-ui-discovery" not in reason  # not a redesign: the nine-specialist rule doesn't apply
     (tmp_path / "qa-screenshots").mkdir()
     (tmp_path / "qa-screenshots" / "premium-pass.md").write_text(COMPLETE_RECORD)
-    assert run_gate(tmp_path, events) == ""
+    assert run_gate(tmp_path, events + [REVIEWER]) == ""
 
 
 def test_old_record_wording_still_counts_as_a_review(tmp_path):
     # Records written before the restructure (cold read / critique) aren't rejected for their headings.
     record = COMPLETE_RECORD.replace("## Independent review", "## Independent critique")
-    events = skills(*ALL_NINE) + write_project(tmp_path, COMPLETE_DESIGN, record)
+    events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, COMPLETE_DESIGN, record)
     assert run_gate(tmp_path, events) == ""
 
 
@@ -328,3 +330,15 @@ def test_a_held_write_is_not_counted_as_a_ui_change(tmp_path):
     written = {"type": "user", "message": {"content": [
         {"type": "tool_result", "tool_use_id": "toolu_1", "content": "File created successfully"}]}}
     assert "arkar-ui-intelligence" in run_gate(tmp_path, [write, written])
+
+
+def test_a_self_review_instead_of_the_subagent_is_sent_back(tmp_path):
+    # Seen in eval runs: "cold review done in-session (no subagent spawned)" although the Agent tool existed.
+    record = COMPLETE_RECORD.replace("Critical 0", "Cold review done in-session (no subagent spawned). Critical 0")
+    reason = json.loads(run_gate(tmp_path, skills(*ALL_NINE) + write_project(tmp_path, COMPLETE_DESIGN, record)))["reason"]
+    assert "without a subagent" in reason
+
+
+def test_a_cold_review_counts_when_there_is_no_agent_tool(tmp_path):
+    record = COMPLETE_RECORD + "Cold review: no Agent tool in this session.\n"
+    assert run_gate(tmp_path, skills(*ALL_NINE) + write_project(tmp_path, COMPLETE_DESIGN, record)) == ""

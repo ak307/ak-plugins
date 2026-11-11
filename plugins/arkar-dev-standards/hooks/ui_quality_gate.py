@@ -106,6 +106,11 @@ def completed_tool_calls(transcript_path: str) -> list[dict]:
     return [call for call in calls if not (call.get("name") in file_tools and str(call.get("id", "")) in failed)]
 
 
+def used_subagent(transcript_path: str) -> bool:
+    """Whether the session started a subagent (the independent review needs one)."""
+    return any(call.get("name") in ("Agent", "Task") for call in completed_tool_calls(transcript_path))
+
+
 def read_session(transcript_path: str) -> tuple[set[str], list[str], list[str], bool]:
     """The skills loaded, the files written or edited, the files written whole, and whether a build sheet was written."""
     skills: set[str] = set()
@@ -184,7 +189,7 @@ def find_files(roots: list[Path], name: str) -> list[Path]:
     return found
 
 
-def missing_evidence(cwd: Path, edited: list[str]) -> list[str]:
+def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> list[str]:
     """What a new product, page set or redesign still lacks."""
     # Shell writes give relative paths (often after a `cd`), so find those DESIGN.md files in the project.
     design_docs = [Path(path) for path in edited if Path(path).name == "DESIGN.md" and Path(path).is_absolute()]
@@ -214,6 +219,13 @@ def missing_evidence(cwd: Path, edited: list[str]) -> list[str]:
         if not re.search(r"independent review|cold review|independent critique|cold read", record, re.IGNORECASE):
             problems.append("premium-pass.md has no `## Independent review` — one fresh subagent reviews the look "
                             "and the use for defects (arkar-ui-visual-qa/references/independent-review.md)")
+        elif not used_agent and not re.search(r"no agent tool|agent tool (is|was)n'?t available|"
+                                              r"agent tool (is |was )?not available|without an agent tool",
+                                              record, re.IGNORECASE):
+            problems.append("the independent review was done without a subagent — AK asks for a fresh subagent "
+                            "(Agent tool) on every new screen, page set, product or redesign; a self-review only "
+                            "counts when the Agent tool isn't available. Start it now with "
+                            "arkar-ui-visual-qa/references/independent-review.md and record its findings")
     return problems
 
 
@@ -271,7 +283,7 @@ def decide(event: dict) -> str | None:
                             ". Load each with the Skill tool and apply what it requires to the work")
     # A build sheet added to an existing DESIGN.md = new screens: they need the same verify and review.
     if design_rewritten or sheet_written:
-        problems += missing_evidence(cwd, edited)
+        problems += missing_evidence(cwd, edited, used_subagent(transcript_path))
     if not problems:
         return None
     if session_id:

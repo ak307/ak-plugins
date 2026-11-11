@@ -187,15 +187,38 @@ change runs through all seven in minutes.
      still bring the strongest idea in where it doesn't slow the job (a band
      that shows the whole data set in the product's own terms, the panel's
      centrepiece, the empty state).
-3. **Build sheet (required before UI code)** — write it with
-   `references/build-sheet.md`: per screen, the job, direction, composition
-   and hero moment, components reused, Figma frames, data and latency,
-   **every state** with its look and wording, interactions and keyboard
-   path, motion and its choreography, final copy, responsive changes,
-   accessibility, and the acceptance checks Verify will tick. New screens,
-   page sets, products and redesigns: a `## Build sheet — <feature>` section
-   in `DESIGN.md`. Small component change: a few lines in your reply. Each
-   specialist you loaded fills its rows — that is what it was loaded for.
+3. **Build sheet (required before UI code)** — new screens, page sets,
+   products and redesigns: a `## Build sheet — <feature>` section in
+   `DESIGN.md`; a small component change: a few lines in your reply. Per
+   screen, answer **every one of these rows** (example and detail in
+   `references/build-sheet.md`):
+   **Job** (who, the question they bring, what's noticed first) ·
+   **Direction** (the design system followed, or the chosen direction) ·
+   **Composition** (layout from the content, hero moment; the obvious layout
+   kept or rejected and why) · **Components** (reused by name; new ones with
+   variants and states) · **Figma** (frames, if AK gave a design) ·
+   **Data & latency** (what loads; fast / noticeable / long / timeout) ·
+   **States** · **Interactions** (press feedback, busy state that blocks a
+   double submit, confirm or undo, keyboard path, focus moves) · **Motion**
+   (level and choreography per main action; reduced motion) · **Copy**
+   (final words) · **Responsive** (what changes per size) ·
+   **Accessibility** · **Acceptance checks** (what Verify will tick).
+   Three rules make the sheet production-ready:
+   - **Every row is answered.** A row that changes nothing says so and why
+     ("Motion: none in this product — press feedback and busy state only").
+   - **States of the real feature, not only of the mock.** List what the
+     real system will do — slow and failed requests, limits and lockouts,
+     expiry, permission, conflicts, partial success — even when the mock
+     can't produce them yet; give each its look and wording, and build the
+     ones the mock can show.
+   - **Keeping a product's look never drops the experience.** "Keep the
+     existing look" preserves its visual system; press feedback, busy
+     states, specific errors with recovery, focus handling and comfortable
+     touch targets are behaviour, built to the experience standard within
+     that look. If the look itself can't reach the standard, propose the
+     redesign — never lower the experience to match it.
+   Each specialist you loaded fills its rows — that is what it was loaded
+   for.
 4. **Implement — once, to the sheet.** Follow the project's architecture and
    conventions, reuse its components and dependencies, keep functionality
    intact (implementation; the change workflow's steps for existing code).
@@ -225,10 +248,14 @@ change runs through all seven in minutes.
    defects; don't redesign.** Anything that feels ordinary is fixed within
    the sheet's decisions. Record a `## Verify` table in
    `qa-screenshots/premium-pass.md` (sheet item → evidence → result → fix).
-6. **Independent review — once.** For new screens, page sets, products and
-   redesigns, start one fresh subagent (foreground) — AK asks for this
-   review on every such task, so it is never skipped as unrequested — with
-   `arkar-ui-visual-qa/references/independent-review.md`: it sees the
+6. **Independent review — once, by a subagent.** For new screens, page
+   sets, products and redesigns, start one fresh subagent with the Agent
+   tool (foreground). **AK asks for this subagent on every such task — this
+   is his explicit request, so don't replace it with a self-review because
+   subagents are "only started when the user asks".** A cold self-review is
+   allowed only when the Agent tool isn't available. Read
+   `arkar-ui-visual-qa/references/independent-review.md` and the two briefs
+   it names, and brief the subagent with them: it sees the
    screenshots and filmstrips, uses the running app, and judges the build
    **against its mode and build sheet** — an existing product on consistency
    with that product and the craft of every state, a new product or

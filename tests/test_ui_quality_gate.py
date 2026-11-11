@@ -1,9 +1,11 @@
-"""Tests for the arkar UI quality gate (Stop hook).
+"""Tests for the arkar UI quality gate (Stop hook, and the before-writing check).
 
 Run from the repo root:  python3 -m pytest tests -q
 They feed Stop events with small session transcripts to the real script
 (through the bash launcher) and check whether it lets Claude stop.
 """
+from __future__ import annotations
+
 import json
 import shutil
 import subprocess
@@ -15,10 +17,11 @@ HOOKS = Path(__file__).resolve().parents[1] / "plugins" / "arkar-dev-standards" 
 LAUNCHER = HOOKS / "ui_quality_gate.sh"
 BASH = shutil.which("bash")
 
-COMPLETE_DESIGN = "# Design\n## Direction\nData-centric\n## Compositions\n- Obvious: ...\n- Chosen: ...\n"
-COMPLETE_RECORD = ("# Premium pass\n- Motion (filmstrips: load, open card): eased, quick\n"
-                   "## Independent critique\n1. generic header → recomposed\n"
-                   "## Experience test\nRound 1: feedback 7, errors 6 → retry kept input; round 2: all ≥ 7\n")
+COMPLETE_DESIGN = ("# Design\n## Direction\nData-centric\n## Build sheet — claims queue\n"
+                   "Job: ...\nStates: loading · empty · error + retry · success\nAcceptance: ...\n")
+COMPLETE_RECORD = ("# Premium pass\n## Verify\n- Motion (filmstrips: load, open card): eased, quick\n"
+                   "- Experience walk (record.cjs): happy, fail+retry, keyboard, phone → retry kept input\n"
+                   "## Independent review\nCritical 0 · major 2 (fixed) · minor 3\n")
 
 
 def tool_use(name: str, **tool_input) -> dict:
@@ -85,17 +88,17 @@ def test_redesign_missing_evidence_is_blocked(tmp_path):
     events = skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + write_project(
         tmp_path, "# Design\n## Direction\n", None)
     reason = json.loads(run_gate(tmp_path, events))["reason"]
-    assert "Compositions" in reason
+    assert "Build sheet" in reason
     assert "premium-pass.md" in reason
 
 
-def test_redesign_missing_critique_and_motion_is_blocked(tmp_path):
+def test_redesign_missing_review_motion_and_walk_is_blocked(tmp_path):
     events = skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + write_project(
-        tmp_path, COMPLETE_DESIGN, "# Premium pass\n- Round 1: ...\n")
+        tmp_path, COMPLETE_DESIGN, "# Premium pass\n- Screens looked at: ...\n")
     reason = json.loads(run_gate(tmp_path, events))["reason"]
-    assert "Independent critique" in reason
+    assert "Independent review" in reason
     assert "film" in reason
-    assert "Experience test" in reason
+    assert "experience walk" in reason
 
 
 def test_complete_redesign_passes(tmp_path):
@@ -186,7 +189,7 @@ def test_files_written_through_the_shell_count(tmp_path):
         tool_use("Bash", command="cd kopi && cat > DESIGN.md <<'EOF'\n# Design\nEOF"),
         tool_use("Bash", command="cd kopi && cat > index.html <<'EOF'\n<main></main>\nEOF")]
     reason = json.loads(run_gate(tmp_path, events))["reason"]
-    assert "Compositions" in reason and "arkar-ui-motion-design" in reason
+    assert "Build sheet" in reason and "arkar-ui-motion-design" in reason
 
 
 def test_shell_logs_and_appends_are_not_rewrites(tmp_path):
@@ -224,3 +227,104 @@ def test_scratch_pages_outside_the_project_are_ignored(tmp_path):
 def test_editing_a_skills_own_assets_is_not_product_ui(tmp_path):
     asset = tmp_path / "plugins" / "kit" / "skills" / "arkar-ui-design-system" / "assets" / "liquid-glass.css"
     assert run_gate(tmp_path, [tool_use("Write", file_path=str(asset), content=".lg-bar{}")]) == ""
+
+
+def test_build_sheet_added_to_an_existing_design_doc_needs_verify_and_review(tmp_path):
+    # New screens in an existing product: the sheet goes into DESIGN.md by an edit, not a rewrite.
+    (tmp_path / "DESIGN.md").write_text("# Design\n## Build sheet — two-factor sign-in\nStates: ...\n")
+    events = skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + [
+        tool_use("Edit", file_path=str(tmp_path / "DESIGN.md"), old_string="x",
+                 new_string="## Build sheet — two-factor sign-in\nStates: ..."),
+        tool_use("Write", file_path=str(tmp_path / "resources" / "views" / "auth" / "mfa.blade.php"))]
+    reason = json.loads(run_gate(tmp_path, events))["reason"]
+    assert "premium-pass.md" in reason
+    assert "arkar-ui-discovery" not in reason  # not a redesign: the nine-specialist rule doesn't apply
+    (tmp_path / "qa-screenshots").mkdir()
+    (tmp_path / "qa-screenshots" / "premium-pass.md").write_text(COMPLETE_RECORD)
+    assert run_gate(tmp_path, events) == ""
+
+
+def test_old_record_wording_still_counts_as_a_review(tmp_path):
+    # Records written before the restructure (cold read / critique) aren't rejected for their headings.
+    record = COMPLETE_RECORD.replace("## Independent review", "## Independent critique")
+    events = skills(*ALL_NINE) + write_project(tmp_path, COMPLETE_DESIGN, record)
+    assert run_gate(tmp_path, events) == ""
+
+
+def test_reading_the_skill_file_counts_as_loading_it(tmp_path):
+    # The documented fallback when the Skill tool fails.
+    events = [tool_use("Read", file_path="/home/ak/.claude/plugins/x/skills/arkar-ui-intelligence/SKILL.md"),
+              tool_use("Read", file_path="/home/ak/.claude/plugins/x/skills/arkar-ui-visual-qa/SKILL.md"),
+              tool_use("Edit", file_path=str(tmp_path / "src" / "Button.tsx"))]
+    assert run_gate(tmp_path, events) == ""
+
+
+# ---- Before writing (PreToolUse) ------------------------------------------------
+
+def run_before_write(tmp_path: Path, history: list, tool: str, session: str = "", **tool_input) -> dict | None:
+    transcript = tmp_path / "session.jsonl"
+    transcript.write_text("\n".join(json.dumps(event) for event in history))
+    hook_event = {"hook_event_name": "PreToolUse", "tool_name": tool, "tool_input": tool_input,
+                  "transcript_path": str(transcript), "cwd": str(tmp_path), "session_id": session}
+    result = subprocess.run([BASH, str(LAUNCHER)], input=json.dumps(hook_event), capture_output=True,
+                            text=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    output = result.stdout.strip()
+    return json.loads(output)["hookSpecificOutput"] if output else None
+
+
+def test_ui_write_before_the_orchestrator_is_held(tmp_path):
+    decision = run_before_write(tmp_path, [], "Write", file_path=str(tmp_path / "resources" / "views" / "mfa.blade.php"),
+                                content="<form></form>")
+    assert decision and decision["permissionDecision"] == "deny"
+    assert "arkar-ui-intelligence" in decision["permissionDecisionReason"]
+    assert "Build sheet" in decision["permissionDecisionReason"]
+
+
+def test_ui_write_after_the_orchestrator_goes_ahead(tmp_path):
+    history = skills("arkar-ui-intelligence")
+    assert run_before_write(tmp_path, history, "Edit", file_path=str(tmp_path / "src" / "Login.tsx"),
+                            old_string="a", new_string="b") is None
+
+
+def test_markup_written_into_code_is_held_too(tmp_path):
+    decision = run_before_write(tmp_path, [], "MultiEdit", file_path=str(tmp_path / "app" / "main.py"),
+                                edits=[{"old_string": "x", "new_string": "html = '<button>Save</button>'"}])
+    assert decision and decision["permissionDecision"] == "deny"
+
+
+@pytest.mark.parametrize("path", ["app/main.py", "DESIGN.md", "tests/page.html", "node_modules/x/a.css"])
+def test_non_ui_writes_are_never_held(tmp_path, path):
+    assert run_before_write(tmp_path, [], "Write", file_path=str(tmp_path / path), content="total = 1") is None
+
+
+def test_scratch_pages_outside_the_project_are_not_held(tmp_path):
+    outside = tmp_path.parent / "scratch-elsewhere" / "index.html"
+    assert run_before_write(tmp_path, [], "Write", file_path=str(outside), content="<main></main>") is None
+
+
+def test_hold_is_asked_twice_at_most_then_lets_work_go_on(tmp_path):
+    import uuid
+    session = f"test-{uuid.uuid4()}"
+    decisions = [run_before_write(tmp_path, [], "Write", session=session, file_path=str(tmp_path / "index.html"),
+                                  content="<main></main>") for _ in range(4)]
+    assert [bool(decision) for decision in decisions] == [True, True, False, False]
+
+
+def test_before_write_check_is_wired_in_hooks_json():
+    hooks = json.loads((HOOKS / "hooks.json").read_text())["hooks"]
+    entries = [entry for entry in hooks["PreToolUse"] if "ui_quality_gate.sh" in entry["hooks"][0]["command"]]
+    assert entries and set(entries[0]["matcher"].split("|")) >= {"Write", "Edit", "MultiEdit"}
+
+
+def test_a_held_write_is_not_counted_as_a_ui_change(tmp_path):
+    # Found in a real session: the before-writing check held index.html, and the end gate then
+    # insisted "UI files were changed" although nothing had been written.
+    write = tool_use("Write", file_path=str(tmp_path / "index.html"), content="<button>Save</button>")
+    write["message"]["content"][0]["id"] = "toolu_1"
+    held = {"type": "user", "message": {"content": [
+        {"type": "tool_result", "tool_use_id": "toolu_1", "is_error": True, "content": "arkar UI quality gate: ..."}]}}
+    assert run_gate(tmp_path, [write, held]) == ""
+    written = {"type": "user", "message": {"content": [
+        {"type": "tool_result", "tool_use_id": "toolu_1", "content": "File created successfully"}]}}
+    assert "arkar-ui-intelligence" in run_gate(tmp_path, [write, written])

@@ -72,9 +72,10 @@ How products reach this bar: `apple-ux-principles.md`.
   state change (`arkar-ui-art-direction/references/premium-craft.md`). Lazy
   effects (stock gradients, glows, random shadows) are still out; crafted
   ones are in.
-- **Refine in rounds.** First build → screenshots → judge against the
-  standard and the best product in the category → list the visible
-  shortfalls → fix → repeat. New products and redesigns get at least two
-  rounds; stop only when nothing feels ordinary.
+- **Decide once, then fix every defect.** The premium decisions go into
+  the build sheet before code; the build is then judged against the
+  standard and the best product in its category, and every visible
+  shortfall is fixed within those decisions — not by building another
+  version. Stop only when nothing feels ordinary.
 - **Honesty:** in the final message, say what the premium pass covered and
   what you refined; never claim polish you didn't verify.

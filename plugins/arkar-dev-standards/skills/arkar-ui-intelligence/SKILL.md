@@ -17,8 +17,8 @@ AI-native products. They set the bar; they are never templates to copy.
 
 **Operating philosophy:** understand before designing · preserve what works ·
 think before implementing · design with purpose · create with craftsmanship ·
-animate with intelligence · engineer with discipline · verify with evidence ·
-refine until excellent.
+animate with intelligence · engineer with discipline · decide once, build
+once · verify with evidence · fix until excellent.
 
 ## 0. The most important rule — End-to-End Product Craftsmanship & Experience Excellence
 
@@ -45,8 +45,9 @@ premium is exciting, rich, layered and crafted
 make the interface disappear · consistency plus one surprise · solve
 problems, not trends · talk like a person · design for feelings · own
 mistakes · test like a first-time user) at the start of every UI task; every
-specialist works to them, and visual-qa's premium pass enforces them in at
-least two refinement rounds for new products and redesigns.
+specialist works to them: they are designed into the build sheet (section 4),
+built in once, and enforced by visual-qa's premium pass and the independent
+review.
 
 ## 1. Fixed rules that apply to every UI task
 
@@ -119,13 +120,30 @@ verification.
 | `arkar-ui-implementation` | writing or restructuring UI code, choosing techniques, performance or bundle problems |
 | `arkar-ui-visual-qa` | **every task that changes what users see** — always last |
 
+**Every capability is used on purpose, never dropped to save effort.** Each
+specialist owns rows of the build sheet (`references/build-sheet.md`) and is
+loaded because the sheet needs them:
+
+- **Figma** — when AK provides a Figma file or link, its frames are the
+  design: implement them with the Figma skills (design-to-code, motion
+  context) and list the frames in the sheet. No Figma input → no Figma work;
+  never create or edit Figma files unless he asks.
+- **Component intelligence** (design-system) — reuse the product's
+  components first; a new need becomes a variant or a new library component
+  with all its states and tokens, never a one-off style.
+- **Motion** — every main action gets designed choreography at the lowest
+  level that achieves it; the kit makes it cheap, the sheet says where.
+- **Accessibility** — names, focus order, contrast, targets and
+  announcements are decided in the sheet and checked in Verify, for every
+  new screen, form, dialog or custom control.
+
 **Required minimum sets** — load at least these, in this order, then add
 any other specialist the task clearly touches
 (`references/orchestration-guide.md` has the full matrix and hand-offs):
 
 | Task | Load at least |
 |---|---|
-| Small component change | ux-engineering → implementation → visual-qa (a one-round premium pass is still the definition of done: before/after shots at phone and desktop, the interaction probe on the changed control, its states filmed — minutes, not a redesign) |
+| Small component change | ux-engineering → implementation → visual-qa (a short build sheet in the reply, then the premium pass is still the definition of done: before/after shots at phone and desktop, the interaction probe on the changed control, its states filmed — minutes, not a redesign) |
 | New screens or a feature in an existing product (web or mobile) | ux-engineering → motion → responsive → accessibility → implementation → visual-qa (+ discovery if the product is unfamiliar) |
 | Existing site or page improvement (A) | discovery → art-direction → ux-engineering → implementation → visual-qa (+ motion / responsive / accessibility for what you change) |
 | Modernization or redesign (B) — including whenever AK calls a UI dated, old, plain, boring, ugly, outdated or "not good" | all nine |
@@ -142,117 +160,92 @@ the checks without it isn't enough.
 
 Beyond the minimum, don't load specialists "just in case".
 
-## 4. Work through it
+## 4. Work through it — Understand → Decide → Build sheet → Implement → Verify → Independent review → Report
 
-Steps 3 and 6, and filming the main flows in step 5, are **required for
-every new product, new page set and redesign** (Modes B and C, and new
-screens in Mode A) — **whatever its size**: a three-page site or a single
-screen gets them too, because small products are where the template look
-creeps in. They are where "polished but boring" is prevented, so they are
-never skipped, shortened, folded into another step or left for "if AK
-wants". Their written output is the proof: `## Compositions` in
-`DESIGN.md`, and the motion and `## Independent critique` sections in
-`qa-screenshots/premium-pass.md`. If you're running short of time, do fewer
-polish iterations — never drop these.
+Production UI is decided once, built once and verified — not found by
+building variations and critiquing them until one scores well. The premium
+bar is the same; the craft goes into the decisions and the build sheet, not
+into rebuild loops. Every step scales to the scope (section 2): a button
+change runs through all seven in minutes.
 
 1. **Understand** — the product, its users, primary journeys, existing
-   identity, stack and constraints (discovery, scaled to the task).
-2. **Decide** — direction, structure, tokens, motion language, responsive
-   behaviour; record lasting decisions in `DESIGN.md` (every new product
-   gets one).
-3. **Compose (required, before any code)** — add a `## Compositions`
-   section to `DESIGN.md`. For each main screen — and each section of a
-   long page, not only its hero — write:
-   - **The obvious version** — one line on the layout anyone would build for
-     this kind of screen (e.g. "hero → three service cards → CTA band";
-     "KPI tiles over a table"). This one is **rejected by default**.
-   - **Two or three alternatives**, each a few lines or a tiny ASCII
-     wireframe, worked out from the content (what is it — a sequence,
-     places, quantities, a choice? what must be noticed first?), at least
-     one of them unexpected. They must differ in **idea** — each answers a
-     different question the user brings, so each puts something different
-     at the centre — not merely move the same parts around; a straw man
-     that obviously fails doesn't count.
-   - **Chosen** — which one and why; its **hero moment** (what the eye lands
-     on in the first three seconds) and the **visual** it uses that isn't
-     just text and icons.
-   Use `arkar-ui-art-direction/references/visual-ambition.md` §4. Build the
-   obvious version only if every alternative hurts the user's job — say so
-   in the section.
-   **A requested frame is not the composition.** "A list and a detail
-   panel" in the request is a feature list: keep the list fast and the panel
-   there, and still bring the strongest idea in where it doesn't slow the
-   job — a hero band above the list that shows the whole data set in the
-   product's own terms, a second view of the same data, the panel's
-   centrepiece, the empty state. "The brief asked for a list" never
-   justifies a screen that looks like every other list.
-4. **Build** — follow the project's architecture and conventions, reuse its
-   components and dependencies, keep functionality intact
-   (implementation; the change workflow's steps for existing code). Motion
-   is built in from the start, not added at the end: plain web builds copy
-   `arkar-ui-motion-design/assets/motion-kit.js` and route every data
-   change, overlay and step through it; framework builds use their layout
-   animations. In testing, builds that did this scored about 1.5 points
-   higher (motion 7 vs 4–5) than builds that hand-made a few effects.
-   The experience is built in the same way: plain web builds with mock
-   data copy `assets/experience-kit.js` and use its `createStore`/`request`
-   (variable latency, the standard `?latency=slow` and `?fail=1` switches
-   on every request, the user's changes persisted across refresh), `view`
-   (filters, search, selected item and steps in the URL and history),
-   `keepDraft`, `toast` (next to the action, one at a time, with undo) and
-   `roving`/`keepFocus` (keyboard). Frameworks keep the same behaviour with
-   their router and stores. Testers found the same failures in nearly every
-   hand-rolled build: work undone by refresh, drafts lost, Back leaving the
-   app, non-standard switches, distant toasts, focus dropped.
-5. **Verify** — load `arkar-ui-visual-qa` now (Skill tool) and follow it:
-   run on local/test data, look at the real rendered UI at the target sizes,
-   try the interactions and motion, fix and re-check. **Film the main flows**
-   with `arkar-ui-visual-qa/scripts/film.cjs` (open, filter, ask/answer, confirm, close)
-   and judge every filmstrip by eye — motion is reviewed like layout, never
-   from stills or animation counts alone. **Walk the experience**
-   (`references/experience-standard.md`): each main flow as a user — happy
-   path, invalid input, failure and retry, cancel/back/undo, refresh
-   mid-task, keyboard only, phone — recorded at real speed with
-   `arkar-ui-visual-qa/scripts/record.cjs`, every moment judged and fixed. Use the quality gates in
-   `references/quality-standards.md` as a diagnostic, with hard blockers
-   fixed before you call it done.
-6. **Independent critique (required)** — start a fresh subagent with the
-   Agent tool, give it only the screenshot paths, one line on the product
-   and the brief in `arkar-ui-visual-qa/references/design-critic.md`. The
-   critic scores the build with the acceptance rubric; **iterate with a
-   fresh critic each round until it scores overall ≥ 8.5, no dimension or
-   section below 7, no critical failure** (up to four rounds — stopping
-   earlier while below the bar is not allowed; after the fourth, report
-   honestly what's still short). "Needs assets" is not a blocker: build the
-   visual in code (illustration, diagram, data visual, typography as image)
-   or recompose; only real facts (certifications, clients, photos of the
-   real place) go to AK as a need — and the screen must still pass without
-   them. Record a `## Independent critique` section
-   in `qa-screenshots/premium-pass.md`: each round's scores, findings and
-   what you changed. No Agent tool → do the
-   cold read that file describes and say so.
-   **If the critic says a screen looks generic or like a template, that
-   finding can't be marked "not changed", "partly" or "proposal"**: go back
-   to step 3 for that screen, build a different composition within the
-   request (see step 3's note on requested frames), and send the new
-   screenshots to a fresh critic. Repeat until the critic no longer calls
-   it generic. "Fixing it would go beyond the brief" is not a reason: a
-   generic screen is recomposed with what the brief already contains —
-   layout, hierarchy, scale, a visual for the content, motion, empty-space
-   use — never by adding fields or features the brief didn't ask for.
-7. **Independent experience test (required)** — for new products, page
-   sets and redesigns, also start a fresh subagent with the brief in
-   `arkar-ui-visual-qa/references/experience-tester.md`: it *uses* the
-   running app (happy path, invalid input, failure and retry,
-   cancel/back/undo, refresh, keyboard, phone), films every moment and
-   scores the experience rubric. Same bar and loop as the critique: fix,
-   re-test with a fresh tester until overall ≥ 8.5 with no dimension below
-   7 (up to four rounds), recorded under `## Experience test` in
-   `qa-screenshots/premium-pass.md`. A build that looks premium but
-   behaves ordinarily is not finished. Design the mock data layer so
-   failures can be exercised (a visible or URL switch to simulate errors
-   and slow responses) — error handling that can't be triggered can't be
-   checked.
+   identity and design system, stack and constraints, and any Figma design
+   AK provided (discovery, scaled to the task).
+2. **Decide** — once, on paper:
+   - **Existing product (Mode A):** the existing design system, components
+     and patterns decide; name them. No alternative layouts, no new identity.
+   - **New product or redesign (B, C):** art direction chooses one direction
+     and records it in `DESIGN.md` with its reasons. For each main screen,
+     think through the obvious layout and two different ideas in a sentence
+     each (`arkar-ui-art-direction/references/visual-ambition.md` §4), then
+     choose one — a screen that looks like every other screen of its kind is
+     rejected here, not after it's built. If the direction is genuinely open
+     and AK is present, offer at most two directions in text and let him
+     pick. **Never build two versions to compare.**
+   - **A requested frame is not the composition.** "A list and a detail
+     panel" is a feature list: keep the list fast and the panel there, and
+     still bring the strongest idea in where it doesn't slow the job (a band
+     that shows the whole data set in the product's own terms, the panel's
+     centrepiece, the empty state).
+3. **Build sheet (required before UI code)** — write it with
+   `references/build-sheet.md`: per screen, the job, direction, composition
+   and hero moment, components reused, Figma frames, data and latency,
+   **every state** with its look and wording, interactions and keyboard
+   path, motion and its choreography, final copy, responsive changes,
+   accessibility, and the acceptance checks Verify will tick. New screens,
+   page sets, products and redesigns: a `## Build sheet — <feature>` section
+   in `DESIGN.md`. Small component change: a few lines in your reply. Each
+   specialist you loaded fills its rows — that is what it was loaded for.
+4. **Implement — once, to the sheet.** Follow the project's architecture and
+   conventions, reuse its components and dependencies, keep functionality
+   intact (implementation; the change workflow's steps for existing code).
+   If a decision turns out wrong, change the sheet first, then the code.
+   Motion and the experience are built in from the start, not added at the
+   end:
+   - plain web builds copy `arkar-ui-motion-design/assets/motion-kit.js` and
+     route every data change, overlay and step through it; frameworks use
+     their layout animations (in testing, builds using the kit scored about
+     1.5 points higher on motion than hand-made effects);
+   - plain web builds with mock data copy `assets/experience-kit.js`:
+     `createStore`/`request` (variable latency, the standard `?latency=slow`
+     and `?fail=1` switches on every request, the user's changes persisted
+     across refresh), `view` (filters, search, selected item and steps in the
+     URL and history), `keepDraft`, `toast` (next to the action, one at a
+     time, with undo) and `roving`/`keepFocus` (keyboard); frameworks keep
+     the same behaviour with their router and stores;
+   - business systems on Liquid Glass copy
+     `arkar-ui-design-system/assets/liquid-glass.css`.
+5. **Verify — against the sheet.** Load `arkar-ui-visual-qa` now (Skill
+   tool) and run its premium pass: on local/test data, tick every
+   acceptance check — every state seen at the target sizes, the audit and
+   interaction probe, the main flows filmed with `film.cjs` and judged by
+   eye, the experience walked at real speed with `record.cjs` (happy path,
+   invalid input, failure and retry, cancel/back/undo, refresh mid-task,
+   keyboard only, phone) to `references/experience-standard.md`. **Fix
+   defects; don't redesign.** Anything that feels ordinary is fixed within
+   the sheet's decisions. Record a `## Verify` table in
+   `qa-screenshots/premium-pass.md` (sheet item → evidence → result → fix).
+6. **Independent review — once.** For new screens, page sets, products and
+   redesigns, start one fresh subagent (foreground) with
+   `arkar-ui-visual-qa/references/independent-review.md`: it sees the
+   screenshots and filmstrips, uses the running app, and judges the build
+   **against its mode and build sheet** — an existing product on consistency
+   with that product and the craft of every state, a new product or
+   redesign also on distinctiveness. It returns defects ranked critical /
+   major / minor, plus rubric scores as a diagnostic. Fix every critical and
+   major defect and check each fix yourself. A second review happens **only
+   if the first found a critical defect** (a broken flow, an unreadable
+   screen, lost work, or — for a new product or redesign — a screen it
+   calls generic or a template, which is recomposed within the brief). There
+   is no score target to loop on; never rebuild to chase a number. Record
+   `## Independent review` in `qa-screenshots/premium-pass.md`: findings, what was fixed,
+   what remains and why. No Agent tool → do the cold review that file
+   describes and say so.
+7. **Report** — the final message (section 5).
+
+The build sheet, the `## Verify` table and the `## Independent review`
+section are the proof these steps happened; the UI quality gate checks for
+them. If time runs short, polish less — never drop a step.
 
 ## Business systems first
 
@@ -274,12 +267,12 @@ Keep it short and factual:
   signature elements; for motion: its language and the levels used);
 - what you verified and how (sizes, interactions, motion, reduced motion),
   and anything **not** verified, with the reason;
-- **the "Premium pass" block from `arkar-ui-visual-qa`** (rounds, what felt
-  ordinary, what you refined, interaction-probe numbers before → after) —
-  UI work without it is not finished;
-- for new products, page sets and redesigns: the composition chosen per
-  main screen (and the obvious one rejected), and the independent critique
-  (findings count, how many fixed);
+- **the "Premium pass" block from `arkar-ui-visual-qa`** (build-sheet checks
+  passed, defects found and fixed, interaction-probe numbers before → after)
+  — UI work without it is not finished;
+- for new screens, page sets, products and redesigns: where the build sheet
+  is, the composition chosen per main screen, and the independent review
+  (defects by severity, how many fixed, anything left and why);
 - **Assumptions:** always this line, under that word — what you assumed or
   decided where the brief was silent (audience, content, tone, missing
   files), so AK can correct it;
@@ -288,6 +281,7 @@ Keep it short and factual:
 ## References
 
 - `references/premium-standard.md` — AK's premium UI/UX standard: the most important rule.
+- `references/build-sheet.md` — the build sheet: every decision for a feature (direction, composition, components, states, interactions, motion, copy, responsive, accessibility, acceptance checks), written once before UI code.
 - `assets/experience-kit.js` — tested mechanics for the experience standard (mock server with latency/failure switches and persistence, URL view state, drafts, anchored toasts, roving focus).
 - `references/experience-standard.md` — End-to-End Product Craftsmanship & Experience Excellence: every moment of the experience (press, wait, success, dialogs, errors, transitions, timing of information, feedback, phones, consistency) and how it's checked.
 - `references/resilience.md` — recovery routes when a tool, library or network fails, so quality never drops.

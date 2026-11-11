@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs the arkar UI quality gate with whichever Python 3 this computer has.
+# Runs the arkar UI quality gate (before UI writes and before finishing) with whichever Python 3 this computer has.
 # Without Python it does nothing: a missing check must never stop a session.
 
 gate_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

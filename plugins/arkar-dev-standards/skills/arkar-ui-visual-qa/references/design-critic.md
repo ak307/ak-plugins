@@ -4,13 +4,12 @@ The builder is too kind to its own work: it knows what it meant, so it sees
 the intention instead of the screen. A critic that sees **only the
 screenshots** judges what users will actually see.
 
-## When
+## When and how
 
-In the premium pass of every new product, page set or redesign — after
-round 1, and again after round 2 if round 1's critique found major issues.
-For smaller changes it's optional.
-
-## How
+This is the **look** half of the independent review
+(`independent-review.md`, which says when it runs and how its findings are
+handled). Run it once, after Verify, for new screens, page sets, products
+and redesigns.
 
 1. Take full-page screenshots of each main screen at desktop and phone size
    **and of every key state** — the core flow done once (e.g. a question
@@ -20,34 +19,30 @@ For smaller changes it's optional.
    filmstrips of the first load and the main flows
    (`scripts/interaction-probe.cjs`, `scripts/film.cjs`). A critic who only
    sees the empty start screen can't judge the product.
-2. Start a fresh subagent with the Agent tool, in the foreground (`run_in_background: false`) — wait for its report; never end your turn waiting for a background agent. Give it **only**: the
-   screenshot and filmstrip paths, one line on what the product is and who
-   uses it, and the brief below. Never give it the code, `DESIGN.md`, or your
+2. Give the reviewer **only**: the screenshot and filmstrip paths, one line
+   on what the product is and who uses it, the **mode** (existing product
+   following its design system, or new product / redesign) with the design
+   system's name, and the brief below. Never the code, `DESIGN.md` or your
    reasoning — that would anchor it to your intentions.
-3. **The bar is the critic's score, not the number of fixes.** Fix every
-   critical failure, every section scored below 7 and the most severe
-   findings, re-shoot, and send the new screenshots to a **fresh** critic.
-   Repeat until the critic scores the build **overall ≥ 8.5 with no
-   dimension and no section below 7 and no critical failure** — or after
-   four critique rounds, stop and report honestly what is still below the
-   bar and why. Record each round's scores and fixes in
-   `qa-screenshots/premium-pass.md`.
-4. Don't dismiss a finding by pointing at your own `DESIGN.md` ("that idea
-   was rejected there") — the critic is judging the result, and your
-   earlier reasoning is what it's checking. If the critic says a screen or
-   section looks like a generic template, redo that composition — the
-   interaction probe finding no template flags doesn't answer it.
-5. If no subagent tool is available, do a "cold read" yourself: look at each
+3. Don't dismiss a finding by pointing at your own `DESIGN.md` ("that idea
+   was rejected there") — the critic judges the result. A screen it calls a
+   generic template in a new product or redesign is a critical defect: fix
+   it by recomposing that screen within the brief.
+4. If no subagent tool is available, do a "cold read" yourself: look at each
    screenshot as a stranger seeing the product for the first time, before
-   re-reading any code, and score it with the same rubric.
+   re-reading any code, and use the same brief.
 
 ## The critic's brief (paste it)
 
 > You are a world-class product design critic (Apple / Linear / Stripe
 > calibre) reviewing screenshots of a product before launch. Be specific and
 > demanding; do not praise. The bar: a top-tier, Apple-level premium
-> experience — people should open it and think "wow, this is beautiful".
-> Polished-but-boring fails.
+> experience. Judge it for its **mode**: a new product or redesign must
+> also be distinctive — polished-but-boring fails; new screens in an
+> existing product must fit that product's design system and be crafted to
+> its best standard in every state — don't mark them down for keeping the
+> system's look, mark them down for anything plain, inconsistent or
+> unfinished within it.
 >
 > Read each screenshot (Read tool) and for each screen answer:
 > 1. Three-second test: what catches the eye first? "Wow" or merely "fine"?
@@ -83,8 +78,10 @@ For smaller changes it's optional.
 >    **originality**. Also score **each section** of each long page
 >    (hero, each band below it, footer) 1–10.
 >
-> Return: the scores (overall = mean of the dimensions), the section scores,
-> critical failures (anything visibly broken, covered, blank, unreadable, or
-> a missing core state), and the 10 most visible shortfalls, most severe
-> first, each as: screen/section · what's wrong · a concrete direction to fix
-> it (not a copy of any existing product).
+> Return, most severe first, a list of **defects** — each as: severity
+> (**critical**: visibly broken, covered, blank, unreadable, a missing core
+> state, or — for a new product or redesign — a screen that looks like a
+> generic template; **major**: clearly below premium for its mode;
+> **minor**: polish) · screen/section · what's wrong · a concrete fix within
+> the brief (not a copy of any existing product). Then the scores (overall
+> = mean of the dimensions) and section scores, as a diagnostic.

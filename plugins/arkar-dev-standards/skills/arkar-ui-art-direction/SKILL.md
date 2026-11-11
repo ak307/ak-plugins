@@ -62,8 +62,12 @@ constraints. Note existing brand assets that must be kept
    `DESIGN.md`. Reject a candidate when it is **generic** — it would fit any
    product of this type (abstract rings, a gradient blob, a band of
    numbers) — not just because it came first; then pick the most striking
-   one that belongs only to this product. Then do the composition step in the orchestrator's workflow
-   (`## Compositions`: obvious version rejected, alternatives, chosen).
+   one that belongs only to this product. Then decide each main screen's
+   composition once, on paper, and write it in the build sheet's
+   Composition row (`arkar-ui-intelligence/references/build-sheet.md`):
+   the obvious layout named and kept or rejected with why, two different
+   ideas weighed in a sentence each, one chosen with its hero moment —
+   never built as variations to compare.
 4. **Aim to impress** — read `references/visual-ambition.md`: every main
    screen passes the three-second "wow" test, has a hero moment, colour with
    conviction, contrast range and depth; none of the boring signals. Enterprise,
@@ -85,13 +89,12 @@ constraints. Note existing brand assets that must be kept
    considered, users and target screens, palette, type, shape, signature
    elements, voice. The design-system and motion specialists add their
    sections.
-8. **Refine until premium — at least two rounds** for new products and
-   redesigns. Screenshot every main screen (visual-qa's tools), then judge
-   it against AK's premium standard: would it sit comfortably beside the
-   best product in its category? Name the ten most visible shortfalls (type,
-   depth, imagery, empty space, components, states, motion, spacing,
-   detail) and fix them; re-shoot and repeat. "Clean but plain" is a
-   failure, not a finish. Stop only when nothing feels ordinary.
+8. **Check the built result against the direction** in visual-qa's
+   premium pass: would it sit comfortably beside the best product in its
+   category? Fix every visible shortfall (type, depth, imagery, empty
+   space, components, states, motion, spacing, detail) within the chosen
+   direction. "Clean but plain" is a failure, not a finish — and the fix
+   is craft on the decided design, not a new round of designs.
 
 ## Anti-generic rules
 

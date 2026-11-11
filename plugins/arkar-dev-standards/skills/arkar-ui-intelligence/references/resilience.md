@@ -15,11 +15,11 @@ every required step.
 | No images, no image generation, no stock | Build visuals in code: SVG illustration, CSS/SVG patterns and textures, data visuals, product renders made of the UI itself. | Leave empty space or grey boxes where a visual belongs |
 | Browser / Playwright missing | Install Playwright outside the project (the command in `arkar-ui-visual-qa/scripts/screenshot.cjs`), or use Claude in Chrome on a local URL. | Skip visual QA silently; claim it was checked |
 | Port in use / another app answers | Pick another free port and confirm the page is your project. | Screenshot or quote another app |
-| No subagent (Agent) tool for the critic | Do the cold read in `arkar-ui-visual-qa/references/design-critic.md` and record it as such. | Skip the critique |
+| No subagent (Agent) tool for the independent review | Do the cold review in `arkar-ui-visual-qa/references/independent-review.md` (both briefs, evidence only) and record it as such. | Skip the review |
 | Filming fails (script error) | Fix the step selector and retry; or film fewer, key steps; or use `screenshot.cjs --motion` plus manual mid-transition frames — and record what you could film. | Judge motion from stills only without saying so |
 | Mock data / backend missing | Build realistic mock data and a simulated backend with real latency, so loading, empty, error and success states can all be seen. | Design only the happy path |
 | Project constraints (no build step, old browsers, a fixed CSS framework) | Work within them with craft: the constraint shapes the technique, not the ambition. | Use the constraint as a reason for a plain UI |
-| Running short of time or context | Keep the required steps (compositions, critique, filming, premium-pass record); cut the number of polish iterations instead. Write the record early and update it. | Drop a required step "because the site is small" |
+| Running short of time or context | Keep the required steps (build sheet, verify against it, filming, the independent review, premium-pass record); polish less instead. Write the record early and update it. | Drop a required step "because the site is small" |
 | Something you can't fix without AK (content, a backend, credentials) | Build everything else to the full standard, make the gap visible and honest in the UI (a clear placeholder state, never fake data presented as real), and list it as a decision for AK. | Lower the design to match the gap; point at a file that doesn't exist |
 
 The UI quality gate (a hook in this plugin) checks before you finish that UI

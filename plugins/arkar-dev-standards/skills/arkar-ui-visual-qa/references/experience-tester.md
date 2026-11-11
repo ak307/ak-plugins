@@ -7,13 +7,16 @@ error, transition and recovery — against
 required for a new product, page set or redesign; screenshots alone can
 never prove the experience.
 
-## How to run it
+## When and how
 
-Start a fresh subagent with the Agent tool (so it has no attachment to the
-build). Run it in the foreground (`run_in_background: false`) and wait for its report — never end your turn waiting for a background agent, or the work stops there. Give it: the local URL (the app must already be running on local or
-test data), one line on the product and its users, the main flows, the path
-to these scripts, and the brief below. No Agent tool → do it yourself as a
-cold pass and say so.
+This is the **use** half of the independent review
+(`independent-review.md`, which says when it runs and how its findings are
+handled). Run it once, after Verify. Give the reviewer: the local URL (the
+app must already be running on local or test data), one line on the
+product and its users, the mode (existing product following its design
+system, or new product / redesign), the main flows, the path to these
+scripts, and the brief below. No Agent tool → do it yourself as a cold pass
+and say so.
 
 ## Brief for the tester
 
@@ -45,17 +48,16 @@ cold pass and say so.
 > (counts, names, wording updating together)? is the same action handled
 > the same way everywhere?
 >
-> Score with the experience rubric (each 1–10; 10 = Apple-level, 7 = solid
-> professional, 5 = generic): feedback, waiting, success & confirmation,
-> errors & recovery, transitions, information & timing, state & navigation,
-> touch & keyboard, consistency. Then list the ten most important moments
-> that fall short — each with the step, what happened (frame time), and what
-> it should do instead. Be specific and demanding; "fine" is not premium.
+> List the moments that fall short, most severe first — each with severity
+> (**critical**: work lost, a flow that can't be completed, a dead end, an
+> error with no way out, data shown wrong; **major**: clearly below the
+> experience standard; **minor**: polish), the step, what happened (frame
+> time), and what it should do instead. Then score the experience rubric
+> as a diagnostic (each 1–10; 10 = Apple-level, 7 = solid professional, 5 =
+> generic): feedback, waiting, success & confirmation, errors & recovery,
+> transitions, information & timing, state & navigation, touch & keyboard,
+> consistency. Be specific and demanding; "fine" is not premium.
 
-## After the tester reports
+## After the review
 
-Fix the moments it names (all critical ones, then the rest by impact),
-re-test with a fresh tester, and repeat until every experience dimension is
-≥ 7 and the overall ≥ 8.5 — the same bar as the visual critique, up to four
-rounds. Record each round's scores, findings and fixes under
-`## Experience test` in `qa-screenshots/premium-pass.md`.
+Handled as one review with the look half — see `independent-review.md`.

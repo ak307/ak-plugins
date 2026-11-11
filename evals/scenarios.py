@@ -356,16 +356,19 @@ def motion_checks(run, project: Path) -> list:
     ]
 
 
-def premium_pass_check(run, rounds_needed: int = 2, workspace: Path | None = None) -> dict:
-    """The premium pass was done: its record file, or the block in the reply, with rounds and probe numbers."""
+def premium_pass_check(run, rounds_needed: int = 1, workspace: Path | None = None) -> dict:
+    """The premium pass was done against the build sheet: its record file, or the block in the reply.
+
+    `rounds_needed` is kept for older scenario calls: since the build-sheet workflow there is one pass, not rounds.
+    """
     record = ""
     if workspace is not None:
         record = "".join(path.read_text(errors="ignore") for path in workspace.rglob("premium-pass.md"))
     final = run.final + "\n" + record
-    rounds = len(re.findall(r"round\s*\d", final, re.I))
     has_block = re.search(r"premium pass", final, re.I) and re.search(r"probe", final, re.I)
-    return check(f"premium pass reported ({rounds_needed}+ rounds, interaction probe)",
-                 has_block and rounds >= rounds_needed, final[-700:])
+    against_sheet = re.search(r"build sheet", final, re.I)
+    return check("premium pass reported against the build sheet (interaction probe)",
+                 bool(has_block and against_sheet), final[-700:])
 
 
 PROBE_SCRIPT = SCREENSHOT_SCRIPT.parent / "interaction-probe.cjs"
@@ -386,40 +389,41 @@ def structure_check(project: Path, workspace: Path) -> dict:
     return check("no unjustified template structures", not flags or justified, "\n".join(flags) or "none")
 
 
-def compositions_check(project: Path) -> dict:
-    """DESIGN.md records the composition step: the obvious layout rejected, alternatives, the choice."""
+def build_sheet_check(project: Path) -> dict:
+    """DESIGN.md holds the build sheet, decided before code: composition with its hero, every state, acceptance checks."""
     design = design_doc(project)
-    section = re.search(r"##\s*Compositions?(.*?)(?=\n## |\Z)", design, re.S | re.I)
+    section = re.search(r"##\s*Build sheet(.*?)(?=\n## (?!Build sheet)|\Z)", design, re.S | re.I)
     body = section.group(1).lower() if section else ""
-    ok = bool(section) and "obvious" in body and "chosen" in body and "hero" in body
-    return check("DESIGN.md has a Compositions section (obvious rejected, alternatives, chosen, hero moment)",
-                 ok, body[:400] or "no Compositions section")
+    ok = bool(section) and "state" in body and "acceptance" in body and ("hero" in body or "composition" in body)
+    return check("DESIGN.md has a build sheet (composition, every state, acceptance checks)",
+                 ok, body[:400] or "no Build sheet section")
 
 
 def experience_check(workspace: Path) -> dict:
-    """The experience was tested by use, not only looked at: an Experience test section with scores, and videos."""
+    """The experience was used, not only looked at: an experience walk in the record, and journeys recorded."""
     record = "".join(path.read_text(errors="ignore") for path in workspace.rglob("premium-pass.md"))
-    section = re.search(r"##\s*Experience test(.*?)(?=\n## |\Z)", record, re.S | re.I)
+    walked = re.search(r"experience (walk|test)", record, re.I)
     videos = [path for path in workspace.rglob("*.mp4") if "node_modules" not in path.parts] + \
              [path for path in workspace.rglob("*.webm") if "node_modules" not in path.parts]
-    scored = bool(section and re.search(r"\d(\.\d)?\s*(/\s*10)?", section.group(1)))
-    return check("experience tested by use (Experience test section with scores, journeys recorded)",
-                 scored and bool(videos), {"section": bool(section), "scored": scored, "videos": len(videos)})
+    return check("experience walked by use (record.cjs journeys, recorded in premium-pass.md)",
+                 bool(walked) and bool(videos), {"walk in record": bool(walked), "videos": len(videos)})
 
 
-def critique_check(run, workspace: Path) -> dict:
-    """An independent critic subagent looked at the screenshots, and its findings were recorded."""
+def review_check(run, workspace: Path) -> dict:
+    """One independent review by a subagent, recorded; no 'generic' verdict left standing; no score-chasing loop."""
     record = "".join(path.read_text(errors="ignore") for path in workspace.rglob("premium-pass.md"))
-    recorded = re.search(r"##\s*Independent critique", record, re.I)
+    recorded = re.search(r"##\s*Independent (review|critique)", record, re.I)
     used_agent = any(tool in ("Agent", "Task") for tool in run.tools)
     # A "generic / template" verdict must lead to a new composition, never be left standing.
     refused = [line.strip() for line in record.splitlines()
                if re.search(r"generic|template", line, re.I)
                and re.search(r"not changed|not done|proposal|partly|\bkept\b", line, re.I)
                and not re.search(r"(→|->)\s*(fixed|re-?composed|redesigned)", line, re.I)]
-    return check("independent critique by a subagent, recorded; no 'generic' verdict left standing",
-                 bool(recorded) and used_agent and not refused,
-                 f"agent used: {used_agent}; recorded: {bool(recorded)}; left standing: {refused[:2]}")
+    # The workflow allows a second review only after a critical defect; a third means it looped.
+    looped = bool(re.search(r"(review|critique)\s*(round\s*)?(3|4|three|four)\b|round\s*[34]\b", record, re.I))
+    return check("independent review by a subagent, recorded; no 'generic' verdict left; at most two reviews",
+                 bool(recorded) and used_agent and not refused and not looped,
+                 f"agent used: {used_agent}; recorded: {bool(recorded)}; left standing: {refused[:2]}; looped: {looped}")
 
 
 def motion_review_check(run, workspace: Path) -> dict:
@@ -508,10 +512,10 @@ def ui_a_existing_corporate(root: Path, plugin: Path):
     code = site_code(workspace)
     problems = layout_problems(workspace, pages)
     return [
-        premium_pass_check(run, 2, workspace),
+        premium_pass_check(run, workspace=workspace),
         structure_check(workspace, workspace),
-        compositions_check(workspace),
-        critique_check(run, workspace),
+        build_sheet_check(workspace),
+        review_check(run, workspace),
         experience_check(workspace),
         motion_review_check(run, workspace),
         *audit_checks(workspace),
@@ -548,10 +552,10 @@ def ui_b_new_ai_saas(root: Path, plugin: Path):
     custom_properties = set(re.findall(r"--[a-z0-9-]+\s*:", code))
     problems = layout_problems(project)
     return [
-        premium_pass_check(run, 2, workspace),
+        premium_pass_check(run, workspace=workspace),
         structure_check(project, workspace),
-        compositions_check(project),
-        critique_check(run, workspace),
+        build_sheet_check(project),
+        review_check(run, workspace),
         motion_review_check(run, workspace),
         loaded_check(run, {"ui", "art", "ds", "motion", "vqa"}),
         check("a design direction chosen and recorded", re.search(DIRECTIONS, design), design[:300]),
@@ -588,10 +592,10 @@ def ui_c_enterprise_admin(root: Path, plugin: Path):
     measured = measure_motion(project)
     problems = layout_problems(project)
     return [
-        premium_pass_check(run, 2, workspace),
+        premium_pass_check(run, workspace=workspace),
         structure_check(project, workspace),
-        compositions_check(project),
-        critique_check(run, workspace),
+        build_sheet_check(project),
+        review_check(run, workspace),
         motion_review_check(run, workspace),
         loaded_check(run, {"ui", "ux", "vqa"}),
         check("a design direction chosen and recorded", re.search(DIRECTIONS, design_doc(project).lower())),
@@ -651,7 +655,7 @@ def ui_e_small_component(root: Path, plugin: Path):
     changed_files = re.findall(r"^diff --git a/(\S+)", diff, re.M)
     changed_lines = len([line for line in diff.splitlines() if line[:1] in "+-" and line[:3] not in ("+++", "---")])
     return [
-        premium_pass_check(run, 1, workspace),
+        premium_pass_check(run, workspace=workspace),
         loaded_check(run, {"ui", "vqa"}, forbidden={"discovery", "art", "ds"}),
         check("only a few files touched (≤3)", len(changed_files) <= 3, str(changed_files)),
         check("a focused change (≤80 changed lines)", changed_lines <= 80, str(changed_lines)),
@@ -669,7 +673,7 @@ def ui_f_premium_motion(root: Path, plugin: Path):
     ids_after = set(re.findall(r'id="([^"]+)"', (workspace / "index.html").read_text()))
     problems = layout_problems(workspace)
     return [
-        premium_pass_check(run, 1, workspace),
+        premium_pass_check(run, workspace=workspace),
         loaded_check(run, {"ui", "motion", "vqa"}, forbidden={"art"}),
         check("concept preserved (Night Elevation)", "Night Elevation" in (workspace / "DESIGN.md").read_text()),
         check("existing elements and behaviour kept (all ids still present)", ids_before <= ids_after,
@@ -688,10 +692,10 @@ def new_product_checks(run, project: Path, workspace: Path) -> list:
     """The checks every new product shares: full process, evidence, layout, motion."""
     problems = layout_problems(project)
     return [
-        premium_pass_check(run, 2, workspace),
+        premium_pass_check(run, workspace=workspace),
         structure_check(project, workspace),
-        compositions_check(project),
-        critique_check(run, workspace),
+        build_sheet_check(project),
+        review_check(run, workspace),
         experience_check(workspace),
         motion_review_check(run, workspace),
         check("choreography built with the motion kit or a framework's layout animations",
@@ -894,11 +898,11 @@ def ui_q_multi_page(root: Path, plugin: Path):
     project = workspace / "fixwell"
     pages = sorted(path.stem for path in project.glob("*.html"))
     design = design_doc(project).lower()
-    section = re.search(r"##\s*compositions?(.*?)(?=\n## |\Z)", design, re.S)
-    composed = [page for page in pages if section and page.replace("-", " ") in section.group(1).replace("-", " ")]
+    sheets = " ".join(re.findall(r"##\s*build sheet(.*?)(?=\n## (?!build sheet)|\Z)", design, re.S))
+    composed = [page for page in pages if page.replace("-", " ") in sheets.replace("-", " ")]
     return new_product_checks(run, project, workspace) + [
         check("at least five pages built", len(pages) >= 5, pages),
-        check("Compositions cover most pages (each page composed for its job)",
+        check("build sheet covers most pages (each page decided for its job)",
               len(composed) >= max(3, len(pages) - 2), {"pages": pages, "composed": composed}),
     ]
 
@@ -934,6 +938,53 @@ def ui_s_rostering(root: Path, plugin: Path):
         check("assigning works without a mouse (keyboard alternative to drag)",
               not has(code, r"draggable") or has(code, r"keydown|aria-grabbed|assign|<select|<button")),
         check("publishing asks for confirmation", has(code, r"publish") and has(code, r"confirm|dialog|sure")),
+    ]
+
+
+def orchestrator_before_first_ui_write(run) -> bool:
+    """The UI orchestrator was loaded before the first UI file was written (decide first, then build)."""
+    for line in run.raw.splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if event.get("type") != "assistant":
+            continue
+        for block in event.get("message", {}).get("content", []):
+            if block.get("type") != "tool_use":
+                continue
+            tool_input = block.get("input") or {}
+            if block["name"] == "Skill" and str(tool_input.get("skill", "")).endswith("arkar-ui-intelligence"):
+                return True
+            if block["name"] in ("Write", "Edit", "MultiEdit") and re.search(
+                    r"\.(html?|css|jsx|tsx|vue|blade\.php)$|<(form|input|button|main|section)\b",
+                    str(tool_input.get("file_path", "")) + str(tool_input.get("content", "")) +
+                    str(tool_input.get("new_string", ""))):
+                return False
+    return False
+
+
+def ui_t_existing_feature(root: Path, plugin: Path):
+    """T — new screens in an existing product: decide once, build once, verify; no design exploration loop."""
+    workspace = workspace_from("claims-ui", root / "workspace")
+    (workspace / ".env").write_text("APP_ENV=local\nDATABASE_PATH=approvals.db\n")
+    run = run_claude("add two-factor sign-in to the claims portal: a page to set up an authenticator app (QR code "
+                     "placeholder, confirm with a code, show recovery codes) and a page to enter the 6-digit code at "
+                     "sign-in. mock the verification (code 123456 works). keep the portal's existing look.",
+                     workspace, plugin, max_turns=250)
+    design = design_doc(workspace)
+    variants = [path.name for path in workspace.rglob("*") if path.is_file()
+                and re.search(r"(variant|option|version|alt)[-_]?(\d|[ab])\b|-v\d\.", path.name, re.I)
+                and "qa-screenshots" not in path.parts]
+    return [
+        check("orchestrator loaded before the first UI write", orchestrator_before_first_ui_write(run)),
+        build_sheet_check(workspace),
+        check("build sheet lists the code-entry states (wrong, expired, locked, verifying)",
+              all(re.search(word, design, re.I) for word in ("wrong|incorrect", "expir", "lock", "verif"))),
+        check("no design variations built to compare", not variants, variants),
+        check("existing look kept (no new identity)", not re.search(r"##\s*(palette|typography|identity)\b", design, re.I)),
+        review_check(run, workspace),
+        premium_pass_check(run, workspace=workspace),
     ]
 
 
@@ -1106,6 +1157,7 @@ SCENARIOS = {
     "ui-q-multi-page": ("ui business", ui_q_multi_page),
     "ui-r-approvals": ("ui business", ui_r_approvals),
     "ui-s-rostering": ("ui business", ui_s_rostering),
+    "ui-t-existing-feature": ("ui business", ui_t_existing_feature),
     "new-fastapi": ("new projects", new_project("fastapi")),
     "new-django": ("new projects", new_project("django")),
     "delivery": ("delivery", delivery),

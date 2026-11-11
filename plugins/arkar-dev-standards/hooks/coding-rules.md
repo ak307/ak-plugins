@@ -1,4 +1,4 @@
-# AK's coding standards (always on) — arkar-dev-standards v3.0.2
+# AK's coding standards (always on) — arkar-dev-standards v3.1.0
 
 If these rules point at a skill that doesn't exist, tell AK: an old copy of
 the plugin is loaded on this computer.
@@ -107,8 +107,9 @@ app (local or test data only, section 0), look at the real UI at the target
 sizes, fix and re-check. Decide freely within what AK asked; never redesign
 beyond it — propose instead. Never claim a check you didn't do. **Most
 important: premium, Apple-level polish in look and behaviour — never accept
-UI just because it works.** A UI quality gate checks the required steps
-before you finish; if it stops you, complete them.
+UI just because it works.** Decide once, write the build sheet, build
+once — never build variations to compare. A UI quality gate holds UI writes
+until the orchestrator is loaded and checks the steps at the end.
 
 ## 2c. Every feature, update or bug fix
 

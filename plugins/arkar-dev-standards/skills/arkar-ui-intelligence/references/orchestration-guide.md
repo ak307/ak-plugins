@@ -51,6 +51,9 @@
 
 ## Hand-offs
 
+Each specialist's output lands in the build sheet
+(`build-sheet.md`) before code — that is the hand-off between them.
+
 1. **discovery** → a short brief (in your working notes and, for lasting
    facts, `DESIGN.md`): product, users, journeys, mode evidence, identity,
    tokens, components, stack, constraints, problems found.
@@ -62,7 +65,8 @@
 6. **responsive-design** → behaviour per size/platform.
 7. **accessibility** → requirements for the controls and flows in scope.
 8. **implementation** → the code, following all of the above.
-9. **visual-qa** → evidence, fixes, the verification report.
+9. **visual-qa** → verifies the build against the sheet, fixes defects,
+   runs the independent review, writes the verification report.
 
 For small tasks, most steps collapse into a line of thought; don't produce
 documents nobody needs.

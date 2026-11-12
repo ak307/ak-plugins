@@ -97,6 +97,15 @@ Tests for the guard and the read-only tool:
   risky, never just applied. A security gate (Stop hook) sends a session back
   — at most twice — when code changed without the skill.
 
+- **`arkar-testing` skill** — every change verified, existing behaviour
+  protected, and testing never a risk to live data: check where tests point
+  before running (never a non-local database; same-engine disposable test
+  database; isolation by rollback, not cleanup), choose the kinds of test by
+  risk (unit, integration, end-to-end, regression, security, performance, UI
+  and accessibility, AI evals), what every change must test, what makes a
+  test trustworthy (behaviour not implementation, seen failing once, fakes
+  only at the edge, deterministic), never forcing green, and the evidence to
+  report. `scripts/test_smells.py` lists tests that can't be trusted.
 - **`arkar-ai-engineering` skill** — features that call a language model:
   single calls, workflows, agents and RAG. Principles (simplest pattern that
   works; code computes, the model reads and writes; model output is untrusted

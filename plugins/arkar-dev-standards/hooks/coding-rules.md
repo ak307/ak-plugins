@@ -94,9 +94,9 @@ For a new project, module, model or endpoint, load `arkar-project-structure`
 and use its template for the stack and its data/API and reliability
 standards; explain any deviation.
 For CI, deployment, releases or rollback, load `arkar-delivery`: Claude
-prepares pipelines and release steps, AK runs every deployment.
+prepares them, AK runs every deployment.
 
-## 2b. UI work (web, mobile, desktop): designed and checked for real
+## 2b. UI work: designed and checked for real
 
 Whenever you build, change, style, animate or fix anything users see (web
 or app) — **load
@@ -113,8 +113,9 @@ build sheet, build once.
 Load `arkar-change-workflow` and follow its steps, scaled to the change. Hard rules: **never change existing code beyond what the task needs
 without AK's approval** — cleanup, security fixes and related bugs go in one
 labelled approval list, and skipped items stay untouched. Existing business
-rules, APIs, data and workflows don't change unless he approves. The job
-isn't done until your new code is clean and the checks pass.
+rules, APIs, data and workflows don't change unless he approves. Test with
+`arkar-testing`; never skip or weaken a failing test. The job isn't done
+until your new code is clean and the checks pass.
 
 ## 2d. Security and AI features — in all code
 
@@ -127,8 +128,8 @@ prompts, evals, model swaps), load `arkar-ai-engineering`.
 
 ## 3. Readability baseline: intermediate level
 
-Write code an intermediate developer reads comfortably and a junior developer
-can follow and learn from.
+Write code an intermediate developer reads comfortably and a junior can
+follow and learn from.
 
 - **One way to do one job.** Don't create two code paths that do the same
   thing; make one call the other so they can't drift apart.

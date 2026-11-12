@@ -118,6 +118,9 @@ you couldn't run, and propose a local test database.
   place where this kind of logic lives? Would this be a second or third copy
   of something? Does the layout follow `arkar-project-structure` for this
   stack? Note where the feature *should* go if the code were clean.
+- **Tests:** load `arkar-testing` for any change that adds or changes
+  logic — where tests may run, what this change must test, what a
+  trustworthy test is, and the evidence to report.
 - **Security:** if the change handles sign-in, permissions, input, personal
   data, uploads, APIs, queries, configuration or dependencies, load
   `arkar-security` now (it scales to the change; copy/CSS edits need none).
@@ -230,15 +233,18 @@ ends with `arkar-ui-visual-qa`.
   personal in URLs or browser storage. For new routes, pages, cookies,
   headers, uploads or dependencies, its VAPT checklist says what the
   company's scans flag.
-- Add tests for the new behaviour — including the permission cases (owner,
-  another user, not logged in) and every status transition it touches; see
-  `references/testing-strategy.md`.
+- Add tests for the new behaviour, following `arkar-testing` — the
+  permission cases (owner, another user, not logged in), every state change
+  it touches (allowed, and refused with nothing changed), boundaries and
+  side effects; each new test seen failing once.
 
 ### 6. Check, then finish clean
 
 Run, per stack (`arkar-security` step 4 — its scanner guide has the commands):
 
-1. **Tests** — the baseline again plus the new tests; all must pass.
+1. **Tests** — the baseline again plus the new tests, then the full suite;
+   all must pass, existing tests unchanged. A failure is investigated,
+   never skipped, retried or loosened (`arkar-testing`).
 2. **Code scan** — e.g. bandit / ruff `S` (Python), Larastan (PHP).
 3. **Dependency audit** — pip-audit, composer audit, npm audit.
 4. **Secret scan** — detect-secrets on the changed files, plus checking that

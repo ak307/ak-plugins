@@ -36,6 +36,12 @@ steps translate to GitLab CI or Azure DevOps).
   someone other than the author reviews when the team can.
 - CI uses only test credentials stored as CI secrets — never production
   secrets, never a production database.
+- **A red check stops the pipeline and the release.** A failing or
+  intermittent test is investigated and fixed (`arkar-testing`) — never
+  re-run until green, skipped or bypassed to merge or release. Release
+  commands are written to stop at the first failed step.
+- The few end-to-end journeys run on the main branch or before each
+  release, against the app started inside CI with its test database.
 - Dependency updates: Dependabot (or Renovate) grouped weekly for
   patch/minor; majors as separate PRs (🟠).
 
@@ -60,7 +66,8 @@ pipeline doesn't block the team on day one.
 
 Use `references/deploy-and-release.md`:
 
-1. **Before:** CI green on the release commit; migrations reviewed (safe
+1. **Before:** CI green on the release commit — the full suite, on that
+   exact commit, with nothing skipped; migrations reviewed (safe
    per `arkar-project-structure/references/data-and-api.md` section 4, SQL
    shown, 🟠 items approved); a **backup taken and its restore tested**
    recently; release notes; rollback plan written; quiet time chosen for

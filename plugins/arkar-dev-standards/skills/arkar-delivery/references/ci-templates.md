@@ -10,7 +10,8 @@ project (`.python-version`, `composer.json`, `pubspec.yaml`).
 1. FastAPI / Django (Python, uv)
 2. Laravel (PHP + the starter kit's frontend)
 3. Flutter
-4. Secret scan and dependency updates (all projects)
+4. End-to-end journeys (projects with a UI)
+5. Secret scan and dependency updates (all projects)
 
 ## 1. FastAPI / Django (Python, uv)
 
@@ -149,7 +150,34 @@ jobs:
 Release builds (APK/AAB, IPA) and store uploads stay manual or in a
 separate workflow AK triggers — signing keys never live in the repository.
 
-## 4. Secret scan and dependency updates (all projects)
+## 4. End-to-end journeys (projects with a UI)
+
+A separate job, so slow browser tests don't hold up every push: on `main`
+and before a release, start the app inside CI against the CI test database,
+seed invented data, and run the 3–5 journeys (`arkar-testing`).
+
+```yaml
+  e2e:
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    # same `services:` and test-only `env:` as the test job
+    steps:
+      - uses: actions/checkout@v7
+      # install and start the app with the test database, then:
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+```
+
+No `continue-on-error` and no retry-until-pass on any test step: a flaky
+test is fixed, not hidden.
+
+## 5. Secret scan and dependency updates (all projects)
 
 Add a secret scan job:
 

@@ -6,7 +6,21 @@
 3. What to look for in screenshots
 4. When nothing works
 
-## 1. Tools — use the first that works
+## 1. Tools — scripts first, a real browser only where they can't reach
+
+The bundled scripts are the main evidence: exact sizes, measured timings,
+repeatable before → after numbers, and no image tokens beyond the screenshots
+you look at. Use a real browser only where the scripts can't reach:
+
+- **Performance on a real GPU** → `scripts/motion-metrics.cjs --real-browser`
+  (installed Chrome, numbers only) — not Claude in Chrome screenshots.
+- **Pages behind a sign-in** (a local Herd/Valet `*.test` app AK is signed
+  in to) → **Claude in Chrome**, on local addresses only: load the
+  `chrome-browser` skill first when it's listed, open a new tab, walk the
+  affected flow once, read the console with a filter pattern, never trigger
+  `alert`/`confirm` dialogs, and note it in the record. It's AK's real
+  browser signed in as him — local URLs only, never production or staging.
+- **A GIF of a flow** only when AK asks for one.
 
 **Claude in Chrome** (`mcp__claude-in-chrome__*`): AK's own Chrome. Open a
 new tab; only local addresses (`localhost`, `127.0.0.1`, `*.test`); read the console with a filter

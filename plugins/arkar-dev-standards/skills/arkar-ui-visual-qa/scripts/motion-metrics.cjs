@@ -13,7 +13,11 @@
 //   - reduced motion (--reduced): movement left in place counts as a defect.
 //
 // Usage (from the project folder):
-//   node <path-to>/motion-metrics.cjs <url> [--size=1440x900] [--reduced] [--json] <step> [<step> ...]
+//   node <path-to>/motion-metrics.cjs <url> [--size=1440x900] [--reduced] [--real-browser] [--json] <step> [<step> ...]
+// --real-browser: run in the installed Google Chrome, in a visible window, so the graphics card
+//   renders it — use it when the headless run reports a low frame rate or the design uses glass,
+//   blur or heavy shadows (headless has no GPU). Falls back to headless, and says so, when Chrome
+//   or a display isn't available.
 // Steps are the same as record.cjs: click=<selector> hover=<selector> press=<key>
 //   type=<selector>=<text> scroll=<pixels> wait=<ms>; add @<ms> to interrupt.
 // Example: node motion-metrics.cjs http://localhost:5173 click=.row >> nth=0 press=Escape@120
@@ -24,6 +28,7 @@
 const { loadPlaywright, isLocalUrl } = require("./film-lib.cjs");
 
 const SETTLE_QUIET_MS = 300;
+let realGpu = false;  // set when --real-browser got the installed Chrome
 const SETTLE_MAX_MS = 4000;
 
 // Runs inside the page from the first script: records every frame, animation,
@@ -240,8 +245,10 @@ function findings(report, step, reduced) {
   }
   const moving = report.animations.some((item) => !item.infinite) || report.scripted.length;
   if (moving && report.medianFrame > 25) {
-    notes.push(`low frame rate while animating: median frame ${report.medianFrame} ms (~${Math.round(1000 / report.medianFrame)} fps) — ` +
-      "headless rendering is slower than a GPU, so confirm on a device; heavy blur, shadows or loops are the usual cause");
+    const where = realGpu
+      ? "measured in Chrome with the GPU, so it's real — heavy blur, shadows or loops are the usual cause"
+      : "headless has no GPU, so confirm with --real-browser before fixing; heavy blur, shadows or loops are the usual cause";
+    notes.push(`low frame rate while animating: median frame ${report.medianFrame} ms (~${Math.round(1000 / report.medianFrame)} fps) — ${where}`);
   }
   if (report.janky > 2) notes.push(`frame pacing: ${report.janky} janky frames, longest ${report.longestFrame} ms`);
   for (const animation of report.animations.filter((item) => !item.infinite)) {
@@ -300,7 +307,19 @@ async function main() {
   const size = (flags.find((flag) => flag.startsWith("--size=")) || "--size=1440x900").slice(7).split("x").map(Number);
   const reduced = flags.includes("--reduced");
   const { chromium } = loadPlaywright();
-  const browser = await chromium.launch();
+  let browser = null;
+  let renderer = "headless Chromium (no GPU)";
+  if (flags.includes("--real-browser")) {
+    try {
+      browser = await chromium.launch({ channel: "chrome", headless: false });
+      realGpu = true;
+      renderer = "Google Chrome with the GPU";
+    } catch (error) {
+      renderer = `headless Chromium (no GPU) — real browser unavailable: ${String(error.message || error).split("\n")[0].slice(0, 120)}`;
+    }
+  }
+  if (!browser) browser = await chromium.launch();
+  if (!flags.includes("--json")) console.log(`Rendering: ${renderer}`);
   const page = await browser.newPage({ viewport: { width: size[0], height: size[1] }, reducedMotion: reduced ? "reduce" : "no-preference" });
   await page.addInitScript(installRecorder);
   await page.goto(url, { waitUntil: "load" });
@@ -336,7 +355,7 @@ async function main() {
   }
   await browser.close();
   const total = results.reduce((sum, result) => sum + (result.findings ? result.findings.length : 1), 0);
-  if (flags.includes("--json")) console.log(JSON.stringify({ url, reduced, size, steps: results }));
+  if (flags.includes("--json")) console.log(JSON.stringify({ url, reduced, size, renderer, realGpu, steps: results }));
   else console.log(`\n${total ? `${total} finding(s) — check each against the video before fixing.` : "No findings. Still watch the video: numbers can't judge feel."}`);
 }
 

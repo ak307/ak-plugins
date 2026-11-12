@@ -32,6 +32,7 @@ Premium pass
 - Motion (filmstrips: load + <flows filmed>): <what moved well · what felt abrupt, slow, decorative or confusing → fixed> · reduced motion filmed: <yes/no>
 - Motion metrics (scripts/motion-metrics.cjs on the main flows, incl. one interruption and --reduced, before → after):
   slow responses <a→b>, linear/slow movement <a→b>, popped in / vanished <a→b>, jumps <a→b>, low fps <a→b>, reduced motion ignored <a→b>
+  · real-browser run: <fps in Chrome with the GPU / not needed / Chrome unavailable>
 - States seen (every state in the sheet): <which>
 - Security check (arkar-security/scripts/security-check.cjs, before → after): <findings in new code → fixed> · existing-code proposals: <🟢 / 🟠 list or "none">
 - Experience walk (record.cjs videos, experience-standard.md): <flows × paths walked (happy, invalid,
@@ -99,10 +100,12 @@ production, every click changes live data and sends real messages.
 
 ## 2. Discover the tools, then inspect
 
-Use the first available (`references/visual-inspection.md`): Claude in Chrome
-→ Playwright MCP → the bundled script `scripts/screenshot.cjs` (Node +
-Playwright; screenshots at each size, console errors, failed requests,
-horizontal overflow, and `--motion` for animation checks). For mobile apps,
+The bundled scripts are the main evidence (`references/visual-inspection.md`);
+Claude in Chrome is for pages behind a sign-in the scripts can't reach, and
+`motion-metrics.cjs --real-browser` for real-GPU performance. Screenshots
+come from `scripts/screenshot.cjs` (or Playwright MCP): each size, console
+errors, failed requests, horizontal overflow, and `--motion` for animation
+checks. For mobile apps,
 `references/responsive-testing.md` (emulators, widget and golden tests).
 
 For each screen in scope:
@@ -158,7 +161,11 @@ or moment the sheet missed is added to the sheet and built.
    `scripts/motion-metrics.cjs <url> <steps>` — real presses, not previews:
    response time, each animation's timing and easing, frame pacing, things
    that pop in or vanish, jumps; interrupt one action mid-animation
-   (`<step>@120`) and run once with `--reduced`. Cover the six motion areas
+   (`<step>@120`) and run once with `--reduced`. Headless has no graphics
+   card: when it reports a low frame rate, or the design uses glass, blur or
+   heavy shadows, run the same steps once with `--real-browser` (your
+   installed Chrome, real GPU, no screenshots) — only that number decides
+   whether performance is a defect. Cover the six motion areas
    in `references/motion-testing.md` that the product has. Each finding is
    checked against the film, then fixed or justified in the record.
 4. **Experience walk** to

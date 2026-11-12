@@ -319,7 +319,8 @@ change runs through all seven in minutes.
    interaction probe, the main flows filmed with `film.cjs` and judged by
    eye and measured with `motion-metrics.cjs` (real presses: response time,
    timing and easing, frame pacing, pop-ins and jumps, one action
-   interrupted mid-animation with `@<ms>`, and `--reduced`), the experience walked at real speed with `record.cjs` (happy path,
+   interrupted mid-animation with `@<ms>`, and `--reduced`; `--real-browser`
+   when it reports a low frame rate or the design uses glass or blur), the experience walked at real speed with `record.cjs` (happy path,
    invalid input, failure and retry, cancel/back/undo, refresh mid-task,
    keyboard only, phone) to `references/experience-standard.md` — as
    video, because timing can't be judged from step screenshots. Check the

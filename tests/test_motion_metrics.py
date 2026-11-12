@@ -68,3 +68,15 @@ def test_reduced_motion_left_moving_is_reported(page_url):
 def test_refuses_non_local_urls():
     result = subprocess.run(["node", str(SCRIPT), "https://example.com", "click=a"], capture_output=True, text=True)
     assert result.returncode == 1 and "local" in result.stderr
+
+
+def test_real_browser_falls_back_to_headless_and_says_so(page_url):
+    result = subprocess.run(["node", str(SCRIPT), page_url, "--json", "--real-browser", "click=#open"],
+                            capture_output=True, text=True, timeout=120)
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout.strip().splitlines()[-1])
+    if report["realGpu"]:  # a laptop with Chrome and a display
+        assert report["renderer"] == "Google Chrome with the GPU"
+    else:                  # this workspace: no installed Chrome, still measured, clearly labelled
+        assert report["renderer"].startswith("headless Chromium (no GPU) — real browser unavailable")
+    assert report["steps"][-1]["animations"][0]["duration"] == 260

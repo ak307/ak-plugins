@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
+import os
 import re
 import subprocess
 import sys
@@ -174,7 +175,8 @@ def main() -> int:
         for probe in probes:
             print(f"{probe['id']:24} {probe['area']}")
         return 0
-    out = RESULTS / f"probes-{datetime.datetime.now():%Y%m%d-%H%M%S}"
+    # The process ID keeps two runs started in the same second from sharing a folder.
+    out = RESULTS / f"probes-{datetime.datetime.now():%Y%m%d-%H%M%S}-{os.getpid()}"
     out.mkdir(parents=True)
     results = []
     with ThreadPoolExecutor(max_workers=min(args.jobs, 4)) as pool:

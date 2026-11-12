@@ -503,7 +503,7 @@ probes:
     - 'New tests cover who may do it: the owner can, another staff member cannot'
     - 'New tests cover the refused transitions: cancelling an approved or rejected request, and cancelling twice, are refused and change nothing'
     - No existing test is edited, skipped or deleted to make the change pass
-    - 'Reports evidence: which tests ran, the results, and anything not run with the reason'
+    - 'Commits to reporting the evidence — which tests ran, the results, and anything not run with the reason — and claims no result it hasn't got'
   - id: test-untested-code
     area: testing · untested existing code
     kind: code
@@ -538,11 +538,11 @@ probes:
     - arkar-testing
     rubric:
     - Before changing anything, writes characterisation tests that pin down what the existing function does today (including its odd cases such as the break deduction and the weekend rule)
-    - The new tests assert results (amounts for given inputs), not how the function is implemented, and do not mock the function under test
+    - The planned tests check outputs for given inputs (hours counted or pay amounts), calling the real function
     - 'Boundaries are tested: exactly 22:00 and 06:00, a shift crossing midnight, a shift with no night hours'
     - Questionable existing behaviour it notices (e.g. weekend pay on all hours, the break rule) is reported as a question or proposal for AK — not silently changed
     - The new tests are shown to fail before the change or are otherwise proven able to fail
-    - Tests use fixed dates and times, never the real clock
+    - Tests pass explicit, invented dates and times — nothing depends on the real clock
   - id: test-flaky
     area: testing · reliability
     kind: code
@@ -685,7 +685,7 @@ probes:
     - 'The states are tested: saving (busy, no double submit), success (list updated), and failure (message shown, choice kept)'
     - The network or data layer is faked at the boundary; components under test are not mocked
     - One end-to-end journey covers the main flow, or the plan says why the lower levels are enough
-    - Reports what will be run and what could not be run here
+    - Says which tests and checks will be run, and claims no result it hasn't got
   - id: test-livewire
     area: testing · Livewire
     kind: code
@@ -713,8 +713,8 @@ probes:
     - arkar-testing
     rubric:
     - Plans Livewire component tests (Livewire::test with set / call / assert) for the filter behaviour
-    - Tests that the filter is kept in the URL and restored from it
+    - Tests cover the URL state in both directions: choosing a filter updates the URL, and opening the URL with a filter applies it
     - Invalid filter values are tested (ignored or rejected safely)
-    - Tests use factories with invented data and a local test database confirmed before running (phpunit.xml or .env.testing)
-    - 'Permission or visibility is tested: users see only the work orders they may see'
-    - Says which tests will run and what couldn't be run here
+    - Tests use factories with invented data, and the test database is local or in-memory with its configuration checked — or set up — before any test runs
+    - 'Visibility is addressed: tests for who may see which work orders, or — since the project shows no access rule — the gap is raised with AK as a question or proposal'
+    - Says which tests will run, and claims no result it hasn't got

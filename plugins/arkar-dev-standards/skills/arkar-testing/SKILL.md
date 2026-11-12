@@ -108,12 +108,20 @@ permissions, personal data or a status workflow gets the full list below.
    - **side effects on fakes:** the email, notification or job happens
      once, to the right person, only on success;
    - **query count** for list endpoints;
-   - **UI logic** you add: the component's states (loading, empty, error,
-     success) and its interactions, tested as a user drives them.
+   - **UI logic** you add: the component's states (loading or saving,
+     empty, error, success) and its interactions, tested as a user drives
+     them — elements found by role, label or text, the data layer faked at
+     the edge, no whole-tree snapshots.
+   Say which level each check sits at, and whether an end-to-end journey is
+   affected (add or update it) or why the lower levels are enough. Test
+   data comes from factories or builders with invented values and fixed
+   dates; each test states only the values that matter to it.
 3. **Run.** The affected tests while working; the full suite before
    finishing. Existing tests pass **unchanged**.
 4. **Failures are investigated, never bypassed** (principle 6). An
-   intermittent failure is a bug with a cause — find it.
+   intermittent failure is a bug with a cause — find it. When a test shows
+   the intended behaviour is unclear (a boundary, a rule nobody wrote
+   down), ask AK — don't quietly pin it or change it.
 5. **Report the evidence** (below). Never say tests pass without having run
    them; say what couldn't run and why.
 

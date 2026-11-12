@@ -64,6 +64,15 @@ def workspace_from_existing(workspace: Path) -> Path:
     return workspace
 
 
+TOOL_LEFTOVERS = re.compile(r"__pycache__|\.pytest_cache|\.ruff_cache|node_modules|vendor/|\.lock$|-lock\.json$|\.venv")
+
+
+def project_changes(workspace: Path) -> list[str]:
+    """Files the session changed, ignoring caches and lock files left by running tools."""
+    status = subprocess.run(["git", "status", "--porcelain"], cwd=workspace, capture_output=True, text=True).stdout
+    return [line[3:] for line in status.splitlines() if line.strip() and not TOOL_LEFTOVERS.search(line)]
+
+
 def grade(probe: dict, reply: str) -> list[dict]:
     """One grader session (no plugin, no tools) marks each rubric line with evidence."""
     rubric = "\n".join(f"{index + 1}. {line}" for index, line in enumerate(probe["rubric"]))
@@ -101,9 +110,8 @@ def run_probe(probe: dict, attempt: int, plugin: Path) -> dict:
         {"criterion": "orchestrator loaded (arkar-ui-intelligence)", "passed": any(
             skill.endswith("arkar-ui-intelligence") for skill in run.skills), "evidence": ", ".join(run.skills)[:300]}]
     checks += [
-        {"criterion": "stopped at the plan (no UI files written)", "passed": not subprocess.run(
-            ["git", "status", "--porcelain"], cwd=workspace, capture_output=True, text=True).stdout.strip(),
-         "evidence": "workspace unchanged"},
+        {"criterion": "stopped at the plan (no project files written)", "passed": not project_changes(workspace),
+         "evidence": ", ".join(project_changes(workspace))[:200] or "workspace unchanged"},
     ]
     for skill in probe.get("skills_must", []):
         checks.append({"criterion": f"{skill} loaded", "passed": any(name.endswith(skill) for name in run.skills),

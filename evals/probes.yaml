@@ -483,7 +483,7 @@ probes:
     - arkar-testing
     rubric:
     - 'Tests are planned at the right levels: fast unit tests for the booking rules, and a feature or integration test per endpoint through the framework''s test client with a real test database'
-    - 'Each endpoint gets the permission cases: the owner, another user, and not logged in'
+    - 'Endpoints get the permission cases that apply to them: not logged in for all, and owner versus another user where a record belongs to someone'
     - 'Boundaries are tested: slots that touch exactly at the edge, end before start, zero-length, and the double-booking conflict'
     - 'State changes are tested both ways: cancelling works once, and cancelling twice or cancelling someone else''s booking is refused and changes nothing'
     - Tests run only against a local or disposable test database of the same engine, with a guard that refuses anything else — not against whatever the app is configured to use
@@ -502,7 +502,7 @@ probes:
     - 'New tests cover the behaviour added: cancel a pending request succeeds'
     - 'New tests cover who may do it: the owner can, another staff member cannot'
     - 'New tests cover the refused transitions: cancelling an approved or rejected request, and cancelling twice, are refused and change nothing'
-    - No existing test is edited, skipped or deleted to make the change pass
+    - States that existing tests must pass unchanged (none edited, skipped or deleted to make the change pass)
     - 'Commits to reporting the evidence — which tests ran, the results, and anything not run with the reason — and claims no result it has not measured'
   - id: test-untested-code
     area: testing · untested existing code

@@ -140,7 +140,8 @@ candidates to read — not verdicts.
 Tests
 - Target: <local test database / in-memory / none needed> — <how it was confirmed>
 - Ran: <command> → <passed / failed / skipped>
-- New tests: <the behaviours covered> · seen failing first: <yes / how it was proven>
+- New tests: <the behaviours covered, by level: unit / feature / end-to-end> · seen failing first: <yes / how it was proven>
+- End-to-end: <journey added or updated / not needed because …>
 - Existing tests: <unchanged and passing / what changed and why>
 - Not run: <what and why — or "nothing">
 ```

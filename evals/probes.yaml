@@ -503,7 +503,7 @@ probes:
     - 'New tests cover who may do it: the owner can, another staff member cannot'
     - 'New tests cover the refused transitions: cancelling an approved or rejected request, and cancelling twice, are refused and change nothing'
     - No existing test is edited, skipped or deleted to make the change pass
-    - 'Commits to reporting the evidence — which tests ran, the results, and anything not run with the reason — and claims no result it hasn't got'
+    - 'Commits to reporting the evidence — which tests ran, the results, and anything not run with the reason — and claims no result it has not measured'
   - id: test-untested-code
     area: testing · untested existing code
     kind: code
@@ -685,7 +685,7 @@ probes:
     - 'The states are tested: saving (busy, no double submit), success (list updated), and failure (message shown, choice kept)'
     - The network or data layer is faked at the boundary; components under test are not mocked
     - One end-to-end journey covers the main flow, or the plan says why the lower levels are enough
-    - Says which tests and checks will be run, and claims no result it hasn't got
+    - Says which tests and checks will be run, and claims no result it has not measured
   - id: test-livewire
     area: testing · Livewire
     kind: code
@@ -717,4 +717,4 @@ probes:
     - Invalid filter values are tested (ignored or rejected safely)
     - Tests use factories with invented data, and the test database is local or in-memory with its configuration checked — or set up — before any test runs
     - 'Visibility is addressed: tests for who may see which work orders, or — since the project shows no access rule — the gap is raised with AK as a question or proposal'
-    - Says which tests will run, and claims no result it hasn't got
+    - Says which tests will run, and claims no result it has not measured

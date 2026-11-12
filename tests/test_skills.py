@@ -100,3 +100,11 @@ def test_cross_skill_file_references_exist():
             if not (SKILLS / skill / rest).exists():
                 missing.append(f"{doc.relative_to(PLUGIN)} → {skill}/{rest}")
     assert not missing, missing
+
+
+def test_probe_definitions_parse():
+    # A rubric edit once broke the YAML and the probe run failed after the release checks had passed.
+    probes = yaml.safe_load((PLUGIN.parents[1] / "evals" / "probes.yaml").read_text())["probes"]
+    ids = [probe["id"] for probe in probes]
+    assert len(ids) == len(set(ids))
+    assert all(probe.get("prompt") and probe.get("rubric") for probe in probes)

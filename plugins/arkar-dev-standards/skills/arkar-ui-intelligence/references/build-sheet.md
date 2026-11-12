@@ -84,7 +84,7 @@ needs its row, not "just in case".
 | **Responsive** | What changes at phone / tablet / desktop (not "it stacks") | responsive-design |
 | **Accessibility** | Names, roles, focus order, contrast risks, touch targets, announcements | accessibility |
 | **Security** | The data shown or collected and how sensitive it is; what the URL may carry and the browser may store; sign-in / reset / lockout wording that doesn't reveal accounts; which permissions and fields the server re-checks | arkar-security |
-| **Acceptance checks** | The list Verify will tick: each state seen, each flow walked, each check run | visual-qa |
+| **Acceptance checks** | The list Verify will tick: every surface in the inventory at a phone width and a larger size, each state seen, each flow walked, the audit on each page and on each overlay in its open state, the tests left behind | visual-qa |
 
 ## Rules
 

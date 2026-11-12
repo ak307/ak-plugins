@@ -40,7 +40,7 @@ Premium pass
 - States seen (every state in the sheet): <which>
 - Security check (arkar-security/scripts/security-check.cjs, before → after): <findings in new code → fixed> · existing-code proposals: <🟢 / 🟠 list or "none">
 - Tests left behind (arkar-testing): <component tests: which states and interactions · end-to-end journey> →
-  <command → passed n> (or "proposed 🟢 — the project has no test setup")
+  <command → passed n> (or, in an existing project with no test setup, "proposed 🟢 — no test setup")
 - Experience walk (record.cjs videos, experience-standard.md): <flows × paths walked (happy, invalid,
   failure+retry, cancel/back/undo, refresh, keyboard, phone)> → moments fixed: <list> · still weak: <list>
 - First-time-user walkthrough: <flows walked> → hesitations found and fixed: <list>

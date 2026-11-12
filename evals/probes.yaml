@@ -32,12 +32,12 @@ probes:
       slot, and change or cancel my bookings. web, plain HTML/CSS/JS with mock data.
     rubric:
       - The sheet has a surface inventory that numbers every surface (S1, S2 …) before the per-surface rows
-      - The inventory includes surfaces the request never named — at least the booking form, dialog or sheet, the cancel or change confirmation, and a success state
+      - The inventory includes surfaces the request never named — at least the booking form, dialog or sheet, the moment of cancelling or changing (a confirmation, or an undo), and a success state
       - The inventory gives the loading, empty and error states of the surfaces that have them (or says why a surface has none)
       - Every numbered surface gets its own rows later in the sheet (composition, states, interactions …) — none is listed and then left undesigned
-      - The acceptance checks cover every surface in the inventory at a phone width and a larger size
-      - The acceptance checks include the measured audit (accessibility violations and the rendered radii, shadows and font sizes) on the pages and on the overlays in their open state
-      - Plans automated tests to leave behind — component or interaction tests for the states, and one end-to-end journey — or says why not
+      - The acceptance checks or the verify plan say every surface in the inventory is looked at on a phone width and a larger size (one statement that covers all the numbered surfaces counts)
+      - The acceptance checks or the verify plan include the measured audit (audit.cjs or axe — accessibility violations) on the pages and on the overlays (dialog, sheet or panel) in their open state
+      - Plans automated tests that stay in the project as part of this build — tests of the states or interactions, and one end-to-end journey (not only proposed for later)
     must: ["(?i)surface inventory", "\\bS1\\b"]
 
   - id: existing-feature-reuse

@@ -339,8 +339,10 @@ change runs through all seven in minutes.
    keyboard walk, the rendered counts), not step names. **Leave tests
    behind** (`arkar-testing`): component tests for the states and
    interactions of components with logic, and one end-to-end journey for a
-   new flow, in the project's own test tooling — a project with no test
-   setup gets a 🟢 proposal, not a new tool unasked. Run
+   new flow. A new product gets its test setup as part of the build (the
+   stack's usual tools); an existing project uses its own tooling, and one
+   with no test setup gets a 🟢 proposal, not a new tool unasked. Plan them
+   in the sheet's acceptance checks. Run
    `arkar-security/scripts/security-check.cjs <url> --code=<src>` on the
    changed pages (with `--steps` that fill a form when the surface collects
    personal data): findings in the new code are defects, findings in

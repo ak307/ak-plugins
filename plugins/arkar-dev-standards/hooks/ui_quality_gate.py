@@ -365,8 +365,8 @@ def result_problems(record: str, audits: list[dict]) -> list[str]:
     if not TESTS_LEFT.search(record):
         problems.append("premium-pass.md has no `Tests` line — leave automated tests behind (arkar-testing): "
                         "component tests for the states and interactions of components with logic, and one "
-                        "end-to-end journey for a new flow, in the project's own test tooling; where the project "
-                        "has no test setup, record the 🟢 proposal instead")
+                        "end-to-end journey for a new flow. A new product gets its test setup with the build; "
+                        "an existing project with no test setup gets the 🟢 proposal on that line instead")
     return problems
 
 

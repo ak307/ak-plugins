@@ -25,6 +25,21 @@ probes:
       - Explicitly rejects a document- or invoice-style detail (label–value stacks and a plain table) or explains how the detail avoids it
     must: ["(?i)component plan"]
 
+  - id: surface-inventory
+    area: surfaces
+    prompt: >-
+      new product: a meeting-room booking tool for office staff — see the rooms and what's free today, book a
+      slot, and change or cancel my bookings. web, plain HTML/CSS/JS with mock data.
+    rubric:
+      - The sheet has a surface inventory that numbers every surface (S1, S2 …) before the per-surface rows
+      - The inventory includes surfaces the request never named — at least the booking form, dialog or sheet, the cancel or change confirmation, and a success state
+      - The inventory gives the loading, empty and error states of the surfaces that have them (or says why a surface has none)
+      - Every numbered surface gets its own rows later in the sheet (composition, states, interactions …) — none is listed and then left undesigned
+      - The acceptance checks cover every surface in the inventory at a phone width and a larger size
+      - The acceptance checks include the measured audit (accessibility violations and the rendered radii, shadows and font sizes) on the pages and on the overlays in their open state
+      - Plans automated tests to leave behind — component or interaction tests for the states, and one end-to-end journey — or says why not
+    must: ["(?i)surface inventory", "\\bS1\\b"]
+
   - id: existing-feature-reuse
     area: component-plan
     fixture: opsdesk-react
@@ -39,7 +54,8 @@ probes:
       - No new visual identity, palette or fonts — the existing design system is followed
       - States of the real feature are listed (loading, empty, failed save with retry, expired / expiring flags, validation, duplicate)
       - Selected contractor and filters live in the URL (router search params)
-    must: ["(?i)component plan", "(?i)reuse"]
+      - A surface inventory numbers the surfaces this feature adds or changes (not the whole app), with their loading, empty and error states
+    must: ["(?i)component plan", "(?i)reuse", "(?i)surface inventory"]
 
   - id: new-product-foundation
     area: component-plan

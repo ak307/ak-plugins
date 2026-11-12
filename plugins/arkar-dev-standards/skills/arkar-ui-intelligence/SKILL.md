@@ -214,12 +214,16 @@ change runs through all seven in minutes.
    - **No speculative library:** plan what the screens need; extract a
      pattern into a component when it genuinely repeats during
      implementation, rather than designing every possible component up front.
-   Then, per **surface**, answer **every one of these rows** — screens are
-   composed from the planned components, not designed one by one (example
-   and detail in `references/build-sheet.md`). A surface is every place the
-   work happens, not only the page: the detail panel or sheet a list opens,
-   a form, a dialog, the moment of decision, the success, empty and error
-   states. Each gets its own Composition with a hero moment and at least one
+   Next, the **surface inventory** — every surface the request touches,
+   numbered S1, S2…, so none is left undesigned: each page or dashboard,
+   form, dialog or modal, sheet, panel and menu, and beside each its
+   loading, empty, error and success states (or "none, because …"). A
+   surface is every place the work happens, not only the page: the detail a
+   list opens, the moment of decision, the states. Verify ticks every
+   number, and the gate checks both.
+   Then, per **surface in the inventory**, answer **every one of these
+   rows** — screens are composed from the planned components, not designed
+   one by one (example and detail in `references/build-sheet.md`). Each gets its own Composition with a hero moment and at least one
    visual that isn't just text (a journey track instead of status boxes, an
    amount set against its context, a chart of what the numbers mean), built
    from the same identity as the screen it opens from — never a fallback
@@ -329,7 +333,14 @@ change runs through all seven in minutes.
    that job — use or extend the component (a `link` or `icon` variant, say);
    no raw colour, shadow or radius outside the tokens; the audit's rendered
    counts within ≤ 6 radii, ≤ 5 shadows (inset highlights count),
-   ≤ 14 font sizes. Each miss is a defect. Run
+   ≤ 14 font sizes. Each miss is a defect. Tick every surface in the
+   inventory by its number, at a phone width and a larger target size, and
+   record results as numbers (axe serious/critical before → after, the
+   keyboard walk, the rendered counts), not step names. **Leave tests
+   behind** (`arkar-testing`): component tests for the states and
+   interactions of components with logic, and one end-to-end journey for a
+   new flow, in the project's own test tooling — a project with no test
+   setup gets a 🟢 proposal, not a new tool unasked. Run
    `arkar-security/scripts/security-check.cjs <url> --code=<src>` on the
    changed pages (with `--steps` that fill a form when the surface collects
    personal data): findings in the new code are defects, findings in
@@ -363,7 +374,8 @@ change runs through all seven in minutes.
 
 The build sheet, the `## Verify` table and the `## Independent review`
 section are the proof these steps happened; the UI quality gate checks for
-them. If time runs short, polish less — never drop a step.
+them — the inventory and every surface in the record, and results
+(accessibility, component system, sizes, tests), not only step names. If time runs short, polish less — never drop a step.
 
 ## Business systems first
 

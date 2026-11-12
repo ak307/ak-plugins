@@ -18,6 +18,7 @@ import argparse
 import contextlib
 import datetime
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -34,6 +35,10 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from lib import FIXTURES, PLUGIN, run_claude, workspace_from  # noqa: E402
+
+sys.path.insert(0, str(PLUGIN / "hooks"))
+
+import ui_quality_gate as gate  # noqa: E402  (the same checks the gate applies when a session ends)
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
@@ -54,6 +59,13 @@ def serve(folder: Path):
         yield f"http://127.0.0.1:{server.server_port}"
     finally:
         server.shutdown()
+
+
+def built(folder: Path, surface: dict) -> Path:
+    """The folder to serve: the project itself, or its build output after running the surface's build commands."""
+    for command in surface.get("build", []):
+        subprocess.run(command, shell=True, cwd=folder, capture_output=True, timeout=900)
+    return folder / surface.get("serve", "")
 
 
 def shoot(folder: Path, surface: dict, out: Path, label: str) -> list[str]:
@@ -85,9 +97,18 @@ def measure(folder: Path, surface: dict) -> dict:
     return report
 
 
+def project_files(workspace: Path, name: str) -> list[Path]:
+    return [path for path in workspace.rglob(name) if "node_modules" not in path.parts]
+
+
 def process_checks(run, workspace: Path) -> list[dict]:
-    design = "".join(path.read_text(errors="ignore") for path in workspace.rglob("DESIGN.md"))
-    record = "".join(path.read_text(errors="ignore") for path in workspace.rglob("premium-pass.md"))
+    design = "".join(path.read_text(encoding="utf-8", errors="ignore") for path in project_files(workspace, "DESIGN.md"))
+    records = project_files(workspace, "premium-pass.md")
+    record = "".join(path.read_text(encoding="utf-8", errors="ignore") for path in records)
+    sheet = gate.last_build_sheet(design)
+    surface_gaps = gate.surface_problems(sheet, record if records else None) if sheet else ["no build sheet"]
+    audits = gate.audit_results(project_files(workspace, "audit-results.json"), "")
+    result_gaps = gate.result_problems(record, audits) if records else ["no premium-pass.md"]
     videos = [path for path in workspace.rglob("*") if path.suffix in (".mp4", ".webm")]
     first_ui = next((index for index, tool in enumerate(run.tools) if tool in ("Write", "Edit", "MultiEdit")), None)
     first_skill = next((index for index, tool in enumerate(run.tools) if tool == "Skill"), None)
@@ -95,8 +116,14 @@ def process_checks(run, workspace: Path) -> list[dict]:
         {"check": "orchestrator loaded", "passed": any(skill.endswith("arkar-ui-intelligence") for skill in run.skills)},
         {"check": "skills loaded before the first edit", "passed": first_skill is not None
          and (first_ui is None or first_skill < first_ui)},
-        {"check": "build sheet with the detail's composition", "passed": bool(re.search(r"build sheet", design, re.I))
+        {"check": "build sheet with the surface's composition", "passed": bool(re.search(r"build sheet", design, re.I))
          and bool(re.search(r"composition", design, re.I))},
+        {"check": "surface inventory, every surface in the record", "passed": not surface_gaps,
+         "detail": " | ".join(gap[:160] for gap in surface_gaps)},
+        {"check": "measured results (audit, component system, keyboard, sizes, tests)", "passed": not result_gaps,
+         "detail": " | ".join(gap[:160] for gap in result_gaps)},
+        {"check": "specialists that own the sheet's rows loaded", "passed": all(
+            any(skill.endswith(name) for skill in run.skills) for name in gate.NEW_SCREEN_SPECIALISTS)},
         {"check": "Verify recorded", "passed": bool(re.search(r"^##\s*Verify", record, re.M | re.I))},
         {"check": "motion measured (motion-metrics)", "passed": bool(re.search(r"motion.metrics", record, re.I))},
         {"check": "independent review by a subagent", "passed": "Agent" in run.tools
@@ -109,10 +136,12 @@ def run_surface(surface: dict, attempt: int, out: Path) -> dict:
     root = Path(tempfile.mkdtemp(prefix=f"arkar-surface-{surface['id']}-{attempt}-"))
     workspace = workspace_from(surface["fixture"], root / "workspace")
     run = run_claude(surface["prompt"], workspace, PLUGIN, max_turns=surface.get("max_turns", 200))
-    shots = shoot(workspace, surface, out, f"after-{attempt}")
-    motion = measure(workspace, surface)
+    served = built(workspace, surface)
+    shots = shoot(served, surface, out, f"after-{attempt}")
+    motion = measure(served, surface)
     findings = sum(len(step["findings"]) for mode in motion.values() for step in mode)
     return {"surface": surface["id"], "attempt": attempt, "workspace": str(root), "ending": run.ending,
+            "gate_blocks": run.raw.count("the UI work isn't finished yet"),
             "checks": process_checks(run, workspace), "shots": shots, "motion": motion, "motion_findings": findings}
 
 
@@ -126,7 +155,9 @@ def write_summary(surfaces: list[dict], results: list[dict], out: Path) -> str:
             passed = sum(check["passed"] for check in result["checks"])
             lines += ["", f"### Run {result['attempt']} — {result['ending']} — process {passed}/{len(result['checks'])}, "
                           f"motion findings {result['motion_findings']}", f"After: {', '.join(result['shots']) or '—'}"]
-            lines += [f"- ✗ {check['check']}" for check in result["checks"] if not check["passed"]]
+            lines += [f"- ✗ {check['check']}" + (f" — {check['detail']}" if check.get("detail") else "")
+                      for check in result["checks"] if not check["passed"]]
+            lines.append(f"- gate sent the session back {result.get('gate_blocks', 0)} time(s)")
             for mode, steps in result["motion"].items():
                 for step in steps:
                     for note in step["findings"]:
@@ -156,10 +187,11 @@ def main() -> int:
     if shutil.which("node") is None:
         print("node with playwright is needed for shots and motion metrics")
         return 1
-    out = RESULTS / f"surfaces-{datetime.datetime.now():%Y%m%d-%H%M%S}"
+    out = RESULTS / f"surfaces-{datetime.datetime.now():%Y%m%d-%H%M%S}-{os.getpid()}"
     out.mkdir(parents=True)
     for surface in surfaces:
-        shoot(FIXTURES / surface["fixture"], surface, out, "before")
+        if not surface.get("new"):  # a surface that doesn't exist yet has no "before"
+            shoot(FIXTURES / surface["fixture"], surface, out, "before")
     results = []
     with ThreadPoolExecutor(max_workers=min(args.jobs, 4)) as pool:
         futures = [pool.submit(run_surface, surface, attempt, out)

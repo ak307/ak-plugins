@@ -15,11 +15,19 @@ two ends of it:
      `arkar-ui-visual-qa` must have been loaded.
   2. The session created or rewrote `DESIGN.md` (a new product, page set or
      redesign) → all nine UI specialists must have been loaded.
-  3. It created or rewrote DESIGN.md, or wrote a build sheet into it → the
-     evidence must exist: a `## Build sheet` section in DESIGN.md, and
+  3. It wrote a build sheet into an existing DESIGN.md (new screens) → the
+     specialists that own the sheet's rows must have been loaded.
+  4. It created or rewrote DESIGN.md, or wrote a build sheet into it → the
+     evidence must exist: a `## Build sheet` section in DESIGN.md with the
+     component plan and a numbered surface inventory (every page, form,
+     dialog, sheet and panel, with its loading, empty and error states), and
      `premium-pass.md` with the Verify record (films, the experience walk
-     with its videos, the security check)
-     and the `## Independent review`.
+     with its videos, the security check), every inventoried surface
+     accounted for, results rather than step names (what audit.cjs measured
+     and saved in `audit-results.json` — accessibility violations and the
+     rendered radii, shadows and font sizes — plus the keyboard walk, the
+     component-system check, the sizes and the tests left behind) and the
+     `## Independent review`.
 
 When something is missing at the end it blocks the stop with a reason that
 tells Claude exactly what to finish — up to three times per session, then
@@ -49,6 +57,10 @@ SKIP_PATH = re.compile(r"(^|/)(node_modules|vendor|dist|build|qa-screenshots|\.g
 ORCHESTRATOR = "arkar-ui-intelligence"
 VISUAL_QA = "arkar-ui-visual-qa"
 # New products and redesigns load every specialist (the orchestrator's required minimum sets).
+# New screens in an existing product: the specialists that own the sheet's behaviour, motion, responsive,
+# accessibility and code rows (the orchestrator's minimum set for that task).
+NEW_SCREEN_SPECIALISTS = ("arkar-ui-ux-engineering", "arkar-ui-motion-design", "arkar-ui-responsive-design",
+                          "arkar-ui-accessibility", "arkar-ui-implementation")
 ALL_SPECIALISTS = ("arkar-ui-discovery", "arkar-ui-art-direction", "arkar-ui-ux-engineering",
                    "arkar-ui-design-system", "arkar-ui-motion-design", "arkar-ui-responsive-design",
                    "arkar-ui-accessibility", "arkar-ui-implementation", VISUAL_QA)
@@ -199,7 +211,166 @@ def has_videos(records: list[Path]) -> bool:
     return False
 
 
-def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> list[str]:
+SHEET_HEADING = re.compile(r"^(#{2,3})\s*Build sheet", re.MULTILINE | re.IGNORECASE)
+# A surface's number where a list item, table row or heading starts ("S3" inside a sentence, as in "an S3 bucket", is not one).
+SURFACE_ID = re.compile(r"^[\s|*#>-]*\**\s*(S\d{1,2})\b", re.MULTILINE)
+# The states every inventory accounts for — designed, or "none, because …".
+INVENTORY_STATES = (("loading", r"loading|skeleton"), ("empty", r"empty"), ("error", r"error|fail"))
+# The record explains itself: existing code is proposed to AK, not fixed unasked; some tools can't run on some stacks.
+EXPLAINED = r"existing|propos|🟢|🟠"
+CANT_RUN = r"not applicable|n/a|could(n't| not) (be )?run|can(not|'t) (be )?run|unavailable|not available"
+RENDERED_LIMITS = (("radii", "radii", 6), ("shadows", "shadows", 5), ("font sizes", "fontSizes", 14))
+SCREEN_WIDTH = re.compile(r"\b(\d{3,4})\s*[×x]\s*\d{3,4}\b|\b(320|360|375|390|393|412|414|430|768|820|1024|1280|1366|1440|1536|1920)\b")
+TESTS_LEFT = re.compile(r"^[\s*-]*tests\b|\b(component|unit|widget|feature|end-to-end|e2e) tests?\b", re.MULTILINE | re.IGNORECASE)
+
+
+def last_build_sheet(design_text: str) -> str:
+    """The newest build sheet: older sheets in the same DESIGN.md were verified when they were written."""
+    headings = list(SHEET_HEADING.finditer(design_text))
+    if not headings:
+        return ""
+    sheet = design_text[headings[-1].start():]
+    level = len(headings[-1].group(1))
+    following = re.search(r"\n#{1,%d}\s" % level, sheet[level:])
+    return sheet[:following.start() + level] if following else sheet
+
+
+def surface_inventory(sheet: str) -> str:
+    """The inventory part of a build sheet: from its title to the first heading or `Job` row after it."""
+    start = re.search(r"surface inventory", sheet, re.IGNORECASE)
+    if not start:
+        return ""
+    rest = sheet[start.end():]
+    end = re.search(r"\n#{1,6}\s|\n[\s*-]*\**Job\b", rest)
+    return rest[:end.start()] if end else rest[:4000]
+
+
+def recorded_surfaces(record: str) -> set[str]:
+    """Surface numbers named in the record, including ranges such as S1–S4."""
+    found = {f"S{int(number)}" for number in re.findall(r"\bS(\d{1,2})\b", record)}
+    for first, last in re.findall(r"\bS(\d{1,2})\s*(?:–|—|-|to)\s*S?(\d{1,2})\b", record):
+        found |= {f"S{number}" for number in range(int(first), int(last) + 1)}
+    return found
+
+
+def result_line(record: str, label: str) -> str:
+    """The line of the record that reports `label` (empty when there is none)."""
+    match = re.search(r"[^\n]*(?:%s)[^\n]*" % label, record, re.IGNORECASE)
+    return match.group(0) if match else ""
+
+
+def session_start(transcript_path: str) -> str:
+    """When the session began (ISO time), so results left by earlier work aren't judged again."""
+    try:
+        with open(transcript_path, encoding="utf-8", errors="ignore") as transcript:
+            for _, line in zip(range(40), transcript):
+                found = re.search(r'"timestamp"\s*:\s*"(\d{4}-\d\d-\d\dT[\d:.]+)', line)
+                if found:
+                    return found.group(1)
+    except OSError:
+        pass
+    return ""
+
+
+def audit_results(files: list[Path], since: str) -> list[dict]:
+    """What audit.cjs measured this session: the newest run per surface, page and steps."""
+    results: list[dict] = []
+    for file in files:
+        try:
+            saved = json.loads(file.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if isinstance(saved, dict):
+            results += [run for run in saved.values() if isinstance(run, dict) and str(run.get("at", "")) >= since]
+    return results
+
+
+def audit_name(run: dict) -> str:
+    """How a run is named in a message: its surfaces, page and steps."""
+    page = str(run.get("url", "")).split("/")[-1] or str(run.get("url", ""))
+    surfaces = ", ".join(str(name) for name in run.get("surfaces") or [])
+    steps = " ".join(str(step) for step in run.get("steps") or [])
+    return " · ".join(part for part in (surfaces, page, steps) if part)
+
+
+def surface_problems(sheet: str, record: str | None) -> list[str]:
+    """Every surface is listed in the sheet and accounted for in the record."""
+    inventory = surface_inventory(sheet)
+    if not inventory:
+        return ["the build sheet has no surface inventory — after the component plan, number every surface the "
+                "request touches (S1, S2…): each page or dashboard, form, dialog or modal, sheet, panel and menu, "
+                "with its loading, empty, error and success states (or \"none, because …\"), then give each "
+                "surface its rows (arkar-ui-intelligence/references/build-sheet.md)"]
+    surfaces = list(dict.fromkeys(f"S{int(number[1:])}" for number in SURFACE_ID.findall(inventory)))
+    if not surfaces:
+        return ["the surface inventory has no numbered surfaces — start each line or table row with S1, S2… so "
+                "Verify can tick every one"]
+    problems = []
+    unstated = [name for name, words in INVENTORY_STATES if not re.search(words, inventory, re.IGNORECASE)]
+    if unstated:
+        problems.append("the surface inventory doesn't say what happens to: " + ", ".join(unstated) + " — list "
+                        "each as a state of the surface it belongs to, or write \"none, because …\"")
+    if record is not None:
+        seen = recorded_surfaces(record)
+        unseen = [surface for surface in surfaces if surface not in seen]
+        if unseen:
+            problems.append("premium-pass.md doesn't account for every surface in the inventory — missing: " +
+                            ", ".join(unseen) + ". Add a `Surfaces` line or table with each number, the sizes and "
+                            "states seen and the result; look at the ones not yet checked, or say why one wasn't built")
+    return problems
+
+
+def result_problems(record: str, audits: list[dict]) -> list[str]:
+    """Results, not step names: what the audit measured, the component system, keyboard, sizes and tests."""
+    problems = []
+    if not audits:
+        if not re.search(CANT_RUN, result_line(record, r"audit|\baxe\b"), re.IGNORECASE):
+            problems.append("no audit results from this session — run arkar-ui-visual-qa/scripts/audit.cjs on each "
+                            "changed page and on each dialog, sheet or panel in its open state (steps bring it on "
+                            "screen; --surface=S<n> names it). It saves qa-screenshots/audit-results.json, which "
+                            "this gate reads. If it can't run on this stack, the Audit line of premium-pass.md says "
+                            "why and what was checked instead")
+    else:
+        explained = re.search(EXPLAINED, result_line(record, r"\baxe\b|accessib"), re.IGNORECASE)
+        failing = [f"{audit_name(run)}: {', '.join(str(rule) for rule in run['seriousCritical'])}"
+                   for run in audits if run.get("seriousCritical")]
+        if failing and not explained:
+            problems.append("the audit still measures serious or critical accessibility violations — " +
+                            "; ".join(failing[:6]) + ". Fix the ones in the new or changed UI and re-run the same "
+                            "audit command; violations in existing code go to AK as 🟢 / 🟠 proposals, named on "
+                            "the record's axe line")
+        if any(run.get("axeAvailable") is False for run in audits) and not re.search(
+                CANT_RUN, result_line(record, r"\baxe\b"), re.IGNORECASE):
+            problems.append("the audit ran without axe-core, so accessibility wasn't measured — install it once "
+                            "(npm install --prefix ~/.arkar/axe axe-core) and re-run, or say on the record's axe "
+                            "line why it can't be installed")
+        for name, key, limit in RENDERED_LIMITS:
+            count = max((int((run.get("system") or {}).get(key) or 0) for run in audits), default=0)
+            if count > limit and not re.search(EXPLAINED, result_line(record, name + "|rendered system"), re.IGNORECASE):
+                problems.append(f"the rendered UI uses {count} {name} (the system allows {limit}) — tokens aren't "
+                                "being used; consolidate the new UI's values and re-run the audit, or name on the "
+                                "record's rendered-system line which come from existing code")
+    if not re.search(r"keyboard", record, re.IGNORECASE):
+        problems.append("premium-pass.md has no keyboard walk — go through the main flow with the keyboard only "
+                        "(Tab order, visible focus, Enter and Escape, focus returned after a dialog) and record it")
+    if not re.search(r"hand-written|component system", record, re.IGNORECASE):
+        problems.append("premium-pass.md has no component-system check — read the screens' code and record "
+                        "`hand-written copies of components <before → after> · raw colour / shadow / radius "
+                        "outside tokens <before → after>`; a screen composes components, it doesn't restyle them")
+    widths = {int(first or second) for first, second in SCREEN_WIDTH.findall(record)}
+    widths |= {int(width) for run in audits for width in run.get("widths") or [] if str(width).isdigit()}
+    if len(widths) < 2 or min(widths) > 480:
+        problems.append("the sizes checked aren't shown — look at every surface at a phone width and at least one "
+                        "larger target size (DESIGN.md's target screens), and record them in premium-pass.md")
+    if not TESTS_LEFT.search(record):
+        problems.append("premium-pass.md has no `Tests` line — leave automated tests behind (arkar-testing): "
+                        "component tests for the states and interactions of components with logic, and one "
+                        "end-to-end journey for a new flow, in the project's own test tooling; where the project "
+                        "has no test setup, record the 🟢 proposal instead")
+    return problems
+
+
+def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True, since: str = "") -> list[str]:
     """What a new product, page set or redesign still lacks."""
     # Shell writes give relative paths (often after a `cd`), so find those DESIGN.md files in the project.
     design_docs = [Path(path) for path in edited if Path(path).name == "DESIGN.md" and Path(path).is_absolute()]
@@ -207,8 +378,9 @@ def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> l
         design_docs += find_files([cwd], "DESIGN.md")
     roots = {cwd} | {doc.parent for doc in design_docs}
     problems: list[str] = []
-    design_text = "".join(doc.read_text(errors="ignore") for doc in design_docs if doc.exists())
-    if not re.search(r"^#{2,3}\s*Build sheet", design_text, re.MULTILINE | re.IGNORECASE):
+    design_text = "".join(doc.read_text(encoding="utf-8", errors="ignore") for doc in design_docs if doc.exists())
+    sheet = last_build_sheet(design_text)
+    if not sheet:
         problems.append("DESIGN.md has no `## Build sheet` section — write it before (or now, for) the UI code: "
                         "per screen the job, direction, composition, components, data and latency, every state, "
                         "interactions, motion, copy, responsive, accessibility and acceptance checks "
@@ -218,7 +390,9 @@ def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> l
                         "extended and new (variants, properties, states, interactions, tokens), and compose the "
                         "screens from them (arkar-ui-intelligence/references/build-sheet.md)")
     records = find_files(sorted(roots), "premium-pass.md")
-    record = "".join(path.read_text(errors="ignore") for path in records)
+    record = "".join(path.read_text(encoding="utf-8", errors="ignore") for path in records)
+    if sheet:
+        problems += surface_problems(sheet, record if records else None)
     if not records:
         problems.append("no `qa-screenshots/premium-pass.md` record of the premium pass — "
                         "arkar-ui-visual-qa definition of done")
@@ -252,6 +426,8 @@ def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> l
                             "(Agent tool) on every new screen, page set, product or redesign; a self-review only "
                             "counts when the Agent tool isn't available. Start it now with "
                             "arkar-ui-visual-qa/references/independent-review.md and record its findings")
+        # audit.cjs saves beside wherever it was run from, which may not be the record's folder.
+        problems += result_problems(record, audit_results(find_files(sorted(roots), "audit-results.json"), since))
     return problems
 
 
@@ -311,9 +487,15 @@ def decide(event: dict) -> str | None:
             problems.append("this is a new product, page set or redesign (DESIGN.md written), which needs all nine "
                             "specialists — not loaded: " + ", ".join(f"`{name}`" for name in not_loaded) +
                             ". Load each with the Skill tool and apply what it requires to the work")
+    elif sheet_written:
+        not_loaded = [name for name in NEW_SCREEN_SPECIALISTS if not loaded(skills, name)]
+        if not_loaded:
+            problems.append("new screens (a build sheet was written) need the specialists that own its rows — "
+                            "not loaded: " + ", ".join(f"`{name}`" for name in not_loaded) +
+                            ". Load each with the Skill tool and apply what it requires to the work")
     # A build sheet added to an existing DESIGN.md = new screens: they need the same verify and review.
     if design_rewritten or sheet_written:
-        problems += missing_evidence(cwd, edited, used_subagent(transcript_path))
+        problems += missing_evidence(cwd, edited, used_subagent(transcript_path), session_start(transcript_path))
     if not problems:
         return None
     if session_id:

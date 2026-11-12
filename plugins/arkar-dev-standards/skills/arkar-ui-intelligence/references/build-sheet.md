@@ -42,13 +42,29 @@ Rules:
   properties, consistent, responsive, accessible, every state designed,
   tokens only — so every screen built from them inherits it.
 
-## What it contains — per surface
+## Then the surface inventory
 
 A surface is every place the work happens, not only the page: the detail
 panel or sheet a list opens, a form, a dialog, the moment of decision, the
-success, empty and error states. Each one gets these rows; a detail view
-that reads like a printed form or invoice is the template look, rejected
-here on paper.
+success, empty and error states. Before designing any of them, list them
+all — the surfaces nobody listed are the ones that ship as a grey sentence
+or a default white card.
+
+- Walk the request as its user: every page or dashboard, form, dialog or
+  modal, sheet, panel, menu and toast they will meet.
+- Number them S1, S2… and write beside each the states it has: loading,
+  empty, error or failure, success, and any of its own (filtered-empty,
+  permission, offline). A state the feature truly can't have says "none,
+  because …".
+- Existing product: list the surfaces you add or change, not the whole app.
+- Verify ticks every number in `qa-screenshots/premium-pass.md`; the UI quality gate
+  checks that the inventory exists and that each number is in the record.
+
+## What it contains — per surface
+
+Each surface in the inventory gets these rows; a detail view that reads
+like a printed form or invoice is the template look, rejected here on
+paper.
 
 Each specialist fills the rows it owns; load a specialist because the sheet
 needs its row, not "just in case".
@@ -111,6 +127,11 @@ Component plan:
   New: BalanceMeter — props: total, used, requested; variants: enough / low / over;
     states: loading (skeleton), unavailable (retry); role="meter" with label; tokens:
     success / warning / danger, radius-sm. Used here and later on the dashboard.
+Surface inventory:
+  S1 Leave request form (page) — loading balance · balance unavailable + retry · submitting ·
+     server error (form kept) · session expired (draft kept); empty: none, the form is the start.
+  S2 Confirm dialog — busy · failed (stays open, reason shown).
+  S3 Submitted (success state, replaces the form) — reference and approver named.
 Job: staff applying for leave; first question "how many days do I have left?" —
   the balance is noticed first, then the dates.
 Direction: existing AdminLTE theme, its card, form and alert components; no new identity.
@@ -132,6 +153,7 @@ Accessibility: balance announced politely when it changes, labels on every field
   contrast AA on the low/over colours, targets ≥ 44 px.
 Security: own leave balance only (server checks the user); URL carries the request id
   only; reason draft in sessionStorage; dates and balance re-validated on the server.
-Acceptance: each state seen at 390 and 1440; flows recorded; keyboard-only walk;
-  audit clean; ?fail=1 → retry keeps the dates and reason.
+Acceptance: S1–S3 and each state seen at 390 and 1440; flows recorded; keyboard-only
+  walk; audit clean; ?fail=1 → retry keeps the dates and reason; component test for
+  BalanceMeter's variants and states, feature test for submit and its errors.
 ```

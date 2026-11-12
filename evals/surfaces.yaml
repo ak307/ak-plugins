@@ -5,6 +5,8 @@
 #
 # open: steps that bring the surface on screen (motion-metrics.cjs syntax).
 # motion: steps measured for motion quality (include one @<ms> interruption).
+# new: true when the surface doesn't exist in the fixture (no "before" shot).
+# build / serve: commands that build the app, and the folder to serve afterwards.
 
 surfaces:
   - id: approvals-detail
@@ -16,3 +18,40 @@ surfaces:
     url: "index.html?latency=fast"
     open: ["click=.row-main >> nth=0", "wait=1200"]
     motion: ["click=.row-main >> nth=0", "press=Escape", "click=.row-main >> nth=1", "click=.row-main >> nth=2@120"]
+
+  - id: approvals-dashboard
+    fixture: approvals-app
+    new: true
+    prompt: >-
+      add a spending overview for finance to this approvals app, as its own page dashboard.html linked from the
+      top bar: this month's approved spend against budget by department, what is waiting and for how long, the
+      biggest vendors, and requests over budget that need attention. mock data like the rest. keep the app's look.
+    url: "dashboard.html?latency=fast"
+    open: ["wait=1500"]
+    motion: ["scroll=400", "scroll=-400"]
+
+  - id: approvals-delegate
+    fixture: approvals-app
+    new: true
+    prompt: >-
+      add a way to delegate my approvals while i'm away: a "Delegate approvals" button in the top bar opens a
+      dialog (a sheet on phone) to pick a colleague, the dates and a reason, then confirm. while a delegation is
+      active the app shows it and lets me end it early. mock data like the rest. keep the app's look.
+    url: "index.html?latency=fast"
+    open: ['click=role=button[name=/delegate approvals/i]', "wait=1000"]
+    motion: ['click=role=button[name=/delegate approvals/i]', "press=Escape", 'click=role=button[name=/delegate approvals/i]@120']
+
+  - id: opsdesk-contractor-form
+    fixture: opsdesk-react
+    new: true
+    prompt: >-
+      add a "Request contractor" button next to "New work order" on the Work orders page of Ops Desk. it opens a
+      form to request an outside contractor for a job: trade, site, date needed (not in the past), urgency,
+      estimated cost (over $5,000 needs a justification), what needs doing. it validates, saves, can fail and be
+      retried without losing what was typed, and confirms when sent. mock the API like the work orders. keep
+      Ops Desk's look.
+    url: ""
+    build: ["npm install --no-audit --no-fund", "npm run build"]
+    serve: dist
+    open: ['click=role=button[name=/request contractor/i]', "wait=1000"]
+    motion: ['click=role=button[name=/request contractor/i]', "press=Escape", 'click=role=button[name=/request contractor/i]@120']

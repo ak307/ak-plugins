@@ -24,9 +24,13 @@ your final message (it may be shortened, never dropped):
 ```
 Premium pass
 - Build sheet: <where it is> → acceptance checks <passed n / n> · failed and fixed: <list>
+- Surfaces (every number in the sheet's inventory): S1 <sizes · states seen → result> · S2 <…> · not built or not seen: <which and why, or "none">
 - Screens × sizes looked at: <…> → felt ordinary: <list or "nothing"> → fixed: <list>
 - Audit (scripts/audit.cjs, before → after): axe serious/critical <a→b>, console errors <a→b>,
   overflow <sizes>, targets <24px <a→b>, rendered system: radii <n> · shadows <n> · font sizes <n> · spacing values <n>
+- Component system (read the screens' code, before → after): hand-written copies of components <a→b> ·
+  raw colour / shadow / radius outside tokens <a→b>
+- Keyboard walk (main flow, keyboard only): <Tab order, visible focus, Enter / Escape, focus returned → fixed>
 - Interaction probe (scripts/interaction-probe.cjs, before → after):
   no hover <a→b>, no focus <a→b>, no transition <a→b>, under 24px <a→b>
 - Motion (filmstrips: load + <flows filmed>): <what moved well · what felt abrupt, slow, decorative or confusing → fixed> · reduced motion filmed: <yes/no>
@@ -35,6 +39,8 @@ Premium pass
   · real-browser run: <fps in Chrome with the GPU / not needed / Chrome unavailable>
 - States seen (every state in the sheet): <which>
 - Security check (arkar-security/scripts/security-check.cjs, before → after): <findings in new code → fixed> · existing-code proposals: <🟢 / 🟠 list or "none">
+- Tests left behind (arkar-testing): <component tests: which states and interactions · end-to-end journey> →
+  <command → passed n> (or "proposed 🟢 — the project has no test setup")
 - Experience walk (record.cjs videos, experience-standard.md): <flows × paths walked (happy, invalid,
   failure+retry, cancel/back/undo, refresh, keyboard, phone)> → moments fixed: <list> · still weak: <list>
 - First-time-user walkthrough: <flows walked> → hesitations found and fixed: <list>
@@ -49,7 +55,13 @@ fixes every defect it finds, then the independent review runs once (twice
 only if it found a critical defect). Don't rebuild the design to raise a
 score; if something needs a different decision, change the sheet first. If a
 tool couldn't run, the block says so — never fill it with results you didn't
-get.
+get. **Results, not step names:** the UI quality gate reads what the audit
+measured (`audit-results.json`: violations, radii, shadows, font sizes,
+sizes) and, in this record, every surface number from the sheet's
+inventory and the component-system, keyboard and tests lines. A measured
+failure is fixed and re-audited — or explained on its line (existing code
+→ proposed to AK; a tool that can't run on this stack → what was checked
+instead).
 
 ## Activate when
 
@@ -134,7 +146,10 @@ built or changed and ask: *does this feel premium, polished, beautiful,
 intuitive and impressive, or boring, basic, generic or unfinished?* A state
 or moment the sheet missed is added to the sheet and built.
 
-1. **Audit** (web): `scripts/audit.cjs` on each changed page measures what
+1. **Audit** (web): `scripts/audit.cjs` on each changed page — and on each
+   dialog, sheet, panel and menu in its open state: steps after the URL
+   bring it on screen and `--surface=S3` names it
+   (`audit.cjs <url> --surface=S3 "click=text=Reject" wait=400`) — measures what
    the eye misses — accessibility violations (axe-core, WCAG 2.2 AA),
    console errors, broken assets, overflow at 1440/768/375/320, small
    targets — and the design system as actually rendered (distinct radii,
@@ -143,6 +158,9 @@ or moment the sheet missed is added to the sheet and built.
    blocked font CDN), fallback font and overflow — these are defects, not
    notes. A wide spread of values means tokens aren't being used —
    consolidate to about ≤ 6 radii, ≤ 12–14 font sizes and ≤ 5 shadows.
+   Each run is saved to `qa-screenshots/audit-results.json`, which the UI
+   quality gate reads: after a fix, re-run the same command so the saved
+   result is the fixed one.
 2. **Interaction probe:** `scripts/interaction-probe.cjs` takes a full-page
    screenshot, flags **template structures** (equal-card rows, tiles over a
    long table, repeating uniform sections, mostly empty sections), hovers,

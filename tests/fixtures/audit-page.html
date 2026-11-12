@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Audit fixture</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 24px; color: #111; background: #fff; }
+  button { font: inherit; padding: 10px 16px; border-radius: 8px; border: 1px solid #555; background: #fff; color: #111; }
+  dialog { border-radius: 12px; border: 1px solid #555; padding: 24px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Requests</h1>
+  <button id="open" type="button">Reject request</button>
+  <!-- The dialog holds the defect: a field with no name. It is only measured when the dialog is open. -->
+  <dialog id="reject" aria-labelledby="reject-title">
+    <h2 id="reject-title">Reject this request?</h2>
+    <input type="text" id="reason">
+    <button type="button" id="close">Cancel</button>
+  </dialog>
+</main>
+<script>
+  document.getElementById("open").addEventListener("click", () => document.getElementById("reject").showModal());
+  document.getElementById("close").addEventListener("click", () => document.getElementById("reject").close());
+</script>
+</body>
+</html>

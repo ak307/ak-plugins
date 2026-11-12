@@ -3,6 +3,17 @@
 //
 // Usage (from the project folder):
 //   node <path-to>/audit.cjs <url> [--sizes=1440x900,768x1024,375x812,320x640] [--json]
+//        [--surface=S1,S2] [<step> ...]
+//
+// Steps bring a surface on screen before it is measured, so dialogs, sheets, panels and
+// states are audited too, not only the page as it loads:
+//   click=<selector>  hover=<selector>  press=<key>  type=<selector>=<text>  wait=<ms>
+//   node audit.cjs http://127.0.0.1:8123/index.html --surface=S3 "click=text=Reject" wait=400
+// --surface names the surfaces of the build sheet's inventory this run shows.
+//
+// Every run is saved to qa-screenshots/audit-results.json (the newest run per surface, page
+// and steps). The UI quality gate reads that file, so the results it checks are the measured
+// ones: re-run the same command after a fix.
 //
 // Reports, at each size:
 // - accessibility violations (axe-core: WCAG 2.0/2.1/2.2 A and AA rules), by impact;
@@ -87,13 +98,71 @@ function smallTargets() {
   return small;
 }
 
+// One step that brings a surface on screen (the same syntax as film.cjs and motion-metrics.cjs).
+async function perform(page, raw) {
+  const [action, ...rest] = raw.split("=");
+  const value = rest.join("=");
+  if (action === "click") await page.locator(value).first().click({ timeout: 5000 });
+  else if (action === "hover") await page.locator(value).first().hover({ timeout: 5000 });
+  else if (action === "press") await page.keyboard.press(value);
+  else if (action === "type") {
+    const split = value.lastIndexOf("=");
+    await page.locator(value.slice(0, split)).first().fill(value.slice(split + 1));
+  } else if (action === "wait") await page.waitForTimeout(Number(value));
+  else throw new Error(`unknown step: ${raw}`);
+}
+
+// Keeps the newest result per surface, page and steps in qa-screenshots/audit-results.json.
+// The UI quality gate reads it, so what it checks is what was measured, not what was written down.
+function saveResults(report, surfaces, steps) {
+  try {
+    const folder = path.join(process.cwd(), "qa-screenshots");
+    fs.mkdirSync(folder, { recursive: true });
+    const ignore = path.join(folder, ".gitignore");
+    if (!fs.existsSync(ignore)) fs.writeFileSync(ignore, "*\n");
+    const file = path.join(folder, "audit-results.json");
+    let results = {};
+    try {
+      results = JSON.parse(fs.readFileSync(file, "utf8"));
+    } catch {
+      // first run, or an unreadable file: start again
+    }
+    const serious = new Set();
+    for (const size of report.sizes) {
+      for (const violation of size.axe || []) {
+        if (["serious", "critical"].includes(violation.impact)) serious.add(violation.id);
+      }
+    }
+    const counts = report.system ? report.system.counts : null;
+    results[[surfaces.join(","), report.url, steps.join(" ")].join(" | ")] = {
+      at: new Date().toISOString(),
+      url: report.url,
+      surfaces,
+      steps,
+      widths: report.sizes.map((size) => Number(size.size.split("x")[0])),
+      axeAvailable: report.axeAvailable,
+      seriousCritical: [...serious],
+      consoleErrors: Math.max(0, ...report.sizes.map((size) => size.consoleErrors.length)),
+      overflow: report.sizes.filter((size) => size.overflow).map((size) => size.size),
+      smallTargets: Math.max(0, ...report.sizes.map((size) => size.smallTargets.length)),
+      system: counts ? { radii: counts.radius, shadows: counts.shadow, fontSizes: counts.fontSize } : null,
+    };
+    fs.writeFileSync(file, JSON.stringify(results, null, 1));
+    return path.relative(process.cwd(), file);
+  } catch {
+    return null; // a read-only folder must not stop the audit itself
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
-  const url = args.find((arg) => !arg.startsWith("--"));
+  const [url, ...steps] = args.filter((arg) => !arg.startsWith("--"));
   if (!url) {
-    console.error("Usage: node audit.cjs <url> [--sizes=WxH,...] [--json]");
+    console.error("Usage: node audit.cjs <url> [--sizes=WxH,...] [--json] [--surface=S1,S2] [<step> ...]");
     process.exit(1);
   }
+  const surfaceFlag = args.find((arg) => arg.startsWith("--surface="));
+  const surfaces = surfaceFlag ? surfaceFlag.split("=")[1].split(",").map((name) => name.trim()).filter(Boolean) : [];
   if (!isLocalUrl(url)) {
     console.error("Refusing: the audit runs against a local app only (localhost / 127.0.0.1 / *.test).");
     process.exit(1);
@@ -115,6 +184,8 @@ async function main() {
       page.on("response", (response) => { if (response.status() >= 400) problems.failedRequests.push(`${response.status()} ${response.url()}`); });
       await page.goto(url, { waitUntil: "load", timeout: 30000 });
       await page.waitForTimeout(2500);
+      for (const step of steps) await perform(page, step);
+      if (steps.length) await page.waitForTimeout(600);
       const result = { size: `${width}x${height}`, ...problems };
       result.overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
       result.brokenImages = await page.evaluate(() => [...document.images].filter((image) => image.complete && image.naturalWidth === 0).map((image) => image.src));
@@ -134,6 +205,7 @@ async function main() {
   } finally {
     await browser.close();
   }
+  const saved = saveResults(report, surfaces, steps);
   if (args.includes("--json")) {
     console.log(JSON.stringify(report));
     return;
@@ -150,6 +222,7 @@ async function main() {
     if (report.system.fellBack.length) console.log(`FONTS NOT LOADED (rendering in a fallback): ${report.system.fellBack.join(", ")}`);
   }
   if (!axePath) console.log("axe-core not found — install once: npm install --prefix ~/.arkar/axe axe-core");
+  if (saved) console.log(`saved to ${saved} (read by the UI quality gate; re-run this command after a fix)`);
 }
 
 main().catch((error) => {

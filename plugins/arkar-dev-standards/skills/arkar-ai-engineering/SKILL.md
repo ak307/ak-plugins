@@ -27,9 +27,12 @@ live in that project's files, never here.
    before use, escaped before it is shown, never executed, and never decides
    who the user is or what they may do.
 4. **Grounded or silent.** An answer drawn from data or documents shows its
-   source beside every claim and number; when the source doesn't support an
-   answer, the feature says so and hands over to a person. Refusal is a
-   success state. An empty result is a valid answer, not an error.
+   source beside every claim and number — which document and section, or
+   what was looked up and counted (the period, the scope, the records).
+   When the source doesn't support an answer, the feature says so and hands
+   over to a person: a named person or queue that receives the
+   conversation — a "please contact X" line alone is a dead end. Refusal is
+   a success state. An empty result is a valid answer, not an error.
 5. **Evaluated before it ships and before every change.** A test set built
    with the feature; a gate per category, not one blended score; re-run on
    any change to a prompt, model, tool, retrieval setting or corpus
@@ -40,9 +43,12 @@ live in that project's files, never here.
 7. **Data stays in-house by default.** A model, tracing or evaluation
    service outside the organisation is used only with AK's approval for the
    data involved.
-8. **Every run is bounded and visible.** Timeouts, output limits, step
-   limits and concurrency caps; each run logged with who, which model and
-   prompt version, tokens, time, tools called and outcome
+8. **Every run is bounded and visible.** Timeouts on each call and on the
+   whole run, output limits, step limits for agents, and a concurrency cap.
+   A model call takes seconds to a minute, so it never sits inside a
+   blocked web request: stream it, or run it as a background job the page
+   follows. Each run is logged with who, which model and prompt version,
+   tokens, time, tools called and outcome
    (`references/serving-and-models.md`).
 
 ## Existing code
@@ -69,8 +75,8 @@ behaviour change: say so, and show the eval results before and after.
    output costs and who would notice; the data it touches and how sensitive
    it is; what "confidently wrong" means for this contract (a made-up
    answer, a false all-clear, a wrong amount).
-2. **Choose the pattern** — and say why the simpler one isn't enough
-   (`references/patterns.md`).
+2. **Choose the pattern** — name it, and say why it is enough and why the
+   simpler one isn't (`references/patterns.md`).
 3. **Design the contract before the prompt:** inputs, the output schema,
    the refusal and escalation path, and the limits. Then prompts and output
    (`references/prompts-and-output.md`), tools and agents

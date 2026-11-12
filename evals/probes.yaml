@@ -292,7 +292,7 @@ probes:
     - Tools are narrow, typed and parameterised (e.g. a leave-balance function, a team-on-leave function) — no free-form SQL tool
     - Dates, counts and balances are computed by code; the model only presents the result, and today's date comes from code
     - An empty result is treated as a valid answer, and answers show what was looked up or counted
-    - The eval set has the three categories — answerable, unanswerable (must decline) and adversarial (another person's or team's data, claimed authority, injection) — with per-category gates
+    - The eval set has three categories — answerable, must-decline and adversarial (attacks such as asking for other people's data) — with a gate per category
     - Run limits (steps, time, output) and a read-only database account or least-privilege credentials are planned
     - An escalation path to a person exists for what it can't answer
   - id: ai-rag
@@ -307,7 +307,7 @@ probes:
     - The Excel allowance rates are queried directly by code, not embedded and paraphrased; no model arithmetic
     - Retrieval is hybrid (lexical plus vector) with reranking, chunked on meaning boundaries with source metadata
     - The permission check comes before retrieval, with isolation per domain where access differs
-    - 'The evaluation gate is stated per category: about 90% or more on answerable, 100% refusal on unanswerable-critical, 100% on adversarial'
+    - 'The evaluation gate is stated per category: about 90% or more on answerable, 100% decline on unanswerable, 100% on adversarial'
     - Document versions and ingest hygiene (deduplication, superseded versions out of default search) are handled
   - id: ai-model-change
     area: ai · changing a model
@@ -377,7 +377,7 @@ probes:
     - 'Checks what else changes: valid structured-output rate, speed or latency, and token use'
     - Notes the existing eval set is very small (4 cases) and proposes growing it before relying on the comparison
     - The switch is made by configuration with a way back to the previous model, and the comparison is recorded in the project
-    - Says clearly what it could not run or verify in this session rather than claiming results
+    - Claims no result it hasn't measured — the comparison is presented as steps to run (or as needing access to the model server), not as a foregone conclusion that the new model is better
   - id: ai-existing-proposal
     area: ai · existing code
     kind: code

@@ -586,3 +586,34 @@ def test_new_screens_without_the_specialists_that_own_the_sheet_are_sent_back(tm
     reason = json.loads(run_gate(tmp_path, events))["reason"]
     assert "`arkar-ui-accessibility`" in reason and "`arkar-ui-ux-engineering`" not in reason
     assert "arkar-ui-discovery" not in reason
+
+
+# --- False alarms found in real builds ---
+
+def test_an_explanation_further_down_the_record_counts(tmp_path):
+    # The record's opening line names the tools ("audit.cjs (axe-core)"); the explanation comes later
+    # and names the rule. Reading only the first line about axe sent a finished build back twice.
+    record = COMPLETE_RECORD.replace("# Premium pass\n", "# Premium pass\nTools: audit.cjs (axe-core), film.cjs\n").replace(
+        "axe serious/critical 3→0", "S2 dialog clean") + (
+        "- S1 page: color-contrast (serious) 1 → 1 on the priority badge,\n  existing code, not new UI — proposal 1\n")
+    assert reason_with_audit(tmp_path, audit_with(seriousCritical=["color-contrast"]), record) == ""
+
+
+def test_an_explanation_of_one_rule_does_not_excuse_another(tmp_path):
+    record = COMPLETE_RECORD.replace("axe serious/critical 3→0", "S2 dialog clean") + (
+        "- color-contrast on the priority badge: existing code, proposed 🟢\n")
+    reason = reason_with_audit(tmp_path, audit_with(seriousCritical=["color-contrast", "button-name"]), record)
+    assert "button-name" in reason and "color-contrast" not in reason
+
+
+def test_a_form_that_waits_while_sending_has_its_loading_state(tmp_path):
+    design = COMPLETE_DESIGN.replace("loading skeleton · empty", "sending · empty").replace(
+        "loading · failed to load", "failed to load")
+    assert blocked_reason(tmp_path, design=design) == ""
+
+
+@pytest.mark.parametrize("line", ["## Tests left behind\nVitest: 6 passed", "| Tests | vitest run → 6 passed |",
+                                  "Existing project with no test setup → proposed 🟢"])
+def test_the_tests_line_is_found_however_it_is_laid_out(tmp_path, line):
+    record = "\n".join(line for line in COMPLETE_RECORD.split("\n") if "Tests left" not in line) + line + "\n"
+    assert blocked_reason(tmp_path, record=record) == ""

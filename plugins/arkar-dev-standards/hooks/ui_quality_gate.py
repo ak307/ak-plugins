@@ -215,13 +215,16 @@ SHEET_HEADING = re.compile(r"^(#{2,3})\s*Build sheet", re.MULTILINE | re.IGNOREC
 # A surface's number where a list item, table row or heading starts ("S3" inside a sentence, as in "an S3 bucket", is not one).
 SURFACE_ID = re.compile(r"^[\s|*#>-]*\**\s*(S\d{1,2})\b", re.MULTILINE)
 # The states every inventory accounts for — designed, or "none, because …".
-INVENTORY_STATES = (("loading", r"loading|skeleton"), ("empty", r"empty"), ("error", r"error|fail"))
+# A form or dialog waits while it saves rather than while it loads: that wait is its loading state.
+INVENTORY_STATES = (("loading", r"loading|skeleton|busy|saving|sending|submitting|processing|pending"),
+                    ("empty", r"empty"), ("error", r"error|fail"))
 # The record explains itself: existing code is proposed to AK, not fixed unasked; some tools can't run on some stacks.
 EXPLAINED = r"existing|propos|🟢|🟠"
 CANT_RUN = r"not applicable|n/a|could(n't| not) (be )?run|can(not|'t) (be )?run|unavailable|not available"
 RENDERED_LIMITS = (("radii", "radii", 6), ("shadows", "shadows", 5), ("font sizes", "fontSizes", 14))
 SCREEN_WIDTH = re.compile(r"\b(\d{3,4})\s*[×x]\s*\d{3,4}\b|\b(320|360|375|390|393|412|414|430|768|820|1024|1280|1366|1440|1536|1920)\b")
-TESTS_LEFT = re.compile(r"^[\s*-]*tests\b|\b(component|unit|widget|feature|end-to-end|e2e) tests?\b", re.MULTILINE | re.IGNORECASE)
+TESTS_LEFT = re.compile(r"^[\s*#|>-]*\**tests\b|\b(component|unit|widget|feature|end-to-end|e2e) tests?\b|no test setup",
+                        re.MULTILINE | re.IGNORECASE)
 
 
 def last_build_sheet(design_text: str) -> str:
@@ -253,10 +256,24 @@ def recorded_surfaces(record: str) -> set[str]:
     return found
 
 
-def result_line(record: str, label: str) -> str:
-    """The line of the record that reports `label` (empty when there is none)."""
-    match = re.search(r"[^\n]*(?:%s)[^\n]*" % label, record, re.IGNORECASE)
-    return match.group(0) if match else ""
+def explained(record: str, label: str) -> bool:
+    """Whether any line about `label` (or the line after it — records wrap) says it is existing code or proposed.
+
+    Every line counts, not only the first: a record often names a tool in its opening lines and gives the
+    explanation further down.
+    """
+    lines = record.splitlines()
+    for index, line in enumerate(lines):
+        if re.search(label, line, re.IGNORECASE):
+            if re.search(EXPLAINED, " ".join(lines[index:index + 2]), re.IGNORECASE):
+                return True
+    return False
+
+
+def cannot_run(record: str, label: str) -> bool:
+    """Whether any line about `label` says the tool can't run on this stack."""
+    return any(re.search(CANT_RUN, line, re.IGNORECASE)
+               for line in record.splitlines() if re.search(label, line, re.IGNORECASE))
 
 
 def session_start(transcript_path: str) -> str:
@@ -324,29 +341,29 @@ def result_problems(record: str, audits: list[dict]) -> list[str]:
     """Results, not step names: what the audit measured, the component system, keyboard, sizes and tests."""
     problems = []
     if not audits:
-        if not re.search(CANT_RUN, result_line(record, r"audit|\baxe\b"), re.IGNORECASE):
+        if not cannot_run(record, r"audit|\baxe\b"):
             problems.append("no audit results from this session — run arkar-ui-visual-qa/scripts/audit.cjs on each "
                             "changed page and on each dialog, sheet or panel in its open state (steps bring it on "
                             "screen; --surface=S<n> names it). It saves qa-screenshots/audit-results.json, which "
                             "this gate reads. If it can't run on this stack, the Audit line of premium-pass.md says "
                             "why and what was checked instead")
     else:
-        explained = re.search(EXPLAINED, result_line(record, r"\baxe\b|accessib"), re.IGNORECASE)
-        failing = [f"{audit_name(run)}: {', '.join(str(rule) for rule in run['seriousCritical'])}"
-                   for run in audits if run.get("seriousCritical")]
-        if failing and not explained:
+        # A violation is explained on a line that names its rule (or on the axe line).
+        failing = [f"{audit_name(run)}: {', '.join(rules)}" for run in audits
+                   for rules in [[str(rule) for rule in run.get("seriousCritical") or []
+                                  if not explained(record, re.escape(str(rule)))]] if rules]
+        if failing and not explained(record, r"\baxe\b|accessib"):
             problems.append("the audit still measures serious or critical accessibility violations — " +
                             "; ".join(failing[:6]) + ". Fix the ones in the new or changed UI and re-run the same "
                             "audit command; violations in existing code go to AK as 🟢 / 🟠 proposals, named on "
                             "the record's axe line")
-        if any(run.get("axeAvailable") is False for run in audits) and not re.search(
-                CANT_RUN, result_line(record, r"\baxe\b"), re.IGNORECASE):
+        if any(run.get("axeAvailable") is False for run in audits) and not cannot_run(record, r"\baxe\b"):
             problems.append("the audit ran without axe-core, so accessibility wasn't measured — install it once "
                             "(npm install --prefix ~/.arkar/axe axe-core) and re-run, or say on the record's axe "
                             "line why it can't be installed")
         for name, key, limit in RENDERED_LIMITS:
             count = max((int((run.get("system") or {}).get(key) or 0) for run in audits), default=0)
-            if count > limit and not re.search(EXPLAINED, result_line(record, name + "|rendered system"), re.IGNORECASE):
+            if count > limit and not explained(record, name + "|rendered system"):
                 problems.append(f"the rendered UI uses {count} {name} (the system allows {limit}) — tokens aren't "
                                 "being used; consolidate the new UI's values and re-run the audit, or name on the "
                                 "record's rendered-system line which come from existing code")

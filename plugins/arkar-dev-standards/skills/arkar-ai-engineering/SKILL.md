@@ -73,7 +73,8 @@ behaviour change: say so, and show the eval results before and after.
 
 1. **Understand.** The job and who relies on the output; what a wrong
    output costs and who would notice; the data it touches and how sensitive
-   it is; what "confidently wrong" means for this contract (a made-up
+   it is — load `arkar-security` when the feature has tools, permissions,
+   personal data or documents from outside; what "confidently wrong" means for this contract (a made-up
    answer, a false all-clear, a wrong amount).
 2. **Choose the pattern** — name it, and say why it is enough and why the
    simpler one isn't (`references/patterns.md`).

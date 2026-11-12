@@ -30,6 +30,8 @@ approval list (step 3) with the cleanup and related-bug items.
 - **Front end** (`references/frontend.md`; mobile `references/mobile.md`) —
   what the browser or app shows, stores and sends. Defence in depth only:
   anything checked in the browser is checked again on the server.
+- **AI features** (`references/ai.md`) — anything that calls a language
+  model or gives one tools; built to `arkar-ai-engineering`.
 - **Shared** — secrets and configuration, dependencies, headers, cookies and
   HTTPS (`references/vapt-checklist.md`), personal data (PDPA).
 
@@ -109,6 +111,9 @@ numbered 🟢 / 🟠 proposals for existing code awaiting AK's decision.
   third-party code.
 - `references/mobile.md` — Flutter / React Native: secrets, secure storage,
   Firebase rules and App Check, network, release builds.
+- `references/ai.md` — LLM and agent features: the four layers, prompt
+  injection, model output as untrusted input, tools and writes, leakage,
+  personal data and outside services.
 - `references/vapt-checklist.md` — the VAPT findings, their fixes and default labels.
 - `references/scanners.md` — tests and checks per stack, and reading results.
 - `references/security-md-template.md` — the `SECURITY.md` template.

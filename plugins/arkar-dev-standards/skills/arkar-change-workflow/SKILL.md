@@ -121,6 +121,10 @@ you couldn't run, and propose a local test database.
 - **Security:** if the change handles sign-in, permissions, input, personal
   data, uploads, APIs, queries, configuration or dependencies, load
   `arkar-security` now (it scales to the change; copy/CSS edits need none).
+- **AI features:** if the change calls a language or embedding model,
+  touches a prompt, a model's tool, an agent, retrieval or an eval set, load
+  `arkar-ai-engineering` now (its improvements to existing AI code join the
+  approval list in step 3).
 - **UI work** (anything users see — web pages, components, Flutter / React
   Native / desktop screens): load `arkar-ui-intelligence` now, so its
   classification and discovery happen here and any UI improvements beyond

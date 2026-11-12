@@ -97,6 +97,17 @@ Tests for the guard and the read-only tool:
   risky, never just applied. A security gate (Stop hook) sends a session back
   — at most twice — when code changed without the skill.
 
+- **`arkar-ai-engineering` skill** — features that call a language model:
+  single calls, workflows, agents and RAG. Principles (simplest pattern that
+  works; code computes, the model reads and writes; model output is untrusted
+  input; grounded or silent; evaluated before it ships and before every prompt
+  or model change; permission in code before the model; data in-house by
+  default; every run bounded and logged), references for patterns, prompts
+  and structured output, tools and agents, RAG, evals, serving and models,
+  and `scripts/run_evals.py` (a JSONL eval set against any OpenAI-compatible
+  endpoint or the feature's own function, with per-category gates). Project
+  facts — model names, endpoints, capacity — stay in each project's files.
+
 Design ideas adapted from Anthropic's frontend-design and canvas-design
 skills and from UI/UX Pro Max (MIT, Next Level Builder).
 

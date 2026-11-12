@@ -46,6 +46,7 @@ Two standards apply to every stack — read the parts you need:
 |---|---|
 | A model, table, column, migration, query-heavy screen, or API endpoint | `references/data-and-api.md` — types, constraints, indexes, soft delete, audit trail, safe migrations, N+1 and pagination, the API error/pagination/versioning/idempotency contract |
 | Status changes, background jobs, scheduled tasks, calls to other systems, logging, error tracking, health checks — and every new project | `references/reliability-and-observability.md` |
+| Code that calls a language or embedding model — a single call, a workflow, an agent, RAG | the `arkar-ai-engineering` skill (what good looks like); the templates say where the files go |
 | CI, deployment, environments, releases | the `arkar-delivery` skill |
 
 If the stack has no template yet, use that framework's official/default project

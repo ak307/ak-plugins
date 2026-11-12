@@ -150,10 +150,9 @@ The most common real-world hole. For every new action/endpoint:
 
 ## 12. LLM and agent features
 
-- Identity comes from the run context, never from model-chosen tool arguments.
-- Tool outputs, retrieved documents and emails are untrusted data — they
-  can't grant permissions or trigger write actions on their own.
-- Write tools check permissions in the service layer and, where the action
-  matters, require human approval.
-- Don't send secrets or unnecessary personal data in prompts; mind what goes
-  to tracing.
+The full checklist is `ai.md`. In short: identity comes from the run
+context, never from arguments the model chose; the permission check runs in
+code before any retrieval or tool call; documents, emails and tool output
+are data, not instructions; model output is untrusted input (validated,
+escaped, never executed); writes that matter wait for a person; nothing
+leaves the organisation unapproved.

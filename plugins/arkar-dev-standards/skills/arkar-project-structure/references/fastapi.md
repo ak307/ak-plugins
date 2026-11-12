@@ -413,7 +413,8 @@ and cover, for each endpoint: the owner, another user (403) and no token (401).
 One module per external system, e.g. `app/clients/llm_client.py` for the vLLM
 server. Create the underlying client (`AsyncOpenAI`, `httpx.AsyncClient`) once
 in the lifespan, set explicit timeouts, and read base URL and model name from
-`settings`.
+`settings`. Everything else about calling a model — prompts, validated
+output, limits, evals — follows the `arkar-ai-engineering` skill.
 
 ### app/routers/health.py — always present
 

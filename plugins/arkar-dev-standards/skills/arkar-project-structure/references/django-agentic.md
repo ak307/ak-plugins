@@ -23,6 +23,11 @@ version differs, check the migration notes before copying patterns from here.
 10. Adding a new agent — checklist
 11. Defaults and when to change them
 
+This file says where things go in a LangGraph project. How to build the
+agent well — choosing the pattern, prompts and validated output, tool
+design, the evaluation gate, serving limits — is the `arkar-ai-engineering`
+skill, and its security is `arkar-security`; follow both.
+
 ## 1. The one big rule
 
 **Agent code doesn't import Django; Django code calls agents.**

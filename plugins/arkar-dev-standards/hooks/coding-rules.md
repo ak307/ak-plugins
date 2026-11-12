@@ -1,4 +1,4 @@
-# AK's coding standards (always on) — arkar-dev-standards v3.3.1
+# AK's coding standards (always on) — arkar-dev-standards v3.4.0
 
 If these rules point at a skill that doesn't exist, tell AK: an old copy of
 the plugin is loaded on this computer.

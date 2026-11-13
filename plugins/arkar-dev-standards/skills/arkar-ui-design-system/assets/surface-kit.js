@@ -16,7 +16,7 @@
 //                                         "Saving…", and "Saved" only once the server has answered
 //   toast(message, { tone, action })      a small confirmation, or an error that stays until dealt with
 //   progress(title, { onCancel })         long work in the background, with real progress or none
-//   errorDialog({ title, message })       critical errors only
+//   errorDialog({ title, message })       critical errors only (thick glass, with a mark)
 // and it makes the material answer the user — motion that always follows an action, never loops
 // (an indicator moves only while work is really going on):
 //   a press        the control gives way and lights up where it was touched
@@ -46,18 +46,34 @@ function el(tag, className, text) {
   return node;
 }
 
-const stroke = 'fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"';
-const icon = (path, size = 16) => `<svg class="ws-icon" viewBox="0 0 16 16" width="${size}" height="${size}" aria-hidden="true"><path d="${path}" ${stroke}/></svg>`;
-const ICONS = {
-  chevron: icon("M4 6l4 4 4-4"),
-  check: icon("M3.5 8.5l3 3 6-7"),
-  left: icon("M10 3.5L5.5 8l4.5 4.5"),
-  right: icon("M6 3.5L10.5 8 6 12.5"),
-  calendar: icon("M2.5 6.5h11M5 1.75v2.5M11 1.75v2.5M3.5 3h9a1 1 0 0 1 1 1v8.5a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"),
-  close: icon("M4 4l8 8M12 4l-8 8"),
+// Icons are built as elements, never as HTML strings: nothing in this file writes markup into the
+// page, so it works under a strict Content-Security-Policy and with Trusted Types.
+const SVG = "http://www.w3.org/2000/svg";
+const PATHS = {
+  chevron: "M4 6l4 4 4-4",
+  check: "M3.5 8.5l3 3 6-7",
+  left: "M10 3.5L5.5 8l4.5 4.5",
+  right: "M6 3.5L10.5 8 6 12.5",
+  calendar: "M2.5 6.5h11M5 1.75v2.5M11 1.75v2.5M3.5 3h9a1 1 0 0 1 1 1v8.5a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z",
+  close: "M4 4l8 8M12 4l-8 8",
 };
+
+function icon(path, { size = 16, className = "ws-icon" } = {}) {
+  const svg = document.createElementNS(SVG, "svg");
+  const shape = document.createElementNS(SVG, "path");
+  const set = (node, attributes) => Object.entries(attributes).forEach(([name, value]) => node.setAttribute(name, value));
+  set(svg, { class: className, viewBox: "0 0 16 16", width: size, height: size, "aria-hidden": "true" });
+  set(shape, { d: path, fill: "none", stroke: "currentColor", "stroke-width": "1.75", "stroke-linecap": "round", "stroke-linejoin": "round" });
+  svg.append(shape);
+  return svg;
+}
+
 // The tick that confirms something really happened; the stylesheet draws it in.
-const MARK = `<svg class="ws-mark" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" pathLength="1" ${stroke}/></svg>`;
+function tick() {
+  const mark = icon(PATHS.check, { size: 18, className: "ws-mark" });
+  mark.firstChild.setAttribute("pathLength", "1");
+  return mark;
+}
 
 function announceChange(field) {
   field.dispatchEvent(new Event("input", { bubbles: true }));
@@ -217,7 +233,7 @@ export function select(native, { searchAfter = 12 } = {}) {
   const value = el("span", "ws-select-value");
   value.id = nextId("ws-value");
   trigger.append(value);
-  trigger.insertAdjacentHTML("beforeend", ICONS.chevron);
+  trigger.append(icon(PATHS.chevron));
   wrapNative(native, trigger, "ws-select-wrap");
 
   const panel = el("div", "ws-listbox");
@@ -244,7 +260,7 @@ export function select(native, { searchAfter = 12 } = {}) {
     row.id = nextId("ws-option");
     row.dataset.value = option.value;
     row.append(el("span", "ws-option-label", option.textContent.trim()));
-    row.insertAdjacentHTML("beforeend", ICONS.check);
+    row.append(icon(PATHS.check));
     if (option.disabled) row.setAttribute("aria-disabled", "true");
     return row;
   }
@@ -419,7 +435,7 @@ export function datePicker(native) {
   trigger.setAttribute("aria-haspopup", "dialog");
   const value = el("span", "ws-date-value");
   value.id = nextId("ws-value");
-  trigger.insertAdjacentHTML("beforeend", ICONS.calendar);
+  trigger.append(icon(PATHS.calendar));
   trigger.append(value);
   wrapNative(native, trigger, "ws-date-wrap");
   nameFromLabel(native, trigger, value.id);
@@ -432,8 +448,8 @@ export function datePicker(native) {
   const previous = el("button", "ws-calendar-step");
   const next = el("button", "ws-calendar-step");
   previous.type = next.type = "button";
-  previous.innerHTML = ICONS.left;
-  next.innerHTML = ICONS.right;
+  previous.append(icon(PATHS.left));
+  next.append(icon(PATHS.right));
   previous.setAttribute("aria-label", "Previous month");
   next.setAttribute("aria-label", "Next month");
   const header = el("div", "ws-calendar-header");
@@ -1030,8 +1046,7 @@ export async function commit(button, work, { busyLabel = "Saving…", doneLabel 
   };
   if (!outcome.error) {
     setState(button, "success");
-    label.innerHTML = MARK;
-    label.append(doneLabel);
+    label.replaceChildren(tick(), doneLabel);
     announce(doneLabel);
     setTimeout(ready, 1400);
     return { ok: true, data: outcome.data };
@@ -1109,7 +1124,7 @@ function closeButton(onClose) {
   const close = el("button", "ws-notice-close");
   close.type = "button";
   close.setAttribute("aria-label", "Dismiss");
-  close.innerHTML = ICONS.close;
+  close.append(icon(PATHS.close));
   close.addEventListener("click", onClose);
   return close;
 }
@@ -1123,7 +1138,7 @@ export function toast(message, { tone = "info", action, duration } = {}) {
   const notice = el("div", "ws-toast");
   notice.dataset.tone = tone;
   if (tone === "bad") notice.setAttribute("role", "alert");
-  if (tone === "ok") notice.insertAdjacentHTML("beforeend", MARK);
+  if (tone === "ok") notice.append(tick());
   notice.append(el("span", "ws-toast-text", message));
   let timer = 0;
   const dismiss = () => {
@@ -1206,7 +1221,7 @@ export function progress(title, { onCancel } = {}) {
   function finish(state, message, retry) {
     card.dataset.state = state;
     heading.textContent = "";
-    if (state === "success") heading.insertAdjacentHTML("beforeend", MARK);
+    if (state === "success") heading.append(tick());
     heading.append(message);
     status.textContent = "";
     bar.remove();
@@ -1234,8 +1249,9 @@ export function progress(title, { onCancel } = {}) {
   };
 }
 
-// A critical error that must be dealt with before anything else: a solid, high-contrast dialog.
-// Everything else is a message beside the field, in the region, or a toast. Resolves with the
+// A critical error that must be dealt with before anything else: a dialog of thick glass, with a
+// mark — the same material as other pop-ups, dense enough to read over anything. Everything
+// else is a message beside the field, in the region, or a toast. Resolves with the
 // chosen action's value, or "dismissed". actions: [{ label, value, primary }].
 export function errorDialog({ title, message, actions = [{ label: "OK", value: "ok", primary: true }] }) {
   return new Promise((resolve) => {
@@ -1248,8 +1264,10 @@ export function errorDialog({ title, message, actions = [{ label: "OK", value: "
     text.id = nextId("ws-text");
     dialog.setAttribute("aria-labelledby", heading.id);
     dialog.setAttribute("aria-describedby", text.id);
+    const mark = el("span", "ws-dialog-mark", "!");
+    mark.setAttribute("aria-hidden", "true");
     const body = el("div", "ws-dialog-body");
-    body.append(heading, text);
+    body.append(mark, heading, text);
     const row = el("div", "ws-dialog-actions");
     for (const action of actions) {
       const button = el("button", "ws-button", action.label);

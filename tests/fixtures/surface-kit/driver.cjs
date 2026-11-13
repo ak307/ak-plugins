@@ -342,7 +342,24 @@ const fs = require("fs");
       actions: [{ label: "Close", value: "close" }, { label: "Create it again", value: "recreate", primary: true }] });
     await pause(450);
     const critical = document.querySelector("dialog[data-critical]");
-    const facts = { role: critical.getAttribute("role"), open: critical.open, blur: getComputedStyle(critical).backdropFilter, solid: getComputedStyle(critical).backgroundColor };
+    // Text contrast in the worst case: the darkest page behind a light dialog, the lightest behind a dark one.
+    const numbers = (colour) => (colour.match(/[\d.]+/g) || []).map(Number);
+    const over = (top, alpha, under) => top.map((value, index) => value * alpha + under[index] * (1 - alpha));
+    const light = (colour) => colour.map((value) => (value / 255 <= 0.03928 ? value / 255 / 12.92 : ((value / 255 + 0.055) / 1.055) ** 2.4))
+      .reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
+    const worstContrast = (behind) => {
+      const [red, green, blue, alpha = 1] = numbers(getComputedStyle(critical).backgroundColor);
+      const dim = numbers(getComputedStyle(critical, "::backdrop").backgroundColor);
+      const ground = over([red, green, blue], alpha, over(dim.slice(0, 3), dim[3] ?? 1, behind));
+      const text = numbers(getComputedStyle(critical.querySelector(".ws-dialog-text")).color).slice(0, 3);
+      const [high, low] = [light(ground), light(text)].sort((first, second) => second - first);
+      return Math.round(((high + 0.05) / (low + 0.05)) * 10) / 10;
+    };
+    const facts = { role: critical.getAttribute("role"), open: critical.open, glass: getComputedStyle(critical).backdropFilter !== "none",
+      tint: numbers(getComputedStyle(critical).backgroundColor)[3], mark: Boolean(critical.querySelector(".ws-dialog-mark")), contrastLight: worstContrast([0, 0, 0]) };
+    document.documentElement.dataset.theme = "dark";
+    facts.contrastDark = worstContrast([255, 255, 255]);
+    document.documentElement.dataset.theme = "light";
     critical.querySelector('[data-variant="primary"]').click();
     result.critical = { ...facts, chosen: await choice };
     return result;

@@ -246,7 +246,7 @@
     const [year, month, day] = order.due.split("-").map(Number);
     return `<tr data-id="${order.id}">
       <td><input class="ws-check" type="checkbox" data-ws-row aria-label="Select ${order.id}"></td>
-      <td><div class="ws-lead"><span class="ws-tile" aria-hidden="true">${order.trade.slice(0, 2)}</span>
+      <td><div class="ws-lead"><span class="ws-tile" aria-hidden="true">${escapeHtml(order.trade.slice(0, 2))}</span>
         <div><strong>${escapeHtml(order.title)}</strong><span class="ws-sub">${order.id} · ${escapeHtml(order.trade)}</span></div></div></td>
       <td class="hide-narrow place">${escapeHtml(order.where)}<span class="ws-sub">${escapeHtml(order.spot)}</span></td>
       <td><span class="ws-status" data-tone="${tones[order.status]}">${order.status}</span></td>

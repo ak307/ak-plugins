@@ -22,7 +22,8 @@
                      .ws-toast                   success: glass with a tick · failure: a restrained tinted surface
                      .ws-progress                background work: translucent glass, a real percentage or none
                      .ws-problem · .ws-empty     a failure with its way out · nothing to show
-                     dialog.ws-dialog[data-critical]   critical errors only: solid, high contrast
+                     dialog.ws-dialog[data-critical]   critical errors only: thick glass — the same material,
+                                                       dense enough to read over anything, with a mark
                      [aria-invalid] + .ws-error  a problem with a field, beside the field
      Text            full contrast, always
    Blur is deliberate: only on what floats, navigates or overlays. Depth is physical: hairline
@@ -476,13 +477,21 @@ dialog.ws-dialog[open]::backdrop { opacity: 1; }
 .ws-dialog-title { margin: 0; font-size: 1.25rem; font-weight: 650; letter-spacing: -0.02em; }
 .ws-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 16px 24px 22px; }
 .ws-dialog-text { margin: 0; color: var(--ws-muted); line-height: 1.5; }
-/* A critical error: no glass at all — solid, high contrast, nothing behind it competing. */
+/* A critical error: thick glass. The same material as every other pop-up — so it belongs — but
+   dense enough to keep its text above 7:1 over anything behind it, with the page dimmed further
+   and a mark that says it is serious. Never a plain card; never as light as a routine dialog. */
 dialog.ws-dialog[data-critical] {
-  --ws-glass-tint: 1; -webkit-backdrop-filter: none; backdrop-filter: none;
-  background: rgb(var(--ws-surface)); max-width: min(440px, calc(100vw - 32px));
+  --ws-glass-tint: 0.9; max-width: min(440px, calc(100vw - 32px));
+  -webkit-backdrop-filter: blur(calc(var(--ws-blur) * 1.4)) saturate(1.7);
+  backdrop-filter: blur(calc(var(--ws-blur) * 1.4)) saturate(1.7);
 }
 dialog.ws-dialog[data-critical] .ws-dialog-text { color: var(--ws-text); }
-dialog.ws-dialog[data-critical]::backdrop { background: rgb(var(--ws-shadow) / 0.5); }
+dialog.ws-dialog[data-critical]::backdrop { background: rgb(var(--ws-shadow) / 0.42); }
+.ws-dialog-mark {
+  display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+  font-size: 1.4rem; font-weight: 700; color: rgb(var(--ws-bad)); background: rgb(var(--ws-bad) / 0.12);
+  box-shadow: inset 0 1px 0 rgb(var(--ws-rim) / calc(0.7 * var(--ws-rim-strength))), inset 0 0 0 1px rgb(var(--ws-bad) / 0.16);
+}
 /* Inside the glass, what is read sits on solid ground. */
 dialog.ws-dialog .ws-group, dialog.ws-dialog .ws-list { background: rgb(var(--ws-surface) / 0.96); box-shadow: 0 0 0 1px rgb(var(--ws-ink) / 0.06); border-radius: var(--ws-radius); }
 

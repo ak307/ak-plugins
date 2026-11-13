@@ -75,7 +75,9 @@ Materials (the material map in
 solid and muted; a working button keeps its own material; background
 progress is translucent glass; a success notice is glass with a clear
 tick; a failure notice is a restrained tinted surface; a critical error
-dialog is solid and high-contrast.
+dialog is thick glass — the same material as other pop-ups, near-opaque so
+its text stays above 7:1 over anything, with a mark that says it is serious
+(never a plain card, never as light as a routine dialog).
 
 Web builds get all of this from `arkar-ui-design-system/assets/surface-kit.js`
 — `load(region, fetcher)` (skeleton, refresh, empty, error and retry,

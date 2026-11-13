@@ -190,10 +190,12 @@ def test_progress_never_shows_a_figure_it_was_not_given(seen):
     assert progress["done"] == {"state": "success", "tick": True, "text": "Report ready"}
 
 
-def test_a_critical_error_is_a_solid_dialog(seen):
+def test_a_critical_error_is_thick_glass_that_stays_readable_over_anything(seen):
     critical = seen["feedback"]["critical"]
-    assert critical["role"] == "alertdialog" and critical["open"] is True and critical["blur"] == "none"
-    assert critical["solid"].startswith("rgb(") and critical["chosen"] == "recreate"
+    assert critical["role"] == "alertdialog" and critical["open"] is True and critical["chosen"] == "recreate"
+    assert critical["glass"] is True and critical["tint"] == 0.9 and critical["mark"] is True
+    # Worst case: a black page behind the light dialog, a white page behind the dark one.
+    assert critical["contrastLight"] >= 7 and critical["contrastDark"] >= 7, critical
 
 
 def test_the_page_recovers_from_a_failed_load_and_commits_once_from_a_dialog(seen):

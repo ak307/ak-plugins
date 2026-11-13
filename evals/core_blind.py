@@ -1,8 +1,9 @@
 """Prepare a finished brief of the core test for blind judging.
 
-    uv run -q --no-project --with pyyaml python evals/core_blind.py <current results> <core results> <brief id> <blind root> <key file>
+    uv run -q --no-project --with pyyaml python evals/core_blind.py <setup>=<results> <setup>=<results> <brief id> <blind root> <key file>
 
-Copies the two builds of a brief (current plugin, draft core) to <blind root>/<brief>/A/app and
+e.g. current=evals/results/round-1 surface=evals/results/round-3. Copies the two builds of a brief
+(each from its own setup and results folder) to <blind root>/<brief>/A/app and
 .../B/app in a random order, with everything that would give away which setup made it removed
 (design notes, QA records, reports, tests). The order is written only to <key file>, which stays
 outside the blind folder, so judges — people or agents — see two unlabelled apps.
@@ -34,11 +35,12 @@ def served_copy(workspace: Path, brief: dict, destination: Path) -> None:
 
 
 def main() -> int:
-    results = {"current": Path(sys.argv[1]), "core": Path(sys.argv[2])}  # the two setups may come from different rounds
+    # setup name → results folder: the two setups may come from different rounds
+    results = {name: Path(folder) for name, folder in (pair.split("=", 1) for pair in sys.argv[1:3])}
     brief_id, blind_root, key_file = sys.argv[3], Path(sys.argv[4]), Path(sys.argv[5])
     briefs = {brief["id"]: brief for brief in yaml.safe_load((HERE / "core-briefs.yaml").read_text())["briefs"]}
     brief = briefs[brief_id]
-    setups = ["current", "core"]
+    setups = list(results)
     random.shuffle(setups)
     key = json.loads(key_file.read_text()) if key_file.exists() else {}
     key[brief_id] = {"A": setups[0], "B": setups[1]}

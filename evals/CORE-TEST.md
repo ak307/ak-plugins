@@ -109,3 +109,38 @@ address (Back leaves the app) while the current one passes refresh, Back and For
 What it does not find: the three trust-breaking bugs in the current builds (a save that lands
 after Discard, an alerts list that goes blank, a submitted permit that reverts to draft). Those
 need a person or an agent using the product with intent. The tool is a floor, not a tester.
+
+## Round 3 — the released plugin with a working surface (branch `ui-working-surface`)
+
+AK approved a revised plan: keep the released plugin's process (it makes the look he prefers),
+give the tables, forms and controls the same standard as the hero, shorten the checking, and — for
+an existing app with a plain look — keep its colours and layout but lift the screens in scope.
+
+What the four released-plugin builds of round 1 actually did (from their event streams):
+
+- All three new-product builds copied the three ready-made kits (glass, motion, experience). The
+  glass kit covers bars, panels, sheets, pills and tabs — nothing for fields, dropdowns, date
+  pickers, tables or rows.
+- Of 55 UI reference files, about 10 were opened across the four builds; the business-systems
+  file (tables and forms) never; premium-craft once.
+- The plugin's own rule for tables and forms was "stay solid for legibility", with three lines
+  of advice.
+- Planning (loading 11–13 skills) was 6–8% of each build's cost; checking was 60–86%
+  (80–130 turns, 70–100 images looked at, 20–40 tool runs, two reviewer agents).
+- Three of the four builds still shipped a trust-breaking bug.
+
+Changes tested in round 3:
+
+1. `surface-kit.css` / `surface-kit.js` (arkar-ui-design-system/assets): fields, dropdown, date
+   picker, action menu, tick / radio / switch, buttons, chips, table, list rows, toolbar,
+   selection bar, status, meter, empty and skeleton states. Themed by tokens; the real `<select>`
+   and `<input type="date">` stay underneath. 13 tests. Writing it, the use check found five faults
+   in the kit itself (a form that moved under the pointer when a message appeared, a closed menu
+   still rendered, no focus ring on an invalid field, a jump on load, small touch areas).
+2. The working-surface standard in the always-read skill text (one world, no browser-default
+   control, rows and fields as designed objects, glass on interaction).
+3. Verify: one `use-check.cjs` run per surface, the transaction list on every action that
+   commits, motion / system / security once each; no before → after pairs.
+4. "A plain existing look is lifted, not copied."
+
+Builds: the same four briefs, setup `surface`, results in `core-test-20261113-1139-r3`.

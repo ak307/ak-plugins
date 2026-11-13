@@ -93,6 +93,23 @@ def test_one_menu_serves_every_row(seen):
     assert seen["menuAction"]["actions"] == [f"assign:{seen['menuAction']['row']}"] and seen["menuAction"]["open"] is False
 
 
+def test_a_menu_action_can_open_a_dialog_and_keep_focus_there(seen):
+    assert seen["dialog"] == {"open": True, "focusInside": True}
+    assert seen["dialogClosed"] is True
+
+
+def test_the_material_answers_the_user(seen):
+    assert seen["lensAtRest"]["thumb"] == seen["lensAtRest"]["chip"] and seen["lensAtRest"]["width"]
+    assert seen["lensAfterChoice"]["thumb"] == seen["lensAfterChoice"]["chip"]  # the lens flowed to the chosen chip
+    assert seen["lensAfterChoice"]["thumb"] != seen["lensAtRest"]["thumb"]
+    assert seen["glide"]["state"] == "on" and seen["glide"]["top"] == seen["glide"]["row"]
+    assert seen["barAtRest"] is False and seen["barOverContent"] is True  # glass frosts once content is under it
+
+
+def test_reduced_motion_keeps_the_function_and_drops_the_movement(seen):
+    assert seen["reduced"] == {"arriving": 0, "lens": True}
+
+
 def test_row_selection_with_shift_and_select_all(seen):
     assert seen["range"] == {"bulk": "4 selected", "hidden": False, "partial": True, "rows": 4}
     assert seen["all"] == 10 and seen["cleared"] == {"rows": 0, "hidden": True}

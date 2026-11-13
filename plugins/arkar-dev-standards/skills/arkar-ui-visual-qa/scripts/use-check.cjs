@@ -184,8 +184,9 @@ const phoneFacts = () => {
   const name = (element) => (element.getAttribute("aria-label") || element.innerText || element.value || element.tagName).trim().replace(/\s+/g, " ").slice(0, 28);
   const shortSide = (element) => Math.min(element.getBoundingClientRect().width, element.getBoundingClientRect().height);
   const tiny = [], small = [];
+  const modal = document.querySelector("dialog:modal"); // with a modal dialog open, only what is inside it can be pressed
   for (const control of document.querySelectorAll("button, a[href], [role=button], [role=tab], input:not([type=hidden]), select, summary")) {
-    if (!visible(control)) continue;
+    if (!visible(control) || (modal && !modal.contains(control))) continue;
     // A control can also be pressed through its label, so the larger of the two is the target
     // (a small checkbox inside a tall label is fine; a text field is not judged by its short label).
     const label = control.closest("label") || (control.id && document.querySelector(`label[for="${CSS.escape(control.id)}"]`));

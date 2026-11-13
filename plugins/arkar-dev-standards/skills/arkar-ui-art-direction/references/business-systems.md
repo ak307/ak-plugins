@@ -72,7 +72,10 @@ Glass (`arkar-ui-design-system/references/materials-glass.md`):
 
 - glass for the whole floating layer: sidebar and top bar, toolbars and
   filter bars, tab bars, bulk-action bars, detail sheets and side panels,
-  popovers, menus, the command palette, toasts;
+  popovers, menus, the command palette, toasts — translucent for
+  navigation, frosted for what floats over content, layered for dialogs
+  (the material map in
+  `arkar-ui-design-system/references/materials-glass.md`);
 - floating glass content panels wherever the screen has a visual canvas
   (a site map, skyline, floor plan, schedule or time grid, a hero chart):
   the canvas fills the space and the queue, alerts or crew float over it;

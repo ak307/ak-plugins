@@ -7,7 +7,16 @@
 //   <input type="date" class="ws-date">   → a calendar that opens on glass
 //   <button data-ws-menu="panel-id">      → an action menu (panel holds role="menuitem" buttons)
 //   <form data-ws-validate>               → messages when a field is left, not on every key
-//   <div class="ws-table-wrap">           → header shadow once the rows scroll under it
+//   <div class="ws-table-wrap">           → a highlight that glides from row to row; a header shadow
+//                                           once the rows scroll under it
+//   <div class="ws-segmented">            → a glass lens that slides, stretching, to the chosen chip
+// and it makes the material answer the user — motion that always follows an action, never loops:
+//   a press        the control gives way and lights up where it was touched
+//   an opening     lists, calendars and menus pour out of their button and recede into it
+//   a choice       the lens flows to the chosen chip; the row highlight glides to the row
+//   the pointer    a soft reflection follows it across glass; the background shifts a few pixels
+//   scrolling      a sticky bar frosts once content is under it
+// All of it is skipped or reduced to a fade when the user asks for reduced motion.
 // The real <select> and <input> stay in the page and keep their value, name, label and events
 // (input and change still fire on them), so forms, validation and data binding are unchanged.
 //
@@ -72,6 +81,7 @@ export function popover(trigger, panel, { matchWidth = true, onOpen, onClose } =
     const left = Math.min(Math.max(edge, box.left), Math.max(edge, innerWidth - size.width - edge));
     panel.style.maxHeight = `${Math.round(room)}px`;
     panel.style.left = `${Math.round(left)}px`;
+    panel.dataset.opensUp = String(opensUp);
     // Opening upwards, it hangs from its bottom edge, so a list that shortens stays against its button.
     if (opensUp) panel.style.bottom = `${Math.round(innerHeight - box.top + gap)}px`;
     else panel.style.top = `${Math.round(box.bottom + gap)}px`;
@@ -79,11 +89,14 @@ export function popover(trigger, panel, { matchWidth = true, onOpen, onClose } =
     return undefined;
   }
 
+  // It pours out of its button: uncovered from the edge nearest the button while it grows to size.
   function animate(opening) {
-    const hidden = narrow() ? { opacity: 0, transform: "translateY(24px)" } : { opacity: 0, transform: "scale(.96)" };
-    const shown = { opacity: 1, transform: "none" };
-    const frames = reduced() ? [{ opacity: opening ? 0 : 1 }, { opacity: opening ? 1 : 0 }] : opening ? [hidden, shown] : [shown, hidden];
-    return panel.animate(frames, { duration: opening ? 180 : 120, easing: EASE });
+    if (reduced()) return panel.animate([{ opacity: opening ? 0 : 1 }, { opacity: opening ? 1 : 0 }], { duration: 100 });
+    const radius = getComputedStyle(panel).borderTopLeftRadius;
+    const covered = panel.dataset.opensUp === "true" ? `inset(62% 0 0 0 round ${radius})` : `inset(0 0 62% 0 round ${radius})`;
+    const hidden = narrow() ? { opacity: 0, transform: "translateY(28px)" } : { opacity: 0, transform: "scale(.9)", clipPath: covered };
+    const shown = narrow() ? { opacity: 1, transform: "none" } : { opacity: 1, transform: "none", clipPath: `inset(0 0 0 0 round ${radius})` };
+    return panel.animate(opening ? [hidden, shown] : [shown, hidden], { duration: opening ? 280 : 140, easing: opening ? "cubic-bezier(.25,1.2,.45,1)" : EASE });
   }
 
   const pressedOutside = (event) => {
@@ -754,6 +767,144 @@ export function formFeedback(form) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Liquid Glass behaviour: none of it changes what a control does, only how the glass answers.
+
+// Chips that choose one of several (.ws-segmented): a glass lens sits under the chosen chip and,
+// when the choice changes, stretches across both before settling on the new one — like liquid.
+export function segmented(container) {
+  if (container.hasAttribute("data-ws-thumb")) return;
+  const thumb = el("span", "ws-thumb");
+  thumb.setAttribute("aria-hidden", "true");
+  container.prepend(thumb);
+  container.setAttribute("data-ws-thumb", "");
+  let last = null;
+
+  function settle({ animate = true } = {}) {
+    const chosen = container.querySelector('.ws-chip[aria-pressed="true"], .ws-chip[aria-selected="true"]');
+    thumb.hidden = !chosen;
+    if (!chosen) return;
+    const next = { left: chosen.offsetLeft, top: chosen.offsetTop, width: chosen.offsetWidth, height: chosen.offsetHeight };
+    Object.assign(thumb.style, { left: `${next.left}px`, top: `${next.top}px`, width: `${next.width}px`, height: `${next.height}px` });
+    const moved = last && (last.left !== next.left || last.width !== next.width);
+    if (animate && moved && last.top === next.top && !reduced()) {
+      const start = Math.min(last.left, next.left);
+      const end = Math.max(last.left + last.width, next.left + next.width);
+      // Its reflection crosses it in the direction it travels, so the light moves because the glass does.
+      const glint = next.left > last.left ? ["160% 0", "-60% 0"] : ["-60% 0", "160% 0"];
+      thumb.animate([
+        { left: `${last.left}px`, width: `${last.width}px`, backgroundPosition: `${glint[0]}, 0 0` },
+        { left: `${start}px`, width: `${end - start}px`, offset: 0.42 },
+        { left: `${next.left}px`, width: `${next.width}px`, backgroundPosition: `${glint[1]}, 0 0` },
+      ], { duration: 460, easing: "cubic-bezier(.3,.7,.2,1)" });
+    }
+    last = next;
+  }
+
+  // The page's own code decides which chip is chosen; the lens follows whatever it sets.
+  new MutationObserver(() => settle()).observe(container, { subtree: true, attributes: true, attributeFilter: ["aria-pressed", "aria-selected"] });
+  new ResizeObserver(() => settle({ animate: false })).observe(container);
+  settle({ animate: false });
+}
+
+// One highlight for the whole table: it glides to the row under the pointer instead of each row
+// switching on and off.
+export function glide(wrap) {
+  if (wrap.hasAttribute("data-ws-glide")) return;
+  wrap.setAttribute("data-ws-glide", "off");
+  wrap.addEventListener("pointermove", (event) => {
+    const row = event.target.closest && event.target.closest("tbody tr");
+    if (!row || event.pointerType === "touch") return;
+    wrap.style.setProperty("--ws-glide-top", `${row.offsetTop}px`);
+    wrap.style.setProperty("--ws-glide-height", `${row.offsetHeight}px`);
+    wrap.setAttribute("data-ws-glide", "on");
+  }, { passive: true });
+  wrap.addEventListener("pointerleave", () => wrap.setAttribute("data-ws-glide", "off"));
+}
+
+// Glass answers to what is behind it: a sticky bar is clear over the calm page and frosts once
+// content has scrolled under it (data-ws-over; the stylesheet does the rest).
+export function adaptive(bar) {
+  if (bar.wsAdaptive) return;
+  bar.wsAdaptive = true;
+  const update = () => {
+    const restingTop = parseFloat(getComputedStyle(bar).top) || 0;
+    bar.toggleAttribute("data-ws-over", scrollY > 4 && bar.getBoundingClientRect().top <= restingTop + 1);
+  };
+  addEventListener("scroll", update, { passive: true });
+  update();
+}
+
+const GLASS = ".ws-toolbar, .ws-bulk, .ws-popover, dialog.ws-dialog";
+let lightIsOn = false;
+
+// A soft reflection follows the pointer across glass (never across content), the atmosphere
+// behind shifts a few pixels the other way so the glass seems to float, and a press lights a
+// button or chip where it was touched. Mouse only, and not with reduced motion.
+function glassLight() {
+  if (lightIsOn || reduced() || !matchMedia("(hover: hover)").matches) return;
+  lightIsOn = true;
+  let lit = null;
+  let latest = null;
+  let frame = 0;
+  const clear = () => {
+    if (!lit) return;
+    lit.style.removeProperty("--ws-light-x");
+    lit.style.removeProperty("--ws-light-y");
+    lit = null;
+  };
+  document.addEventListener("pointermove", (event) => {
+    latest = event;
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      for (const canvas of document.querySelectorAll(".ws-canvas")) {
+        canvas.style.setProperty("--ws-parallax-x", `${((0.5 - latest.clientX / innerWidth) * 16).toFixed(1)}px`);
+        canvas.style.setProperty("--ws-parallax-y", `${((0.5 - latest.clientY / innerHeight) * 12).toFixed(1)}px`);
+      }
+      const pane = latest.target.closest ? latest.target.closest(GLASS) : null;
+      if (pane !== lit) clear();
+      if (!pane) return;
+      const box = pane.getBoundingClientRect();
+      lit = pane;
+      pane.style.setProperty("--ws-light-x", `${Math.round(latest.clientX - box.left)}px`);
+      pane.style.setProperty("--ws-light-y", `${Math.round(latest.clientY - box.top)}px`);
+    });
+  }, { passive: true });
+  document.addEventListener("pointerleave", clear);
+  document.addEventListener("pointerdown", (event) => {
+    const control = event.target.closest ? event.target.closest(".ws-button, .ws-chip") : null;
+    if (!control) return;
+    const box = control.getBoundingClientRect();
+    control.style.setProperty("--ws-press-x", `${Math.round(event.clientX - box.left)}px`);
+    control.style.setProperty("--ws-press-y", `${Math.round(event.clientY - box.top)}px`);
+    control.removeAttribute("data-ws-pressed");
+    requestAnimationFrame(() => control.setAttribute("data-ws-pressed", ""));
+    setTimeout(() => control.removeAttribute("data-ws-pressed"), 520);
+  }, { passive: true });
+}
+
+let hasArrived = false;
+
+// As the page opens, the surfaces in view rise into place one after another — once, as the answer
+// to arriving. Nothing is hidden before the script runs, so a slow script never hides the page.
+function arrive(root) {
+  if (hasArrived || reduced()) return;
+  hasArrived = true;
+  const inView = (pane) => pane.getBoundingClientRect().top < innerHeight && pane.getBoundingClientRect().bottom > 0;
+  const panes = [...root.querySelectorAll(".ws-toolbar, .ws-group, .ws-table-wrap")].filter(inView).slice(0, 8);
+  panes.forEach((pane, order) => {
+    pane.style.setProperty("--ws-order", String(order));
+    pane.classList.add("ws-arrive");
+  });
+  setTimeout(() => {
+    for (const pane of panes) {
+      pane.classList.remove("ws-arrive");
+      pane.style.removeProperty("--ws-order");
+    }
+  }, 600 + panes.length * 60);
+}
+
+// ---------------------------------------------------------------------------------------------
 
 // The header of a scrolling table gains its shadow only once rows have moved under it.
 export function scrollShadow(wrap) {
@@ -771,5 +922,12 @@ export function enhance(root = document) {
     if (panel) menu(trigger, panel);
   }
   for (const form of root.querySelectorAll("form[data-ws-validate]")) formFeedback(form);
-  for (const wrap of root.querySelectorAll(".ws-table-wrap")) scrollShadow(wrap);
+  for (const wrap of root.querySelectorAll(".ws-table-wrap")) {
+    scrollShadow(wrap);
+    glide(wrap);
+  }
+  for (const container of root.querySelectorAll(".ws-segmented")) segmented(container);
+  for (const bar of root.querySelectorAll(".ws-toolbar")) adaptive(bar);
+  glassLight();
+  arrive(root);
 }

@@ -106,6 +106,45 @@ const fs = require("fs");
   await settle(page);
   out.menuAction = await page.evaluate(() => ({ actions: window.menuActions, row: document.querySelectorAll("#orders tbody tr")[2].dataset.id,
     open: document.getElementById("row-menu").matches(":popover-open") }));
+  // The action opened a dialog: focus stays inside it (the closing menu must not pull it back), and Escape closes it.
+  out.dialog = await page.evaluate(() => ({ open: document.getElementById("assign-dialog").open,
+    focusInside: document.getElementById("assign-dialog").contains(document.activeElement) }));
+  await page.keyboard.press("Escape");
+  await settle(page);
+  out.dialogClosed = await page.evaluate(() => !document.getElementById("assign-dialog").open);
+  await page.close();
+
+  // The material answers: the lens sits under the chosen chip, the row highlight goes to the row under
+  // the pointer, and the sticky bar frosts once content is under it.
+  page = await fresh({ viewport: { width: 1280, height: 560 } });
+  const lens = () => page.evaluate(() => {
+    const thumb = document.querySelector(".ws-segmented .ws-thumb");
+    const chosen = document.querySelector('.ws-segmented .ws-chip[aria-pressed="true"]');
+    return { thumb: Math.round(thumb.offsetLeft), chip: Math.round(chosen.offsetLeft), width: Math.round(thumb.offsetWidth) === Math.round(chosen.offsetWidth) };
+  });
+  out.lensAtRest = await lens();
+  out.barAtRest = await page.evaluate(() => document.querySelector(".ws-toolbar").hasAttribute("data-ws-over"));
+  await page.click('.ws-chip[data-status="Done"]');
+  await page.waitForTimeout(650);
+  out.lensAfterChoice = await lens();
+  await page.click('.ws-chip[data-status=""]');
+  await page.hover("#orders tbody tr:nth-child(3) td:nth-child(2)");
+  await settle(page);
+  out.glide = await page.evaluate(() => {
+    const wrap = document.querySelector(".ws-table-wrap");
+    return { state: wrap.getAttribute("data-ws-glide"), top: wrap.style.getPropertyValue("--ws-glide-top"),
+      row: `${document.querySelector("#orders tbody tr:nth-child(3)").offsetTop}px` };
+  });
+  await page.mouse.move(640, 300);
+  await page.mouse.wheel(0, 900);
+  await settle(page);
+  out.barOverContent = await page.evaluate(() => document.querySelector(".ws-toolbar").hasAttribute("data-ws-over"));
+  await page.close();
+
+  // With reduced motion nothing rises on arrival, and the lens is still in place.
+  page = await fresh({ reducedMotion: "reduce" });
+  out.reduced = await page.evaluate(() => ({ arriving: document.querySelectorAll(".ws-arrive").length,
+    lens: Math.round(document.querySelector(".ws-thumb").offsetLeft) === Math.round(document.querySelector('.ws-chip[aria-pressed="true"]').offsetLeft) }));
   await page.close();
 
   // Row selection: shift-click selects the range; the header box shows part, all or none.
@@ -171,7 +210,7 @@ const fs = require("fs");
     kit.enhance(dialog);
     dialog.showModal();
     dialog.querySelector("button.ws-select").click();
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 600));
     const option = dialog.querySelectorAll('[role="option"]')[2];
     const box = option.getBoundingClientRect();
     const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
@@ -179,7 +218,7 @@ const fs = require("fs");
   });
   await page.keyboard.press("Escape");
   await settle(page);
-  out.dialogStaysOpen = await page.evaluate(() => document.querySelector("dialog").open);
+  out.dialogStaysOpen = await page.evaluate(() => document.querySelector("dialog:not(.ws-dialog)").open);
   await page.close();
 
   // On a phone the list docks to the bottom edge at full width with large rows.

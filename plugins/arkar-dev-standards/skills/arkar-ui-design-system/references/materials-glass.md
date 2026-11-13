@@ -10,6 +10,41 @@ consistently rates glass designs higher); for other products it is chosen
 in art direction. Either way each product composes it in its own way — glass
 is a material, never a reason for products to resemble iOS or each other.
 
+## The material map — where glass belongs, and where it doesn't
+
+AK's standard, in his words: *Apple-level design isn't about maximising
+glass effects. It's about knowing exactly where glass belongs and where it
+doesn't. When everything is glass, nothing feels special.*
+
+| Element | Treatment |
+|---|---|
+| Background | Atmospheric and restrained: soft light in the product's colours |
+| Main content | Solid or near-opaque — visually stable |
+| Tables and lists | Solid surfaces (only a sticky header is glass) |
+| Navigation, filter and tab bars | Translucent glass that content scrolls under |
+| Floating panels: menus, pickers, the selection bar | Frosted glass |
+| Dialogs and sheets | Layered glass: a frosted sheet, the page behind dimmed and slightly out of focus, solid fields and lists inside |
+| Buttons | Subtle material depth, not glass |
+| Text | High contrast, always |
+
+- **Glass is for navigation and hierarchy, not for everything.**
+- **Content stays visually stable:** solid or near-opaque wherever
+  readability matters.
+- **Glass responds to context:** it frosts (more tint, the same blur) when
+  what is behind it is busy — a bar is clear over the calm page and frosted
+  once rows scroll under it; glass over a map, photo or chart is frosted
+  from the start.
+- **Blur is intentional:** only on floating surfaces, navigation, overlays
+  and contextual controls.
+- **Depth is physical:** hairline borders, a lit top edge, layered shadows
+  and layered translucency — not more blur.
+
+The design system has three layers, each answering to the next:
+**material** (solid, glass, light, depth) · **motion** (the material
+responding — `arkar-ui-motion-design`) · **interaction** (feedback,
+hierarchy, usability, accessibility). `assets/surface-kit.css` and
+`assets/liquid-glass.css` build this map; theme them, don't re-derive it.
+
 ## When it fits
 
 - Consumer, AI-native, premium, booking, onboarding and media products,

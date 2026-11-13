@@ -10,12 +10,18 @@
   /* The product's own tokens: the kits take their colour, shape and type from here. */
   :root {
     --ws-accent: 0 116 122;
-    --ws-canvas: #edf2f1;
+    --ws-field-a: 0 168 160;
+    --ws-field-b: 96 120 255;
+    --ws-field-c: 255 176 104;
+    --ws-canvas: #e9eff1;
     --ws-radius: 13px;
-    --lg-tint: 246 250 249;
-    --lg-tint-alpha: 0.62;
+    --lg-tint: 255 255 255;
+    --lg-tint-alpha: 0.46;
   }
-  [data-theme="dark"] { --ws-accent: 64 196 190; --ws-on-accent: 6 28 30; --ws-canvas: #0a1113; --lg-tint: 20 30 32; }
+  [data-theme="dark"] {
+    --ws-accent: 64 196 190; --ws-on-accent: 6 28 30; --ws-canvas: #070d10; --lg-tint: 24 34 40;
+    --ws-field-a: 0 150 150; --ws-field-b: 70 90 230; --ws-field-c: 200 110 60;
+  }
   * { box-sizing: border-box; }
   body { margin: 0; font: 16px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: -0.006em; }
   h1, h2, p { margin: 0; }
@@ -33,7 +39,6 @@
   .layout { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 20px; align-items: start; }
   .place { white-space: nowrap; }
   .orders { display: grid; gap: 12px; min-width: 0; --ws-toolbar-top: 78px; }
-  .filters { display: flex; flex-wrap: wrap; gap: 6px; }
   .form { display: grid; gap: 16px; padding: 22px; position: sticky; top: 78px; }
   .form h2 { font-size: 1.25rem; letter-spacing: -0.02em; }
   .form .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -83,7 +88,7 @@
           <option>Harbour Tower</option><option>Kestrel House</option><option>Riverside Hall</option>
           <option>Civic Library</option><option>North Annex</option><option>Mill Street Depot</option>
         </select>
-        <div class="filters" role="group" aria-label="Status">
+        <div class="ws-segmented" role="group" aria-label="Status">
           <button class="ws-chip" type="button" aria-pressed="true" data-status="">All <span class="ws-count">10</span></button>
           <button class="ws-chip" type="button" aria-pressed="false" data-status="Open">Open <span class="ws-count">4</span></button>
           <button class="ws-chip" type="button" aria-pressed="false" data-status="In progress">In progress <span class="ws-count">4</span></button>
@@ -170,6 +175,25 @@
   <button type="button" role="menuitem" data-action="cancel" data-tone="bad">Cancel order</button>
 </div>
 
+<dialog class="ws-dialog" id="assign-dialog" aria-labelledby="assign-title">
+  <div class="ws-dialog-body">
+    <h2 class="ws-dialog-title" id="assign-title">Assign work order</h2>
+    <p class="ws-hint" id="assign-order"></p>
+    <div class="ws-list" role="radiogroup" aria-label="Technician">
+      <label class="ws-list-item"><input class="ws-radio" type="radio" name="technician" value="Aisha Rahman" checked>
+        <span>Aisha Rahman<span class="ws-sub">Electrical · on shift</span></span><span class="ws-status" data-tone="ok">Free</span></label>
+      <label class="ws-list-item"><input class="ws-radio" type="radio" name="technician" value="Daniel Lim">
+        <span>Daniel Lim<span class="ws-sub">Lifts · on shift</span></span><span class="ws-status" data-tone="warn">2 of 4 jobs</span></label>
+      <label class="ws-list-item"><input class="ws-radio" type="radio" name="technician" value="Priya Nair">
+        <span>Priya Nair<span class="ws-sub">Plumbing · on shift</span></span><span class="ws-status" data-tone="bad">Full</span></label>
+    </div>
+  </div>
+  <div class="ws-dialog-actions">
+    <button class="ws-button" type="button" id="assign-cancel">Cancel</button>
+    <button class="ws-button" data-variant="primary" type="button" id="assign-confirm">Assign</button>
+  </div>
+</dialog>
+
 <script type="module">
   import { enhance, selection, menu } from "./surface-kit.js";
 
@@ -235,8 +259,17 @@
   window.menuActions = [];
   document.getElementById("row-menu").addEventListener("click", (event) => {
     const item = event.target.closest("[data-action]");
-    if (item) window.menuActions.push(`${item.dataset.action}:${event.currentTarget.wsTrigger.closest("tr").dataset.id}`);
+    if (!item) return;
+    const order = event.currentTarget.wsTrigger.closest("tr").dataset.id;
+    window.menuActions.push(`${item.dataset.action}:${order}`);
+    if (item.dataset.action === "assign") {
+      document.getElementById("assign-order").textContent = `${order} — choose who takes it. They are told at once.`;
+      assignDialog.showModal();
+    }
   });
+  const assignDialog = document.getElementById("assign-dialog");
+  document.getElementById("assign-cancel").addEventListener("click", () => assignDialog.close());
+  document.getElementById("assign-confirm").addEventListener("click", () => assignDialog.close());
 
   document.getElementById("search").addEventListener("input", (event) => { view.search = event.target.value; render(); });
   document.getElementById("building").addEventListener("change", (event) => { view.building = event.target.value; render(); });

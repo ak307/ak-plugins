@@ -1,32 +1,57 @@
-/* surface-kit.css — the working surface: the tables, forms, lists and controls people use
-   all day, built to the same standard as the glass around them. Copy it with surface-kit.js
-   (the dropdown, date picker, menu, row selection and form feedback) and liquid-glass.css.
+/* surface-kit.css — the working surface: the tables, forms, lists and controls people use all
+   day, and the glass that floats above them. Copy it with surface-kit.js (the dropdown, date
+   picker, menu, row selection, form feedback and the motion of the glass) and liquid-glass.css.
 
-   Theme it through the tokens below — set at least the accent, the canvas, the radii and the
-   font from the product's DESIGN.md, so two products never share a look, only the craft.
+   Where glass belongs — and where it doesn't. Glass is for navigation and hierarchy, not for
+   everything: when everything is glass, nothing feels special.
+     Background      .ws-canvas                    atmospheric and restrained: soft light in the product's colours
+     Main content    .ws-group                     solid or near-opaque, never blurred — stable under the eye
+     Tables, lists   .ws-table-wrap · .ws-list     solid surfaces; only the sticky header is glass
+     Navigation      .ws-toolbar (and .lg-bar)     translucent glass that content scrolls under
+     Floating        .ws-popover · .ws-bulk        frosted glass: menus, lists, calendars, the selection bar
+     Dialogs         dialog.ws-dialog              layered glass: a frosted sheet, the page behind dimmed
+                                                   and out of focus, solid fields and lists inside
+     Buttons         .ws-button · .ws-chip         subtle material depth, not glass
+                     .ws-segmented                 a glass lens slides to the chosen chip
+     Fields          .ws-input .ws-textarea .ws-select .ws-date .ws-check .ws-radio .ws-switch
+                     (in .ws-field with .ws-label .ws-hint .ws-error) — wells, lit on focus
+     Rows            .ws-table · .ws-list-item · .ws-lead .ws-tile .ws-sub .ws-num .ws-status .ws-meter .ws-sort
+     States          .ws-empty · .ws-skeleton · [aria-busy] on a button · [aria-invalid] on a field
+     Text            full contrast, always
+   Blur is deliberate: only on what floats, navigates or overlays. Depth is physical: hairline
+   borders, a top highlight, layered shadows and layered translucency, not more blur. Glass
+   answers to what is behind it: a bar is clearer over the calm page and frosts when content is
+   under it (data-ws-over, set by surface-kit.js; set data-ws-over="busy" yourself on glass that
+   sits over a map, a photo or a chart).
+
+   Three layers, each answering to the next: MATERIAL (solid, glass, light, depth) · MOTION
+   (the material responding: pressing, pouring, flowing, receding) · INTERACTION (feedback,
+   hierarchy, usability, accessibility). Motion here always answers an action — a press, an
+   opening, a choice, a pointer crossing glass. Nothing loops, and nothing moves for its own sake;
+   with reduced motion, things change at once or fade.
+
+   Theme it through the tokens below — set at least the accent, the three field colours, the
+   canvas, the radii and the font from the product's DESIGN.md, on :root or on the element that
+   carries data-theme — so two products never share a look, only the material and the craft.
    Dark: data-theme="dark" on any ancestor, or the system setting unless data-theme="light"
    pins it. A product without a designed dark theme pins data-theme="light" on <html>.
-
-   Layers, back to front:
-     .ws-canvas     the page the work sits on — the product's world carried on, never plain white
-     .ws-group      a grouped, solid surface for reading and typing (forms, tables, lists)
-     controls       .ws-input .ws-textarea .ws-select .ws-date .ws-check .ws-radio .ws-switch
-                    .ws-button .ws-chip  (inside .ws-field with .ws-label .ws-hint .ws-error)
-     rows           .ws-table (in .ws-table-wrap) · .ws-list / .ws-list-item
-                    .ws-lead .ws-tile .ws-sub .ws-num .ws-status .ws-meter .ws-sort
-     floating       .ws-toolbar (sticky filter bar) · .ws-bulk (selection bar) · .ws-popover
-                    (lists, calendars, menus) — glass, above the content that scrolls under it
-     states         .ws-empty · .ws-skeleton · [aria-busy] on a button · [aria-invalid] on a field
    Fallbacks: no backdrop-filter, reduced transparency or more contrast → solid surfaces. */
 
 :root {
   --ws-accent: 10 102 255;         /* RGB of the product's accent */
   --ws-on-accent: 255 255 255;     /* RGB of text on the accent */
   --ws-ink: 17 20 28;              /* RGB of text */
-  --ws-canvas: #f1f3f7;            /* the page behind the work */
-  --ws-surface: 255 255 255;       /* RGB of grouped surfaces */
-  --ws-glass: 250 251 253;         /* RGB of the glass tint for bars and pop-ups */
-  --ws-glass-alpha: 0.74;
+  --ws-canvas: #eef1f6;            /* the page's base colour, under the atmosphere */
+  --ws-field-a: var(--ws-accent);  /* RGB of the three soft lights of the atmosphere: */
+  --ws-field-b: 112 96 255;        /* the product's own colours, not these defaults */
+  --ws-field-c: 255 168 92;
+  --ws-atmosphere: 0.3;            /* how strong those lights are: restrained; 0 for none */
+  --ws-surface: 255 255 255;       /* RGB of surfaces and of the glass tint */
+  --ws-solid: 0.94;                /* content: tables, forms, lists — near-opaque, never blurred */
+  --ws-clear: 0.5;                 /* navigation glass over the calm page */
+  --ws-frost: 0.74;                /* floating glass (menus, pickers, dialogs), and navigation glass with content under it */
+  --ws-rim: 255 255 255;           /* RGB of the light on glass edges */
+  --ws-rim-strength: 1;            /* 1 on light themes; lower on dark */
   --ws-blur: 24px;
   --ws-shadow: 15 23 42;           /* RGB of shadows */
   --ws-ok: 15 118 70;
@@ -44,10 +69,13 @@
 
 [data-theme="dark"] {
   --ws-ink: 240 244 250;
-  --ws-canvas: #0b0f17;
-  --ws-surface: 24 29 40;
-  --ws-glass: 36 42 56;
-  --ws-glass-alpha: 0.72;
+  --ws-canvas: #080c13;
+  --ws-surface: 26 32 46;
+  --ws-solid: 0.9;
+  --ws-clear: 0.5;
+  --ws-frost: 0.72;
+  --ws-atmosphere: 0.34;
+  --ws-rim-strength: 0.2;
   --ws-shadow: 0 0 0;
   --ws-ok: 92 214 150;
   --ws-warn: 245 190 90;
@@ -56,8 +84,8 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --ws-ink: 240 244 250; --ws-canvas: #0b0f17; --ws-surface: 24 29 40; --ws-glass: 36 42 56;
-    --ws-glass-alpha: 0.72; --ws-shadow: 0 0 0; --ws-ok: 92 214 150; --ws-warn: 245 190 90;
+    --ws-ink: 240 244 250; --ws-canvas: #080c13; --ws-surface: 26 32 46; --ws-solid: 0.9; --ws-clear: 0.5;
+    --ws-frost: 0.72; --ws-atmosphere: 0.34; --ws-rim-strength: 0.2; --ws-shadow: 0 0 0; --ws-ok: 92 214 150; --ws-warn: 245 190 90;
     --ws-bad: 255 128 128; --ws-info: 130 178 255;
   }
 }
@@ -69,26 +97,39 @@
   --ws-line: rgb(var(--ws-ink) / 0.08);
   --ws-fill: rgb(var(--ws-ink) / 0.05);
   --ws-fill-strong: rgb(var(--ws-ink) / 0.09);
-  --ws-lift: 0 0 0 1px rgb(var(--ws-ink) / 0.05), 0 1px 2px rgb(var(--ws-shadow) / 0.05), 0 14px 34px -20px rgb(var(--ws-shadow) / 0.28);
-  --ws-float: 0 0 0 1px rgb(var(--ws-ink) / 0.07), 0 2px 6px rgb(var(--ws-shadow) / 0.10), 0 24px 60px -18px rgb(var(--ws-shadow) / 0.40);
-  --ws-ring: inset 0 0 0 1.5px rgb(var(--ws-accent)), 0 0 0 4px rgb(var(--ws-accent) / 0.18);
+  /* The edge of a pane of glass: bright along the top, lit down the sides, a hairline underneath. */
+  --ws-edge: inset 0 1px 0 rgb(var(--ws-rim) / calc(0.9 * var(--ws-rim-strength))),
+    inset 1px 0 0 rgb(var(--ws-rim) / calc(0.4 * var(--ws-rim-strength))), inset -1px 0 0 rgb(var(--ws-rim) / calc(0.4 * var(--ws-rim-strength))),
+    inset 0 -1px 0 rgb(var(--ws-ink) / 0.06);
+  --ws-lift: 0 0 0 1px rgb(var(--ws-ink) / 0.05), 0 1px 2px rgb(var(--ws-shadow) / 0.06), 0 26px 50px -26px rgb(var(--ws-shadow) / 0.34);
+  --ws-float: 0 0 0 1px rgb(var(--ws-ink) / 0.07), 0 2px 6px rgb(var(--ws-shadow) / 0.10), 0 28px 64px -18px rgb(var(--ws-shadow) / 0.44);
 }
 
-/* ---------- canvas and groups */
+/* ---------- the atmosphere, and the solid content that sits in it */
 
-.ws-canvas {
-  color: var(--ws-text);
+.ws-canvas { position: relative; isolation: isolate; color: var(--ws-text); background: var(--ws-canvas); }
+/* Soft light in the product's colours, fixed behind the page and strongest near the top, where
+   the navigation glass is: enough to give the glass something to refract, never a show of its own. */
+.ws-canvas::before {
+  content: ""; position: fixed; inset: -14px; z-index: -1; pointer-events: none;
+  /* It shifts a few pixels against the pointer (surface-kit.js): the glass in front seems to float. */
+  translate: var(--ws-parallax-x, 0px) var(--ws-parallax-y, 0px);
+  transition: translate 700ms var(--ws-ease);
   background:
-    radial-gradient(1100px 520px at 10% -10%, rgb(var(--ws-accent) / 0.10), transparent 62%),
-    radial-gradient(900px 460px at 100% 0, rgb(var(--ws-accent) / 0.06), transparent 60%),
-    var(--ws-canvas);
+    radial-gradient(48% 56% at 8% 0%, rgb(var(--ws-field-a) / var(--ws-atmosphere)), transparent 72%),
+    radial-gradient(44% 52% at 94% 2%, rgb(var(--ws-field-b) / calc(var(--ws-atmosphere) * 0.85)), transparent 72%),
+    radial-gradient(64% 44% at 62% 106%, rgb(var(--ws-field-c) / calc(var(--ws-atmosphere) * 0.7)), transparent 74%);
 }
 
-.ws-group {
+/* Content is solid: near-opaque, so it belongs to the page's light without ever being blurred.
+   Its depth is physical — a lit top edge, a hairline, a contact shadow and a soft ambient one. */
+.ws-group, .ws-table-wrap {
+  position: relative;
   color: var(--ws-text);
-  background: rgb(var(--ws-surface));
+  background: linear-gradient(180deg, rgb(var(--ws-rim) / calc(0.5 * var(--ws-rim-strength))), rgb(var(--ws-rim) / 0) 96px),
+    rgb(var(--ws-surface) / var(--ws-solid));
   border-radius: var(--ws-radius-group);
-  box-shadow: var(--ws-lift);
+  box-shadow: var(--ws-edge), var(--ws-lift);
 }
 .ws-group-title {
   margin: 0;
@@ -136,7 +177,9 @@
   font: inherit; font-size: 0.9375rem; line-height: 1.3; text-align: start;
   color: var(--ws-text);
   background: var(--ws-fill);
-  box-shadow: inset 0 0 0 1px rgb(var(--ws-ink) / 0.07), inset 0 1px 2px rgb(var(--ws-shadow) / 0.05);
+  /* A well cut into the glass: shaded inside its top edge, lit along its lower lip. */
+  box-shadow: inset 0 0 0 1px rgb(var(--ws-ink) / 0.07), inset 0 1.5px 3px rgb(var(--ws-shadow) / 0.10),
+    0 1px 0 rgb(var(--ws-rim) / calc(0.75 * var(--ws-rim-strength)));
   outline: 2px solid transparent; outline-offset: 2px; /* shown by forced-colours modes */
   transition: background-color var(--ws-fast) var(--ws-ease), box-shadow var(--ws-fast) var(--ws-ease);
   -webkit-tap-highlight-color: transparent;
@@ -149,8 +192,8 @@
 .ws-input:hover, .ws-textarea:hover, .ws-select:hover, .ws-date:hover { background: var(--ws-fill-strong); }
 .ws-input:focus-visible, .ws-textarea:focus-visible, .ws-select:focus-visible, .ws-date:focus-visible,
 .ws-select[aria-expanded="true"], .ws-date[aria-expanded="true"] {
-  background: rgb(var(--ws-surface));
-  box-shadow: var(--ws-ring);
+  background: rgb(var(--ws-surface) / 0.94);
+  box-shadow: var(--ws-ring), 0 10px 24px -14px rgb(var(--ws-accent) / 0.65); /* the well lights up */
 }
 .ws-input[aria-invalid="true"], .ws-textarea[aria-invalid="true"], .ws-select[aria-invalid="true"], .ws-date[aria-invalid="true"] {
   background: rgb(var(--ws-bad) / 0.06);
@@ -252,21 +295,34 @@ select.ws-select:not(.ws-native) {
 }
 .ws-button {
   min-height: var(--ws-height); padding: 0 18px; font-size: 0.9375rem;
-  color: var(--ws-text); background: var(--ws-fill-strong);
+  color: var(--ws-text);
+  background: linear-gradient(180deg, rgb(var(--ws-rim) / calc(0.5 * var(--ws-rim-strength))), rgb(var(--ws-rim) / 0) 70%), rgb(var(--ws-surface) / 0.5);
+  box-shadow: inset 0 1px 0 rgb(var(--ws-rim) / calc(0.9 * var(--ws-rim-strength))), 0 0 0 1px rgb(var(--ws-ink) / 0.07), 0 1px 2px rgb(var(--ws-shadow) / 0.10);
   --ws-busy: var(--ws-ink);
 }
-.ws-button:hover { background: rgb(var(--ws-ink) / 0.13); }
-.ws-button:active, .ws-chip:active { scale: 0.97; }
+.ws-button:hover { background-color: rgb(var(--ws-surface) / 0.8); }
+/* A press lights the glass where it was touched (surface-kit.js says where). */
+.ws-button::before, .ws-chip::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+  background: radial-gradient(110px circle at var(--ws-press-x, 50%) var(--ws-press-y, 50%), rgb(var(--ws-rim) / 0.7), transparent 72%);
+}
+.ws-button[data-ws-pressed]::before, .ws-chip[data-ws-pressed]::before { animation: ws-glow 460ms ease-out; }
+/* A press: it gives way, brightens, and the light leaves its top edge for the bottom one. */
+.ws-button:active, .ws-chip:active { scale: 0.97; filter: brightness(1.06); }
+.ws-button:active:not([data-variant="quiet"]) {
+  box-shadow: inset 0 2px 4px rgb(var(--ws-shadow) / 0.2), inset 0 -1px 0 rgb(var(--ws-rim) / calc(0.7 * var(--ws-rim-strength))), 0 0 0 1px rgb(var(--ws-ink) / 0.07);
+}
 .ws-button[data-variant="primary"] {
   color: rgb(var(--ws-on-accent));
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0) 60%), rgb(var(--ws-accent));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 1px 2px rgb(var(--ws-shadow) / 0.2), 0 8px 18px -8px rgb(var(--ws-accent) / 0.7);
+  /* Tinted glass: the accent with light through its upper half and a glow of its own colour beneath. */
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.30), rgb(255 255 255 / 0.04) 52%, rgb(0 0 0 / 0.06)), rgb(var(--ws-accent) / 0.94);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), inset 0 -1px 0 rgb(0 0 0 / 0.14), 0 1px 2px rgb(var(--ws-shadow) / 0.2), 0 12px 26px -10px rgb(var(--ws-accent) / 0.75);
   --ws-busy: var(--ws-on-accent);
 }
 .ws-button[data-variant="primary"]:hover { filter: brightness(1.07); }
-.ws-button[data-variant="quiet"] { color: rgb(var(--ws-accent)); background: transparent; --ws-busy: var(--ws-accent); }
+.ws-button[data-variant="quiet"] { color: rgb(var(--ws-accent)); background: transparent; box-shadow: none; --ws-busy: var(--ws-accent); }
 .ws-button[data-variant="quiet"]:hover { background: rgb(var(--ws-accent) / 0.1); }
-.ws-button[data-variant="danger"] { color: rgb(var(--ws-bad)); background: rgb(var(--ws-bad) / 0.1); --ws-busy: var(--ws-bad); }
+.ws-button[data-variant="danger"] { color: rgb(var(--ws-bad)); background: rgb(var(--ws-bad) / 0.1); box-shadow: inset 0 0 0 1px rgb(var(--ws-bad) / 0.14); --ws-busy: var(--ws-bad); }
 .ws-button[data-variant="danger"]:hover { background: rgb(var(--ws-bad) / 0.16); }
 .ws-button[data-size="small"] { min-height: 36px; padding: 0 14px; font-size: 0.875rem; }
 .ws-button:focus-visible, .ws-chip:focus-visible { outline: 2px solid rgb(var(--ws-accent)); outline-offset: 2px; }
@@ -285,28 +341,61 @@ select.ws-select:not(.ws-native) {
 }
 .ws-chip:hover { color: var(--ws-text); background: var(--ws-fill-strong); }
 .ws-chip[aria-pressed="true"], .ws-chip[aria-selected="true"] {
-  color: var(--ws-text); background: rgb(var(--ws-surface));
-  box-shadow: 0 0 0 1px rgb(var(--ws-ink) / 0.06), 0 1px 2px rgb(var(--ws-shadow) / 0.12), 0 6px 14px -6px rgb(var(--ws-shadow) / 0.3);
+  color: var(--ws-text); background: rgb(var(--ws-surface) / 0.92);
+  box-shadow: inset 0 1px 0 rgb(var(--ws-rim) / var(--ws-rim-strength)), 0 0 0 1px rgb(var(--ws-ink) / 0.06), 0 1px 2px rgb(var(--ws-shadow) / 0.12), 0 6px 14px -6px rgb(var(--ws-shadow) / 0.3);
+}
+/* Chips that choose one of several: a track with a glass lens that slides — and stretches, like
+   liquid — to the chosen chip (surface-kit.js moves it; without the script the chip itself lights). */
+.ws-segmented {
+  position: relative; display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 4px;
+  border-radius: calc(var(--ws-height) / 2 + 4px);
+  background: rgb(var(--ws-ink) / 0.06);
+  box-shadow: inset 0 1px 2px rgb(var(--ws-shadow) / 0.12), 0 1px 0 rgb(var(--ws-rim) / calc(0.7 * var(--ws-rim-strength)));
+}
+.ws-segmented > .ws-chip { z-index: 1; background: none; }
+.ws-segmented[data-ws-thumb] > .ws-chip[aria-pressed="true"], .ws-segmented[data-ws-thumb] > .ws-chip[aria-selected="true"] { background: none; box-shadow: none; }
+.ws-thumb {
+  position: absolute; z-index: 0; border-radius: 999px; pointer-events: none;
+  /* A glint waits off its left edge and crosses it while it moves (surface-kit.js); below it, the lens itself. */
+  background: linear-gradient(105deg, rgb(var(--ws-rim) / 0) 30%, rgb(var(--ws-rim) / 0.95) 50%, rgb(var(--ws-rim) / 0) 70%) 160% 0 / 220% 100% no-repeat,
+    linear-gradient(180deg, rgb(var(--ws-surface)), rgb(var(--ws-surface) / 0.78));
+  box-shadow: inset 0 1px 0 rgb(var(--ws-rim) / var(--ws-rim-strength)), inset 0 -1px 0 rgb(var(--ws-ink) / 0.07),
+    0 0 0 1px rgb(var(--ws-ink) / 0.05), 0 2px 4px rgb(var(--ws-shadow) / 0.14), 0 8px 18px -8px rgb(var(--ws-shadow) / 0.4);
+}
+[data-theme="dark"] .ws-thumb {
+  background: linear-gradient(105deg, rgb(255 255 255 / 0) 30%, rgb(255 255 255 / 0.35) 50%, rgb(255 255 255 / 0) 70%) 160% 0 / 220% 100% no-repeat,
+    linear-gradient(180deg, rgb(255 255 255 / 0.22), rgb(255 255 255 / 0.12));
 }
 .ws-count { font-weight: 500; font-variant-numeric: tabular-nums; color: var(--ws-muted); }
 @media (pointer: coarse) {
   .ws-chip, .ws-button[data-size="small"], .ws-sort { min-height: 44px; }
 }
 
-/* ---------- the floating layer: glass above the content that scrolls under it */
+/* ---------- glass: navigation, and what floats */
 
-.ws-toolbar, .ws-bulk, .ws-popover {
+.ws-toolbar, .ws-bulk, .ws-popover, dialog.ws-dialog {
   color: var(--ws-text);
-  background: rgb(var(--ws-glass) / var(--ws-glass-alpha));
+  /* Light on the glass: a soft glow under the pointer (surface-kit.js moves it), light falling from the top edge, then the tint. */
+  background: radial-gradient(260px circle at var(--ws-light-x, -400px) var(--ws-light-y, -400px), rgb(var(--ws-rim) / calc(0.26 * var(--ws-rim-strength) + 0.04)), transparent 72%),
+    linear-gradient(180deg, rgb(var(--ws-rim) / calc(0.34 * var(--ws-rim-strength))), rgb(var(--ws-rim) / 0) 140px),
+    rgb(var(--ws-surface) / var(--ws-glass-tint));
   -webkit-backdrop-filter: blur(var(--ws-blur)) saturate(1.8);
   backdrop-filter: blur(var(--ws-blur)) saturate(1.8);
+  transition: background-color var(--ws-base) var(--ws-ease), box-shadow var(--ws-base) var(--ws-ease);
 }
+/* Navigation glass is translucent over the calm page; what floats over content is frosted. */
+.ws-toolbar { --ws-glass-tint: var(--ws-clear); }
+.ws-bulk, .ws-popover, dialog.ws-dialog { --ws-glass-tint: var(--ws-frost); }
+/* Glass answers to what is behind it: with content under it, or over a busy background, it frosts. */
+.ws-toolbar[data-ws-over] { --ws-glass-tint: var(--ws-frost); }
+[data-ws-over="busy"] { --ws-glass-tint: calc(var(--ws-frost) + 0.1); }
 .ws-toolbar {
   position: sticky; top: var(--ws-toolbar-top, 12px); z-index: 20;
   display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
   padding: 10px; border-radius: var(--ws-radius-group);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), var(--ws-lift);
+  box-shadow: var(--ws-edge), var(--ws-lift);
 }
+.ws-toolbar[data-ws-over] { box-shadow: var(--ws-edge), var(--ws-float); } /* it lifts off the content passing beneath */
 .ws-toolbar .ws-input, .ws-toolbar .ws-select { border-radius: 999px; }
 .ws-toolbar > .ws-select { width: auto; } /* a filter is as wide as its words, before and after the script upgrades it */
 .ws-search { position: relative; flex: 1 1 240px; min-width: 0; }
@@ -319,10 +408,12 @@ select.ws-select:not(.ws-native) {
   width: fit-content; max-width: calc(100% - 24px); margin: 12px auto 0;
   padding: 8px 8px 8px 18px; border-radius: 999px;
   font-size: 0.9375rem; font-weight: 550;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), var(--ws-float);
-  animation: ws-rise var(--ws-base) var(--ws-spring);
+  box-shadow: var(--ws-edge), var(--ws-float);
+  /* It emerges when a selection exists and recedes when it is cleared (browsers that can't animate display switch at once). */
+  transition: opacity 240ms var(--ws-ease), translate 320ms var(--ws-spring), scale 320ms var(--ws-spring), display 240ms allow-discrete;
 }
-.ws-bulk[hidden] { display: none; }
+.ws-bulk[hidden] { display: none; opacity: 0; translate: 0 14px; scale: 0.96; }
+@starting-style { .ws-bulk { opacity: 0; translate: 0 14px; scale: 0.96; } }
 
 .ws-popover {
   position: fixed; inset: auto; z-index: 2147483000;
@@ -330,7 +421,7 @@ select.ws-select:not(.ws-native) {
   margin: 0; padding: 6px; border: 0;
   overflow: auto; overscroll-behavior: contain;
   border-radius: calc(var(--ws-radius) + 6px);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), var(--ws-float);
+  box-shadow: var(--ws-edge), var(--ws-float);
   font-size: 0.9375rem;
 }
 .ws-popover[popover]:not(:popover-open) { display: none; } /* a closed menu must not show, whatever its layout */
@@ -346,6 +437,37 @@ select.ws-select:not(.ws-native) {
   font: inherit; color: inherit; background: var(--ws-fill-strong); outline: none;
 }
 .ws-popover-search:focus-visible { box-shadow: inset 0 0 0 1.5px rgb(var(--ws-accent)); }
+
+/* Dialogs — layered glass: a frosted sheet in front, the page behind dimmed and slightly out of
+   focus, and solid fields, lists and groups inside the sheet. Use the browser's own <dialog>
+   (showModal), so focus is held and Escape closes it. */
+dialog.ws-dialog {
+  box-sizing: border-box; width: 100%; max-width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 48px);
+  margin: auto; padding: 0; border: 0; overflow: auto;
+  border-radius: calc(var(--ws-radius-group) + 4px);
+  box-shadow: var(--ws-edge), 0 0 0 1px rgb(var(--ws-ink) / 0.08), 0 4px 10px rgb(var(--ws-shadow) / 0.10), 0 44px 90px -28px rgb(var(--ws-shadow) / 0.55);
+}
+dialog.ws-dialog::backdrop {
+  background: rgb(var(--ws-shadow) / 0.26);
+  -webkit-backdrop-filter: blur(2px) saturate(0.9);
+  backdrop-filter: blur(2px) saturate(0.9);
+}
+/* The sheet emerges from just below its place and recedes the same way; the page behind dims with it. */
+dialog.ws-dialog {
+  opacity: 0; translate: 0 16px; scale: 0.96;
+  transition: opacity 220ms var(--ws-ease), translate 300ms var(--ws-ease), scale 300ms var(--ws-ease),
+    overlay 300ms allow-discrete, display 300ms allow-discrete;
+}
+dialog.ws-dialog[open] { opacity: 1; translate: 0 0; scale: 1; }
+@starting-style { dialog.ws-dialog[open] { opacity: 0; translate: 0 16px; scale: 0.96; } }
+dialog.ws-dialog::backdrop { opacity: 0; transition: opacity 260ms ease-out, overlay 260ms allow-discrete, display 260ms allow-discrete; }
+dialog.ws-dialog[open]::backdrop { opacity: 1; }
+@starting-style { dialog.ws-dialog[open]::backdrop { opacity: 0; } }
+.ws-dialog-body { display: grid; gap: 16px; padding: 24px 24px 8px; }
+.ws-dialog-title { margin: 0; font-size: 1.25rem; font-weight: 650; letter-spacing: -0.02em; }
+.ws-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 16px 24px 22px; }
+/* Inside the glass, what is read sits on solid ground. */
+dialog.ws-dialog .ws-group, dialog.ws-dialog .ws-list { background: rgb(var(--ws-surface) / 0.96); box-shadow: 0 0 0 1px rgb(var(--ws-ink) / 0.06); border-radius: var(--ws-radius); }
 
 .ws-options { display: grid; gap: 1px; outline: none; }
 .ws-option, .ws-menu [role="menuitem"] {
@@ -410,19 +532,26 @@ select.ws-select:not(.ws-native) {
 
 /* ---------- rows: tables and lists */
 
-.ws-table-wrap {
-  overflow: auto; max-height: var(--ws-table-height, none);
-  color: var(--ws-text); background: rgb(var(--ws-surface));
-  border-radius: var(--ws-radius-group); box-shadow: var(--ws-lift);
+.ws-table-wrap { overflow: auto; max-height: var(--ws-table-height, none); isolation: isolate; }
+/* One highlight that glides from row to row under the pointer (surface-kit.js moves it). */
+.ws-table-wrap::before {
+  content: ""; position: absolute; z-index: -1; left: 6px; top: 0; width: calc(100% - 12px);
+  height: var(--ws-glide-height, 0px); translate: 0 var(--ws-glide-top, 0px);
+  border-radius: var(--ws-radius); pointer-events: none; opacity: 0;
+  background: rgb(var(--ws-ink) / 0.045);
+  box-shadow: inset 0 0 0 1px rgb(var(--ws-ink) / 0.04);
+  transition: translate 200ms var(--ws-ease), height 200ms var(--ws-ease), opacity var(--ws-fast) var(--ws-ease);
 }
+.ws-table-wrap[data-ws-glide="on"]::before { opacity: 1; }
+.ws-table-wrap[data-ws-glide] tbody tr:hover td { background: none; }
 .ws-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.9375rem; }
 .ws-table th {
   position: sticky; top: 0; z-index: 2;
   padding: 12px 16px; text-align: start; white-space: nowrap;
   font-size: 0.8125rem; font-weight: 600; color: var(--ws-muted);
-  background: rgb(var(--ws-surface) / 0.8);
-  -webkit-backdrop-filter: blur(18px) saturate(1.6);
-  backdrop-filter: blur(18px) saturate(1.6);
+  background: rgb(var(--ws-surface) / 0.6); /* the one piece of glass on a table: rows blur as they pass under */
+  -webkit-backdrop-filter: blur(18px) saturate(1.8);
+  backdrop-filter: blur(18px) saturate(1.8);
   box-shadow: inset 0 -1px 0 var(--ws-line);
   transition: box-shadow var(--ws-base) var(--ws-ease);
 }
@@ -474,7 +603,9 @@ th[aria-sort="descending"] .ws-sort::after { rotate: 180deg; }
 .ws-lead strong { display: block; font-weight: 600; }
 .ws-tile {
   flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px;
-  color: rgb(var(--ws-accent)); background: rgb(var(--ws-accent) / 0.1);
+  color: rgb(var(--ws-accent));
+  background: linear-gradient(160deg, rgb(var(--ws-accent) / 0.2), rgb(var(--ws-accent) / 0.07));
+  box-shadow: inset 0 1px 0 rgb(var(--ws-rim) / calc(0.7 * var(--ws-rim-strength))), inset 0 0 0 1px rgb(var(--ws-accent) / 0.14);
 }
 .ws-sub { display: block; font-size: 0.8125rem; color: var(--ws-muted); }
 .ws-num { text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -498,12 +629,14 @@ th.ws-num { text-align: end; }
 }
 .ws-meter {
   --value: 0.5;
-  position: relative; display: inline-block; width: 96px; height: 6px; overflow: hidden;
+  position: relative; display: inline-block; width: 96px; height: 6px;
   border-radius: 999px; background: rgb(var(--ws-ink) / 0.1); vertical-align: middle;
+  box-shadow: inset 0 1px 1.5px rgb(var(--ws-shadow) / 0.14);
 }
 .ws-meter::after {
   content: ""; position: absolute; inset: 0; width: calc(var(--value) * 100%);
-  border-radius: inherit; background: rgb(var(--tone));
+  border-radius: inherit; background: linear-gradient(90deg, rgb(var(--tone) / 0.7), rgb(var(--tone)));
+  box-shadow: 0 0 10px rgb(var(--tone) / 0.45); /* a lit fill, not a painted bar */
   transition: width var(--ws-base) var(--ws-ease);
 }
 .ws-meter:not([data-tone]) { --tone: var(--ws-accent); }
@@ -519,7 +652,8 @@ th.ws-num { text-align: end; }
 }
 .ws-list-item:hover { background: rgb(var(--ws-ink) / 0.05); }
 .ws-list-item:active { background: rgb(var(--ws-ink) / 0.09); }
-.ws-list-item[aria-current], .ws-list-item[aria-selected="true"] { font-weight: 600; background: rgb(var(--ws-accent) / 0.11); }
+.ws-list-item[aria-current], .ws-list-item[aria-selected="true"], .ws-list-item:has(:checked) { font-weight: 600; background: rgb(var(--ws-accent) / 0.11); }
+.ws-list-item:has(:focus-visible) { outline: 2px solid rgb(var(--ws-accent)); outline-offset: -2px; }
 .ws-list-item:focus-visible { outline: 2px solid rgb(var(--ws-accent)); outline-offset: -2px; }
 .ws-list-item > :last-child:not(:first-child) { margin-left: auto; }
 
@@ -535,17 +669,23 @@ th.ws-num { text-align: end; }
 
 @keyframes ws-spin { to { rotate: 360deg; } }
 @keyframes ws-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
-@keyframes ws-rise { from { opacity: 0; translate: 0 12px; scale: 0.96; } }
+@keyframes ws-glow { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+
+/* Arrival: when the page opens, each surface in view rises into place once — the answer to
+   having navigated here (surface-kit.js adds .ws-arrive and takes it off again). */
+.ws-arrive { animation: ws-arrive 420ms var(--ws-ease) both; animation-delay: calc(var(--ws-order, 0) * 60ms); }
+@keyframes ws-arrive { from { opacity: 0; translate: 0 10px; } }
 
 /* ---------- fallbacks */
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .ws-toolbar, .ws-bulk, .ws-popover { background: rgb(var(--ws-glass)); }
-  .ws-table th { background: rgb(var(--ws-surface)); }
+  .ws-toolbar, .ws-bulk, .ws-popover, dialog.ws-dialog, .ws-table th { background: rgb(var(--ws-surface)); }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .ws-toolbar, .ws-bulk, .ws-popover { background: rgb(var(--ws-glass)); -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .ws-table th { background: rgb(var(--ws-surface)); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .ws-toolbar, .ws-bulk, .ws-popover, dialog.ws-dialog, .ws-group, .ws-table-wrap, .ws-table th {
+    background: rgb(var(--ws-surface)); -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+  .ws-canvas::before { display: none; }
 }
 @media (prefers-contrast: more) {
   :root, [data-theme] { --ws-muted: rgb(var(--ws-ink) / 0.86); --ws-line: rgb(var(--ws-ink) / 0.3); }
@@ -557,7 +697,10 @@ th.ws-num { text-align: end; }
 @media (prefers-reduced-motion: reduce) {
   .ws-button, .ws-chip, .ws-day, .ws-calendar-step { scale: 1 !important; }
   .ws-check::after, .ws-radio::after, .ws-switch::after, .ws-select > .ws-icon, .ws-sort::after, .ws-meter::after { transition: none; }
-  .ws-bulk, .ws-skeleton { animation: none; }
+  .ws-skeleton, .ws-arrive, .ws-button[data-ws-pressed]::before, .ws-chip[data-ws-pressed]::before { animation: none; }
+  .ws-bulk, dialog.ws-dialog, dialog.ws-dialog::backdrop { transition: opacity 120ms linear; translate: none; scale: none; }
+  .ws-canvas::before { translate: none; transition: none; }
+  .ws-table-wrap::before { transition: opacity var(--ws-fast) var(--ws-ease); }
   .ws-button[aria-busy="true"]::after { animation: ws-pulse 1.4s ease-in-out infinite; border-right-color: rgb(var(--ws-busy)); }
 }
 @keyframes ws-pulse { 50% { opacity: 0.35; } }

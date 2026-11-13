@@ -273,7 +273,7 @@ change runs through all seven in minutes.
      forms, lists and inner screens are where people spend the day, and
      where a build most often turns ordinary: AK chose builds whose hero he
      liked and still called their tables and forms "simple, not Apple-level".
-     Four things hold on every one of them (kit:
+     Five things hold on every one of them (kit:
      `arkar-ui-design-system/assets/surface-kit.css` and `surface-kit.js`):
      1. *One world.* The canvas, type, accent and material of the main
         screen carry through — never a designed band above a generic white
@@ -289,10 +289,23 @@ change runs through all seven in minutes.
         before typing, checks a field when it is left, keeps a line for the
         message so nothing moves under the pointer, and says honestly what
         is saved.
-     4. *Glass on interaction.* Content stays solid for reading; everything
-        that floats — toolbar, sticky header, selection bar, menus, pickers,
-        sheets — is glass that content scrolls under, opening from the
-        control that called it.
+     4. *Glass is for navigation and hierarchy, not for everything.*
+        Content, tables, lists and forms are solid or near-opaque and never
+        blurred; navigation and filter bars are translucent glass; menus,
+        pickers and the selection bar are frosted; dialogs are layered
+        glass (a frosted sheet, the page behind dimmed, solid lists and
+        fields inside); buttons have subtle material depth; the background
+        is atmospheric and restrained; text is full contrast everywhere.
+        Glass frosts when what is behind it is busy, and depth is physical
+        — hairlines, a lit top edge, layered shadows — not more blur. When
+        everything is glass, nothing feels special
+        (`arkar-ui-design-system/references/materials-glass.md`).
+     5. *Motion communicates the material.* A press gives way and lights
+        up; menus and panels emerge from what opened them and recede into
+        it; the chosen tab's indicator flows; a reflection moves only
+        because the glass or the pointer did. Never animate because you
+        can — every motion answers an action, nothing loops, and reduced
+        motion is respected.
    - **Every row is answered.** A row that changes nothing says so and why
      ("Motion: none in this product — press feedback and busy state only").
    - **States of the real feature, not only of the mock.** List what the

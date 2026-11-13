@@ -66,7 +66,8 @@ sake.
    controls; the product's signature components are still its own. A
    product without a designed dark theme pins `data-theme="light"` on
    `<html>`, or both kits follow the system into a half-dark page.
-5. **Materials** (`references/materials-glass.md`): solid surfaces and,
+5. **Materials** (`references/materials-glass.md` — the material map: glass
+   for navigation and hierarchy, solid for content): solid surfaces and,
    where the direction calls for it, Liquid Glass for the floating control
    layer (bars, sheets, menus, palette) — with legibility guards and
    reduced-transparency fallbacks. Content surfaces stay solid.

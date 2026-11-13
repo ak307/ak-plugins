@@ -41,6 +41,28 @@ interfaces or force iOS behaviour onto other platforms.
 - The moments in scope: navigation, arrival, feedback, content changes,
   waiting, AI activity, signature moments.
 
+## Motion communicates the material
+
+Without motion, glass is only a translucent surface; with it, glass is a
+physical material that answers the user. On a Liquid Glass product:
+
+1. **Responsive interaction** — a pressed button gives way, brightens and
+   its highlight moves; it feels tactile, never flat.
+2. **Fluid transitions** — menus, popovers and panels emerge from what
+   opened them and recede into it, keeping the visual connection.
+3. **Subtle parallax** — the background shifts a few pixels against the
+   pointer, so the glass in front seems to float.
+4. **Dynamic light** — a reflection moves because the glass or the pointer
+   moved, never as an animation of its own.
+5. **Morphing** — the chosen tab's indicator flows between positions;
+   contextual controls change shape rather than switch appearance.
+
+**Non-negotiable: never animate because you can — animate because the
+interaction needs feedback.** Motion stays lightweight, nothing loops, and
+reduced-motion settings are respected. In web builds
+`arkar-ui-design-system/assets/surface-kit.js` does all five for the kit's
+controls; use it rather than hand-making effects.
+
 ## The five motion levels — choose the lowest that achieves the result
 
 | Level | What | Examples |

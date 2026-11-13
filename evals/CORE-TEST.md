@@ -144,3 +144,45 @@ Changes tested in round 3:
 4. "A plain existing look is lifted, not copied."
 
 Builds: the same four briefs, setup `surface`, results in `core-test-20261113-1139-r3`.
+
+## Round 4 — the revised plugin, all four briefs (results in `core-test-20261113-1139-r4`)
+
+Plugin frozen at commit `e884f41`: the working-surface kit with AK's material map and motion
+principles. It does not include what came after (the feedback kit's state model, the thick-glass
+critical dialog, the configuration layer).
+
+| Brief | Released plugin (round 1) | Revised plugin (round 4) |
+|---|---|---|
+| assets-table | 75.0 min · $23.7 · 102 images · 29 check runs | 71.9 min · $19.4 · 56 images · 31 check runs |
+| energy-dashboard | 72.9 min · $20.4 · 88 images · 45 check runs | 70.3 min · $17.0 · 68 images · 30 check runs |
+| permit-form | 47.4 min · $17.3 · 71 images · 28 check runs | 55.6 min · $15.9 · 76 images · 18 check runs |
+| opsdesk-assign | 84.4 min · $18.1 · 88 images · 63 check runs | 86.8 min · $13.7 · 53 images · 33 check runs |
+| Total | 279.7 min · $79.5 | 284.6 min · $66.0 |
+
+Cost is 17% lower; time is the same (2% higher). **The shorter checking step did not shorten
+the builds.** Checking is still nearly all of the work after the first files are written:
+
+- The use check was meant to run once per surface. Builds ran it 6 to 16 times, because every
+  fix was followed by a full rerun.
+- The older tools (audit, film, motion-metrics, record, interaction-probe) were still run
+  beside it, 12 to 22 times per build.
+- The quality gate sent each build back two or three times for a record it had not written
+  (independent review, transaction list, security check, interaction probe), and the security
+  gate once where the skill had not been loaded.
+
+What the builds are like:
+
+- All three new-product builds copied the working-surface kit and built their tables, forms,
+  dropdowns, date fields and dialogs from it. The React app (Ops Desk) kept its own components
+  and its look, as intended for an existing app.
+- Use check on each finished build (the current `use-check.cjs`): asset register, energy
+  dashboard and permit form have nothing to fix (asset register: touch targets under 44 px on a
+  phone to look at). Ops Desk has two things to fix — badge contrast and a page that scrolls
+  sideways on phones — and both are in the existing app: the released plugin's build has the
+  same two, and the revised build reported them as proposals instead of changing them.
+- Found by looking: the asset register's "Log service" form shows the browser's own validation
+  bubble; it uses the kit's fields but not its form feedback.
+
+Blind comparison (released plugin against revised, random A/B per brief, same journey states,
+one recording each) is published for AK; the key is kept outside the page. Verdict: pending.
+

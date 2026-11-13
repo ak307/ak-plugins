@@ -71,3 +71,41 @@ Pattern across the four briefs:
    part of the old process worth keeping, ideally as one tool.
 4. Ambition for a new product's identity has to be asked for; without it the result is clean and
    forgettable.
+
+## AK's blind verdict (he did not know which setup made which)
+
+| Brief | Looks better | Feels better | Would ship | His note |
+|---|---|---|---|---|
+| Asset register | Current | Current | Current | Some UI is simple and not Apple-level, but mostly better than the other |
+| Permit to work | Current | Current | Current | Same note |
+| Energy dashboard | Current | Current | Current | Same note |
+| Ops Desk feature (existing app, look kept) | Same | Same | Neither | "I don't like both A and B at all" |
+
+Decision: the draft core is **not** proposed as a replacement for the released UI skills. The
+released plugin makes the look AK prefers; what he still finds missing is that some surfaces inside
+it are "simple and not Apple-level". The open questions moved to: how to lift those inner surfaces,
+how to cut the plugin's cost and its trust-breaking bugs without losing its look, and what an
+existing app with a plain look should get.
+
+## The "use it" check (`drafts/ui-core/arkar-ui-design-intelligence/scripts/use-check.cjs`)
+
+One command that uses a local page the way the blind testers did and prints PASS / FIX / LOOK lines:
+load (console errors, public-server dependencies, own files lost, layout shift), ten widths
+(sideways overflow, controls under a fixed or sticky side panel), every Tab stop shows focus, phone
+touch targets and small text, `?latency=slow` and `?fail=always`, reduced motion; with steps that
+open a view, refresh / Back / Forward and layout shift during the steps; with `--commit` and
+`--count`, a double press. About 30 seconds a run. `tests/test_use_check.py` holds a page that
+behaves and a page with eleven built-in defects; the tool passes the first and names each defect on
+the second.
+
+Run on the eight builds of this test without steps, it found again, unprompted, these tester
+findings: the core dashboard's layout jump (0.81), its Google Fonts dependency and its missing
+slow and failure states; the current dashboard's rows running under the side panel at 1200–1280 px;
+the core register's layout jump (0.29) and its seven browser-default controls; a Tab stop with no
+visible focus in the current register; a 16 px "Reset demo data" target in the core permit form.
+With a step that opens a building it also found that the core dashboard's sheet is not in the
+address (Back leaves the app) while the current one passes refresh, Back and Forward.
+
+What it does not find: the three trust-breaking bugs in the current builds (a save that lands
+after Discard, an alerts list that goes blank, a submitted permit that reverts to draft). Those
+need a person or an agent using the product with intent. The tool is a floor, not a tester.

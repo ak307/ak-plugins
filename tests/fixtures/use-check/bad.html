@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Use check: a page with known defects</title>
+<style>
+  body { margin: 0; font: 16px/1.5 system-ui, sans-serif; }
+  main { padding: 24px 16px; }
+  button { min-height: 48px; padding: 0 20px; font: inherit; }
+  /* Defect: this button shows nothing when it has focus. */
+  #mute, #mute:focus, #mute:focus-visible { outline: none; }
+  /* Defect: a 16 px touch target. */
+  #tiny { min-height: 0; width: 16px; height: 16px; padding: 0; font-size: 10px; }
+  /* Defect: wider than a phone, so the page scrolls sideways. */
+  .wide { min-width: 700px; background: #eee; }
+  /* Defect: full-width rows run underneath a fixed side panel. */
+  aside { position: fixed; right: 0; top: 120px; width: 300px; height: 420px; background: #dde; }
+  [role=row] { display: block; padding: 12px; border-bottom: 1px solid #ccc; }
+  /* Defect: keeps spinning when the user asked for reduced motion. */
+  .spinner { width: 24px; height: 24px; border: 3px solid #999; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .fine-print { font-size: 10px; }
+  .filler { height: 500px; background: #f4f4f4; }
+  [hidden] { display: none; }
+</style>
+</head>
+<body>
+<!-- Defect: arrives late and pushes the page down. -->
+<div id="banner" hidden style="height: 240px; background: #fc9">Maintenance window on Saturday</div>
+<main>
+  <h1>Work orders</h1>
+  <div class="spinner"></div>
+  <button id="mute">Mute alerts</button>
+  <button id="tiny" aria-label="Dismiss">×</button>
+  <select aria-label="Building"><option>Tower A</option><option>Tower B</option></select>
+  <p class="fine-print">Updated by the facilities team.</p>
+  <div class="wide">A table that does not fit a phone</div>
+  <div role="row" tabindex="0">Chiller valve, level four — mechanical team — due Friday</div>
+  <div role="row" tabindex="0">Lift inspection, lobby — vendor — due Monday</div>
+  <section id="list">
+    <button id="open">Open work order 1042</button>
+  </section>
+  <!-- Defect: the view is not in the address, so a refresh loses it and Back leaves the app. -->
+  <section id="detail" hidden>
+    <h2>Chiller valve, level four</h2>
+    <p>Replace the valve and test the loop pressure.</p>
+    <p>Assigned to the mechanical team.</p>
+    <button id="add">Add note</button>
+    <ul id="notes"></ul>
+  </section>
+  <div class="filler"></div>
+  <aside>Filters</aside>
+</main>
+<!-- Defect: depends on a server that is not the product's. -->
+<img src="https://fonts.example.invalid/pixel.png" alt="" width="1" height="1">
+<script>
+  console.error("Could not read the saved filters"); // Defect: an error on every load.
+  setTimeout(() => { document.getElementById("banner").hidden = false; }, 600);
+  document.getElementById("open").addEventListener("click", () => {
+    document.getElementById("list").hidden = true;
+    document.getElementById("detail").hidden = false;
+  });
+  // Defect: nothing stops a second press, so each press saves again.
+  document.getElementById("add").addEventListener("click", () => {
+    setTimeout(() => {
+      const note = document.createElement("li");
+      note.className = "note";
+      note.textContent = "Note saved";
+      document.getElementById("notes").append(note);
+    }, 300);
+  });
+</script>
+</body>
+</html>

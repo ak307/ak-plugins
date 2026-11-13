@@ -69,6 +69,8 @@ def build_variant(destination: Path) -> Path:
     for old in skills.glob("arkar-ui-*"):
         if old.name != CORE:
             shutil.rmtree(old)
+    for tool in (DRAFT / "scripts").glob("*.cjs"):  # tools that so far exist only in the draft
+        shutil.copy2(tool, core / "scripts" / tool.name)
     text = (DRAFT / "SKILL.md").read_text(encoding="utf-8")
     (core / "SKILL.md").write_text(text.replace("DRAFT for AK's review — not part of the live plugin. ", ""), encoding="utf-8")
 

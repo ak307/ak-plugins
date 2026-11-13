@@ -45,7 +45,14 @@ behaviour right.
    action obvious (`references/layout-strategy.md`).
 3. **Interaction patterns** — forms, validation, states, feedback,
    confirmations, undo, tables, filters, dashboards and charts, AI
-   conversations (`references/interaction-patterns.md`).
+   conversations (`references/interaction-patterns.md`). Tables, forms and
+   lists follow the working-surface standard in `arkar-ui-intelligence`
+   (step 3) and start from `arkar-ui-design-system/assets/surface-kit.css`
+   and `.js`: a row leads with what identifies the record and shows its
+   state as a shape as well as a word; a form states its rules first,
+   checks a field when it is left, keeps a line for the message so nothing
+   moves under the pointer, and says honestly what is saved; every action
+   that commits survives a double press, a quick exit and a failure.
 4. **UX writing** — labels, buttons, empty states and errors in plain
    language that says what happened and what to do; the same word for the
    same thing everywhere.

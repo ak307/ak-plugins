@@ -175,10 +175,17 @@ change runs through all seven in minutes.
 2. **Decide** — once, on paper:
    - **Existing product (Mode A):** the existing design system, components
      and patterns decide; name them. No alternative layouts, no new identity.
-     This holds even when the product has little identity of its own: if AK
-     didn't ask for a redesign, a new screen follows what's there (built to
-     the experience standard within it) and the redesign goes in the reply
-     as a 🟠 proposal — never a new identity started on one screen.
+   - **A plain existing look is lifted, not copied.** When the product has
+     little identity of its own (browser-default controls, flat white cards,
+     no material) and AK didn't ask for a redesign, keep its colours, type,
+     navigation and page layout — and build the screens you add or change to
+     the working-surface standard (step 3), themed to those colours and
+     type, so the new work belongs to the product and is still premium. Use
+     the product's own component library where it has one, restyled through
+     its theme for the screens in scope; the working-surface kit where it has
+     none. Screens you weren't asked to touch stay as they are; lifting them
+     goes in the reply as a 🟠 proposal — never a new identity started on one
+     screen.
    - **New product or redesign (B, C):** art direction chooses one direction
      and records it in `DESIGN.md` with its reasons. For each main screen,
      think through the obvious layout and two different ideas in a sentence
@@ -259,9 +266,33 @@ change runs through all seven in minutes.
    **gestures** — follows the finger, threshold, spring back, interrupt and
    reverse mid-way, momentum and settle, a non-gesture alternative ·
    reduced motion for each.
-   Three rules make the sheet production-ready:
+   Five rules make the sheet production-ready:
    - **Every surface is designed, not only the first screen.** Calm means
      no noise — never plain.
+   - **The working surface is designed, not left as white cards.** Tables,
+     forms, lists and inner screens are where people spend the day, and
+     where a build most often turns ordinary: AK chose builds whose hero he
+     liked and still called their tables and forms "simple, not Apple-level".
+     Four things hold on every one of them (kit:
+     `arkar-ui-design-system/assets/surface-kit.css` and `surface-kit.js`):
+     1. *One world.* The canvas, type, accent and material of the main
+        screen carry through — never a designed band above a generic white
+        sheet. If deleting one band would remove the product's identity, it
+        doesn't have one yet.
+     2. *No browser-default control.* Dropdowns, date and time pickers,
+        ticks, switches and menus are the kit's (or the framework's
+        accessible primitives styled to match). A native select or date
+        pop-up on a new surface is a defect.
+     3. *Rows and fields are designed objects.* A row leads with what
+        identifies the record and shows its state as a shape (a meter, a
+        spark, a status dot) as well as a word. A form states its rules
+        before typing, checks a field when it is left, keeps a line for the
+        message so nothing moves under the pointer, and says honestly what
+        is saved.
+     4. *Glass on interaction.* Content stays solid for reading; everything
+        that floats — toolbar, sticky header, selection bar, menus, pickers,
+        sheets — is glass that content scrolls under, opening from the
+        control that called it.
    - **Every row is answered.** A row that changes nothing says so and why
      ("Motion: none in this product — press feedback and busy state only").
    - **States of the real feature, not only of the mock.** List what the
@@ -311,32 +342,41 @@ change runs through all seven in minutes.
      `#[Url]` for filters and the selected item, and the motion kit's `flip`
      only where Alpine can't (reordering lists); Flutter: theme tokens, Hero
      or shared-axis transitions, implicit animations, `disableAnimations`;
-   - business systems on Liquid Glass copy
-     `arkar-ui-design-system/assets/liquid-glass.css`.
-5. **Verify — against the sheet.** Load `arkar-ui-visual-qa` now (Skill
-   tool) and run its premium pass: on local/test data, tick every
-   acceptance check — every state seen at the target sizes, the audit and
-   interaction probe, the main flows filmed with `film.cjs` and judged by
-   eye and measured with `motion-metrics.cjs` (real presses: response time,
-   timing and easing, frame pacing, pop-ins and jumps, one action
-   interrupted mid-animation with `@<ms>`, and `--reduced`; `--real-browser`
-   when it reports a low frame rate or the design uses glass or blur), the experience walked at real speed with `record.cjs` (happy path,
-   invalid input, failure and retry, cancel/back/undo, refresh mid-task,
-   keyboard only, phone) to `references/experience-standard.md` — as
-   video, because timing can't be judged from step screenshots. Check the
-   system was really used: no button, field, dialog or library class name
-   (`btn`, `link-button`…) hand-written in a screen when a component does
-   that job — use or extend the component (a `link` or `icon` variant, say);
-   no raw colour, shadow or radius outside the tokens; the audit's rendered
-   counts within ≤ 6 radii, ≤ 5 shadows (inset highlights count),
-   ≤ 14 font sizes. Each miss is a defect. Run
-   `arkar-security/scripts/security-check.cjs <url> --code=<src>` on the
-   changed pages (with `--steps` that fill a form when the surface collects
-   personal data): findings in the new code are defects, findings in
-   existing code are 🟢 / 🟠 proposals for AK — never applied unasked. **Fix
-   defects; don't redesign.** Anything that feels ordinary is fixed within
-   the sheet's decisions. Record a `## Verify` table in
-   `qa-screenshots/premium-pass.md` (sheet item → evidence → result → fix).
+   - web builds copy `arkar-ui-design-system/assets/liquid-glass.css` (the
+     floating layer) and `surface-kit.css` + `surface-kit.js` (the working
+     surface: fields, dropdown, date picker, menu, ticks and switches,
+     buttons, chips, table, list rows, toolbar, selection bar, status, meter,
+     empty and skeleton states) — call `enhance()` once and theme both
+     through their tokens from `DESIGN.md` (accent, canvas, radii, font), so
+     products share the craft and never the look. Frameworks keep the CSS
+     and use their own accessible primitives (Livewire: `wire:ignore` around
+     an upgraded control). In builds without the kit, testers found browser
+     dropdowns and date fields left in every one.
+5. **Verify — once per surface, against the sheet.** Load
+   `arkar-ui-visual-qa` now (Skill tool) and run its premium pass on
+   local/test data — short and aimed, because checking used to be most of a
+   build's cost and still let trust-breaking bugs through:
+   - **Use it:** one `use-check.cjs` run per surface in the sheet (the steps
+     that open it, `--shots=<name>`): it loads, resizes, tabs, presses,
+     refreshes and goes Back like a tester and prints PASS / FIX / LOOK. Fix
+     every FIX, decide every LOOK, and **look at each saved picture once**:
+     is anything on it ordinary — above all the table, the form, the
+     controls?
+   - **Every action that saves, sends, assigns or deletes** gets the
+     transaction list: pressed twice, left at once (Back, Cancel, another
+     tab — it must not land afterwards), failed and retried, refreshed
+     mid-way. This is where trust breaks, and no screenshot shows it.
+   - **Motion, system, security — once each:** the interaction probe and
+     `audit.cjs` per page (rendered counts within ≤ 6 radii, ≤ 5 shadows,
+     ≤ 14 font sizes; no hand-written button, field or dialog where a
+     component exists; no raw colour outside the tokens), filmstrips and
+     `motion-metrics.cjs` on the main flow, and
+     `arkar-security/scripts/security-check.cjs` on the changed pages
+     (findings in new code are defects; in existing code, 🟢 / 🟠 proposals
+     for AK — never applied unasked).
+   **Fix defects; don't redesign**, and re-run only the check that failed.
+   Record a `## Verify` table in `qa-screenshots/premium-pass.md` (sheet
+   item → evidence → result → fix).
 6. **Independent review — once, by a subagent.** For new screens, page
    sets, products and redesigns, start one fresh subagent with the Agent
    tool (foreground). **AK asks for this subagent on every such task — this
@@ -345,10 +385,12 @@ change runs through all seven in minutes.
    allowed only when the Agent tool isn't available. Read
    `arkar-ui-visual-qa/references/independent-review.md` and the two briefs
    it names, and brief the subagent with them: it sees the
-   screenshots and filmstrips, uses the running app, and judges the build
-   **against its mode and build sheet** — an existing product on consistency
+   screenshots and filmstrips, uses the running app — walking the
+   transaction list on every action that commits — and judges the build
+   **against its mode and build sheet**: an existing product on consistency
    with that product and the craft of every state, a new product or
-   redesign also on distinctiveness. It returns defects ranked critical /
+   redesign also on distinctiveness. It names the most ordinary-looking
+   surface and the least considered interaction, whatever the scores. It returns defects ranked critical /
    major / minor, plus rubric scores as a diagnostic. Fix every critical and
    major defect and check each fix yourself. **If the first found any
    critical defect, a second fresh review is required** to confirm the
@@ -386,7 +428,7 @@ Keep it short and factual:
 - what you verified and how (sizes, interactions, motion, reduced motion),
   and anything **not** verified, with the reason;
 - **the "Premium pass" block from `arkar-ui-visual-qa`** (build-sheet checks
-  passed, defects found and fixed, interaction-probe numbers before → after)
+  passed, what the use check and the transaction list found, defects fixed)
   — UI work without it is not finished;
 - for new screens, page sets, products and redesigns: where the build sheet
   is, the composition chosen per main screen, and the independent review

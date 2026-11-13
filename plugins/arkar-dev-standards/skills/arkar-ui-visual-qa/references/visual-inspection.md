@@ -9,8 +9,14 @@
 ## 1. Tools — scripts first, a real browser only where they can't reach
 
 The bundled scripts are the main evidence: exact sizes, measured timings,
-repeatable before → after numbers, and no image tokens beyond the screenshots
-you look at. Use a real browser only where the scripts can't reach:
+repeatable numbers, and no image tokens beyond the screenshots you look at.
+`scripts/use-check.cjs <url> <steps> --shots=<name>` is the first tool on
+every surface: one run uses it like a tester (load, accessibility rules, the
+system's dark setting, ten widths, keyboard, phone, slow and failed
+requests, reduced motion, refresh, Back, and with `--commit` / `--count` a
+double press), prints PASS / FIX / LOOK lines and saves the surface at
+desktop and phone size to look at once. Use a real browser only where the
+scripts can't reach:
 
 - **Performance on a real GPU** → `scripts/motion-metrics.cjs --real-browser`
   (installed Chrome, numbers only) — not Claude in Chrome screenshots.

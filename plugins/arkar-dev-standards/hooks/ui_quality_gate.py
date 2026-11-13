@@ -17,8 +17,8 @@ two ends of it:
      redesign) → all nine UI specialists must have been loaded.
   3. It created or rewrote DESIGN.md, or wrote a build sheet into it → the
      evidence must exist: a `## Build sheet` section in DESIGN.md, and
-     `premium-pass.md` with the Verify record (films, the experience walk
-     with its videos, the security check)
+     `premium-pass.md` with the Verify record (the use check per surface,
+     the transaction list, films, the interaction probe, the security check)
      and the `## Independent review`.
 
 When something is missing at the end it blocks the stop with a reason that
@@ -190,15 +190,6 @@ def find_files(roots: list[Path], name: str) -> list[Path]:
     return found
 
 
-def has_videos(records: list[Path]) -> bool:
-    """A recorded journey (record.cjs writes .mp4, or .webm without ffmpeg) beside a premium-pass record."""
-    for record in records:
-        for suffix in ("*.mp4", "*.webm"):
-            if next(record.parent.rglob(suffix), None) is not None:
-                return True
-    return False
-
-
 def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> list[str]:
     """What a new product, page set or redesign still lacks."""
     # Shell writes give relative paths (often after a `cd`), so find those DESIGN.md files in the project.
@@ -230,14 +221,14 @@ def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> l
             problems.append("premium-pass.md has no interaction probe results — run "
                             "arkar-ui-visual-qa/scripts/interaction-probe.cjs on each changed page (hover, focus, "
                             "press feedback, transitions, target sizes) and record before → after (Verify)")
-        if not re.search(r"experience (walk|test)|record\.cjs", record, re.IGNORECASE):
-            problems.append("premium-pass.md has no experience walk — record the main flows at real speed with "
-                            "arkar-ui-visual-qa/scripts/record.cjs (happy path, errors and retry, cancel/undo, "
-                            "refresh, keyboard, phone) and judge every moment (Verify)")
-        elif not has_videos(records) and not re.search(r"could(n't| not) record|no video", record, re.IGNORECASE):
-            problems.append("the experience walk has no videos — step screenshots can't show timing; record the "
-                            "main flows at real speed with arkar-ui-visual-qa/scripts/record.cjs (or say in "
-                            "premium-pass.md why recording couldn't run)")
+        if not re.search(r"use[ -]check", record, re.IGNORECASE):
+            problems.append("premium-pass.md has no use check results — run "
+                            "arkar-ui-visual-qa/scripts/use-check.cjs once per surface (the steps that open it, "
+                            "--shots=<name>), fix every FIX, decide every LOOK and look at each saved picture (Verify)")
+        if not re.search(r"transaction", record, re.IGNORECASE):
+            problems.append("premium-pass.md has no transaction list — every action that saves, sends, assigns or "
+                            "deletes is pressed twice, left at once, failed and retried, and refreshed mid-way; "
+                            "record what happened, or that the surfaces have no such action (Verify)")
         if not re.search(r"security.check", record, re.IGNORECASE):
             problems.append("premium-pass.md has no security check — run arkar-security/scripts/security-check.cjs "
                             "on the changed pages (and --code on the source); fix findings in new code, and list "

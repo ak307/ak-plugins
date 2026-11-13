@@ -24,29 +24,22 @@ your final message (it may be shortened, never dropped):
 ```
 Premium pass
 - Build sheet: <where it is> → acceptance checks <passed n / n> · failed and fixed: <list>
-- Screens × sizes looked at: <…> → felt ordinary: <list or "nothing"> → fixed: <list>
-- Audit (scripts/audit.cjs, before → after): axe serious/critical <a→b>, console errors <a→b>,
-  overflow <sizes>, targets <24px <a→b>, rendered system: radii <n> · shadows <n> · font sizes <n> · spacing values <n>
-- Interaction probe (scripts/interaction-probe.cjs, before → after):
-  no hover <a→b>, no focus <a→b>, no transition <a→b>, under 24px <a→b>
-- Motion (filmstrips: load + <flows filmed>): <what moved well · what felt abrupt, slow, decorative or confusing → fixed> · reduced motion filmed: <yes/no>
-- Motion metrics (scripts/motion-metrics.cjs on the main flows, incl. one interruption and --reduced, before → after):
-  slow responses <a→b>, linear/slow movement <a→b>, popped in / vanished <a→b>, jumps <a→b>, low fps <a→b>, reduced motion ignored <a→b>
-  · real-browser run: <fps in Chrome with the GPU / not needed / Chrome unavailable>
-- States seen (every state in the sheet): <which>
-- Security check (arkar-security/scripts/security-check.cjs, before → after): <findings in new code → fixed> · existing-code proposals: <🟢 / 🟠 list or "none">
-- Experience walk (record.cjs videos, experience-standard.md): <flows × paths walked (happy, invalid,
-  failure+retry, cancel/back/undo, refresh, keyboard, phone)> → moments fixed: <list> · still weak: <list>
-- First-time-user walkthrough: <flows walked> → hesitations found and fixed: <list>
-- Three-second test per main screen: <screen → what catches the eye first → wow / fine>
-- Composition: <probe structure flags → fixed or justified by the sheet>
+- Use check (scripts/use-check.cjs, one run per surface): <surfaces checked> → FIX found and fixed: <list> · LOOK decided: <list>
+- Surfaces looked at (desktop + phone, each once): <list> → felt ordinary: <list or "nothing"> → fixed: <list>
+- Transactions (every save / send / assign / delete: pressed twice, left at once, failed and retried, refreshed): <which> → fixed: <list>
+- Motion (interaction probe · filmstrips of <flows> · motion-metrics with one interruption and --reduced):
+  <what moved well · what was abrupt, slow, decorative or ignored reduced motion → fixed>
+- System (scripts/audit.cjs): radii <n> · shadows <n> · font sizes <n> · hand-made controls: <none / list>
+- Security check (arkar-security/scripts/security-check.cjs): <findings in new code → fixed> · existing-code proposals: <🟢 / 🟠 list or "none">
 - Independent review (references/independent-review.md): <critical/major/minor found → fixed> · second review: <not needed / done> (or "cold review" if no subagent tool)
 - Still not premium (if any) and why: <…>
 ```
 
 **One pass, not rounds.** The pass checks the build against its sheet and
 fixes every defect it finds, then the independent review runs once (twice
-only if it found a critical defect). Don't rebuild the design to raise a
+only if it found a critical defect). Each tool runs once per surface or
+page; after a fix, re-run only the check that failed — no "before → after"
+pairs, no second sweep of everything. Don't rebuild the design to raise a
 score; if something needs a different decision, change the sheet first. If a
 tool couldn't run, the block says so — never fill it with results you didn't
 get.
@@ -98,110 +91,90 @@ production, every click changes live data and sends real messages.
   data. Screenshots go in `qa-screenshots/` (the script adds a `.gitignore`
   inside it so they're never committed); remove it when done if you can.
 
-## 2. Discover the tools, then inspect
+## 2. The tools
 
-The bundled scripts are the main evidence (`references/visual-inspection.md`);
-Claude in Chrome is for pages behind a sign-in the scripts can't reach, and
-`motion-metrics.cjs --real-browser` for real-GPU performance. Screenshots
-come from `scripts/screenshot.cjs` (or Playwright MCP): each size, console
-errors, failed requests, horizontal overflow, and `--motion` for animation
-checks. For mobile apps,
-`references/responsive-testing.md` (emulators, widget and golden tests).
+The bundled scripts are the evidence (`references/visual-inspection.md`);
+Claude in Chrome is for pages behind a sign-in the scripts can't reach. For
+mobile apps, `references/responsive-testing.md` (emulators, widget and
+golden tests).
 
-For each screen in scope:
-
-1. **Screenshots at the target screens** (`DESIGN.md`; default 375×812,
-   768×1024, 1440×900) — and **look at each one** (Read the PNGs).
-2. **Examine:** typography, spacing, hierarchy, alignment, overflow and
-   clipping, component consistency, the signature element, empty/loading/
-   error states.
-3. **Interactions** (`references/interaction-testing.md`): click what
-   changed, forms valid and invalid, menus, dialogs, keyboard (Tab, Enter,
-   Escape), focus visibility.
-4. **Motion** (`references/motion-testing.md`): it runs, it matches the
-   motion language, it's quick on frequent actions, it calms under reduced
-   motion, nothing is left invisible.
-5. **Console and network:** no errors or failed requests.
+| Script | What it is for | How often |
+|---|---|---|
+| `scripts/use-check.cjs` | uses a surface like a tester: load, accessibility rules, dark setting, ten widths, keyboard, phone, slow and failed requests, reduced motion, refresh, Back, double press; saves the surface to look at | once per surface |
+| `scripts/interaction-probe.cjs` | hover, focus and press feedback on every control; template structures | once per page |
+| `scripts/film.cjs` · `scripts/motion-metrics.cjs` | motion judged by eye, then measured | the main flow and each signature moment |
+| `scripts/audit.cjs` | the design system as rendered: radii, shadows, font sizes, colours | once per page |
+| `scripts/record.cjs` | a real-speed video of the main journey, for AK | once |
+| `scripts/screenshot.cjs` | extra sizes or states the use check didn't save | when needed |
 
 ## 3. The premium pass — the most important check
 
 Apply `arkar-ui-intelligence/references/premium-standard.md` and the build
 sheet to everything in scope. **The sheet is the checklist:** tick each
-acceptance check, see each state it lists at each target size, walk each
-flow it lists. Then go beyond it — walk every page, button, tab, dropdown,
-menu, form, loading, processing, download, success and error state you
-built or changed and ask: *does this feel premium, polished, beautiful,
-intuitive and impressive, or boring, basic, generic or unfinished?* A state
-or moment the sheet missed is added to the sheet and built.
+acceptance check and see each state it lists. A state or moment the sheet
+missed is added to the sheet and built.
 
-1. **Audit** (web): `scripts/audit.cjs` on each changed page measures what
-   the eye misses — accessibility violations (axe-core, WCAG 2.2 AA),
-   console errors, broken assets, overflow at 1440/768/375/320, small
-   targets — and the design system as actually rendered (distinct radii,
-   shadows, font sizes, spacing values, colours). Fix every serious or
-   critical violation, console error, failed request (a missing file, a
-   blocked font CDN), fallback font and overflow — these are defects, not
-   notes. A wide spread of values means tokens aren't being used —
-   consolidate to about ≤ 6 radii, ≤ 12–14 font sizes and ≤ 5 shadows.
-2. **Interaction probe:** `scripts/interaction-probe.cjs` takes a full-page
-   screenshot, flags **template structures** (equal-card rows, tiles over a
-   long table, repeating uniform sections, mostly empty sections), hovers,
-   focuses and clicks every safe control, and reports which give no
-   hover/focus/press feedback, have no transition, are too small, or do
-   nothing visible — saving a slowed filmstrip of the first load and each
-   click. A template flag on a new product or redesign is fixed from the
-   content (`arkar-ui-art-direction/references/visual-ambition.md`); in an
-   existing product it may be the product's own pattern — say so.
-3. **Motion:** film each main flow with `scripts/film.cjs` (open the
-   detail, filter, ask the AI and watch the answer arrive, confirm a
-   destructive action, open and close a menu; `--span=3000` for longer
-   sequences, `--reduced` once with reduced motion) and **look at every
-   strip** — motion is judged by eye, like layout, against the sheet's
-   choreography. Then measure the same flows with
-   `scripts/motion-metrics.cjs <url> <steps>` — real presses, not previews:
-   response time, each animation's timing and easing, frame pacing, things
-   that pop in or vanish, jumps; interrupt one action mid-animation
-   (`<step>@120`) and run once with `--reduced`. Headless has no graphics
-   card: when it reports a low frame rate, or the design uses glass, blur or
-   heavy shadows, run the same steps once with `--real-browser` (your
-   installed Chrome, real GPU, no screenshots) — only that number decides
-   whether performance is a defect. Cover the six motion areas
-   in `references/motion-testing.md` that the product has. Each finding is
-   checked against the film, then fixed or justified in the record.
-4. **Experience walk** to
-   `arkar-ui-intelligence/references/experience-standard.md`: record each
-   main flow at real speed with `scripts/record.cjs <url> <out.mp4> --cursor
-   <steps>` — the happy path, invalid input, a failure and retry (the mock's
-   `?fail=1`), slow data (`?latency=slow`), cancel/back/undo, a refresh
-   mid-task, keyboard only, and the phone size — and judge every moment:
-   the press, the wait, the hand-off from loading to result, success and
-   toasts (position, timing, wording, undo), dialogs, errors and recovery,
-   transitions, information timing.
-5. **First-time-user walkthrough** of each main flow: with no prior
-   knowledge and a real goal, note every hesitation, confusion, missing
-   feedback, unclear wording or dead end — and fix it.
-6. **Whole-screen judgement, section by section:** the three-second test —
-   "wow, this looks premium", or just "fine"? Check the boring signals in
-   `arkar-ui-art-direction/references/visual-ambition.md` (muted or
-   monochrome palette, no hero moment, flat, low contrast range, rows-only
-   layout, empty areas) and fix with
-   `arkar-ui-art-direction/references/premium-craft.md`. "Clean but
-   plain", default type, flat grey surfaces and unstyled states are premium
-   failures — in an existing product, judged within its design system.
-
-7. **One system, not separate pages:** the same kind of control looks and
-   behaves the same on every screen (one button family, one field style,
-   one dialog, one toast); no screen carries its own copy of a shared
-   component; the audit's spread of radii, shadows and font sizes stays
-   small. A duplicate or drifting component is a defect — fold it back into
-   the shared one.
+1. **Use each surface** (web): for every surface in the sheet — the page,
+   the table in use, the form part-filled, each open dialog, sheet, menu and
+   picker, the empty and error states —
+   `scripts/use-check.cjs <url> <steps that open it> --shots=<name>`.
+   Steps are `click=<selector>`, `type=<selector>=<text>`, `press=<key>`,
+   `hover=`, `scroll=`, `wait=`. Every **FIX** is a defect: a console error,
+   a file that didn't load, a font or script from another server, layout
+   that jumps, an accessibility violation, sideways scrolling, a control
+   under a panel, a Tab stop with no visible focus, a target under 24 px, a
+   view that a refresh loses or that Back walks out of, a save that lands
+   twice. Every **LOOK** is decided, not ignored: a dark version nobody
+   designed, targets under 44 px, browser-default controls, no loading or
+   failure state.
+2. **Look at each surface once** — the pictures the use check saved
+   (`qa-screenshots/<name>-desktop.png`, `-phone.png`, `-dark.png`) — and
+   ask of each: *premium, polished, intuitive and impressive, or boring,
+   basic, generic or unfinished?* Judge the working surface hardest: does
+   the table, form or list belong to this product's world, or could it sit
+   in any admin panel? Check the boring signals in
+   `arkar-ui-art-direction/references/visual-ambition.md` (no hero moment,
+   flat, rows-only layout, default type, white cards under a designed
+   header, unstyled states) and fix with
+   `arkar-ui-art-direction/references/premium-craft.md` — in an existing
+   product, judged within its look.
+3. **The transaction list**, for every action that saves, sends, assigns,
+   approves or deletes — this is where trust breaks, and three of four
+   test builds had such a bug after a hundred checking steps:
+   - pressed twice quickly → it happens once
+     (`--commit=click=<button> --count=<selector of the result>`);
+   - left at once (Back, Cancel, Discard, another tab) → it does not land
+     afterwards, and nothing half-saved shows;
+   - failed (`?fail=1`) → a specific message, the input kept, a retry that
+     works; then succeeded → the state is right everywhere it shows;
+   - refreshed mid-way → the user is where they were, with what they typed;
+   - returned to later → still saved, still in the same state.
+4. **Motion:** `scripts/interaction-probe.cjs` once per page (controls with
+   no hover, focus or press feedback, no transition; template structures —
+   fixed from the content in a new product, the product's own pattern in an
+   existing one). Film the main flow and each signature moment with
+   `scripts/film.cjs` (`--span=3000` for longer sequences) and **look at
+   every strip** against the sheet's choreography. Measure the main flow
+   once with `scripts/motion-metrics.cjs <url> <steps>` — one action
+   interrupted (`<step>@120`) — and once with `--reduced`; when it reports a
+   low frame rate, or the design uses glass, blur or heavy shadows, once
+   more with `--real-browser` (only that number decides whether performance
+   is a defect). Record one real-speed video of the main journey with
+   `scripts/record.cjs <url> <out.mp4> --cursor <steps>` for AK.
+5. **One system, not separate pages:** `scripts/audit.cjs` once per page —
+   about ≤ 6 radii, ≤ 12–14 font sizes and ≤ 5 shadows as rendered; the
+   same kind of control looks and behaves the same on every screen (one
+   button family, one field style, one dialog, one toast); no screen
+   carries its own copy of a shared component. A duplicate or drifting
+   component is a defect — fold it back into the shared one.
 
 Record a `## Verify` table in the record (sheet item or moment → what
-happens → result → fix) and fix every defect it shows, re-checking each fix.
-Then run the **independent review** (`references/independent-review.md`)
-for new screens, page sets, products and redesigns. **Working is not done;
-exceptional is done** — reached by deciding well and fixing every defect,
-not by rebuilding.
+happens → result → fix) and fix every defect it shows, re-running only the
+check that failed. Then run the **independent review**
+(`references/independent-review.md`) for new screens, page sets, products
+and redesigns — it walks the product as a first-time user, so that walk
+isn't repeated here. **Working is not done; exceptional is done** — reached
+by deciding well and fixing every defect, not by rebuilding.
 
 ## 4. Gate, fix, re-check
 
@@ -210,11 +183,13 @@ then the weighted gates as a diagnostic. Fix meaningful defects, re-shoot,
 check again — don't stop at the first screenshot. Then run the project's own
 checks (build, lint, types, tests).
 
-For an existing app with no real visual identity, when no redesign was
-requested and none is on record (check `DESIGN.md` / `ARCHITECTURE.md` "Open
-proposals"): end the reply with a 🟠 proposal (redesign with the UI skills —
-which screens, what stays the same), record it under "Open proposals" in
-`ARCHITECTURE.md`, and don't do it. Once recorded, don't repeat it.
+For an existing app with a plain look, when no redesign was requested and
+none is on record (check `DESIGN.md` / `ARCHITECTURE.md` "Open proposals"):
+the screens in scope were lifted within its colours, type and layout
+(`arkar-ui-intelligence`, step 2); end the reply with a 🟠 proposal to bring
+the other screens to the same level — which screens, what stays the same —
+record it under "Open proposals" in `ARCHITECTURE.md`, and don't do it. Once
+recorded, don't repeat it.
 
 ## 5. Report honestly
 

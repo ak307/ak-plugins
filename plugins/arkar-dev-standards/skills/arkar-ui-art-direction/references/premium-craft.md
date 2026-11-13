@@ -89,6 +89,10 @@ section openers) need a visual:
 
 ## 6. Components that feel expensive
 
+Web builds start from `arkar-ui-design-system/assets/surface-kit.css` and
+`.js`, which build the fields, dropdowns, date picker, menus, tables and
+rows below to this standard; theme it, then add what is the product's own.
+
 - **Buttons:** comfortable height (40–48px), refined radius, a primary with
   subtle depth (gradient sheen or inner highlight), a crisp pressed state
   (scale ~0.97, darker), a visible but elegant focus ring (2px offset ring in

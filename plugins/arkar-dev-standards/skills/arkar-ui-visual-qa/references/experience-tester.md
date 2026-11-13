@@ -38,6 +38,16 @@ and say so.
 > mid-task (does state survive?); keyboard only (Tab, Enter, Escape,
 > shortcuts — is focus visible and sensible?); phone size (390×844).
 >
+> On every action that saves, sends, assigns, approves or deletes, try to
+> break trust: press it twice quickly; press it and leave at once (Back,
+> Cancel, Discard, another tab) — does it still land afterwards?; make it
+> fail, retry, then check the state everywhere it shows; refresh while it
+> is in flight; come back to the record later — is it still what the
+> screen said? `node <scripts>/use-check.cjs <url> <steps>
+> --commit=click=<button> --count=<selector of the result>` runs the
+> double press for you. A commit that lands twice, lands after the user
+> left, or shows a state that isn't true is a critical defect.
+>
 > For every moment judge, concretely: does the control respond at once?
 > what fills the wait, and does it hand off smoothly to the result? how do
 > success messages, toasts and confirmations appear — position, timing,

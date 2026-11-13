@@ -24,7 +24,8 @@ REVIEWER = {"type": "assistant", "message": {"content": [
     {"type": "tool_use", "name": "Agent", "input": {"description": "Independent review"}}]}}
 COMPLETE_RECORD = ("# Premium pass\n## Verify\n- Motion (filmstrips: load, open card): eased, quick\n"
                    "- Interaction probe: no hover 3→0, no focus 1→0\n"
-                   "- Experience walk (record.cjs): happy, fail+retry, keyboard, phone → retry kept input\n"
+                   "- Use check (use-check.cjs): queue, detail, form → 2 FIX fixed, 1 LOOK decided\n"
+                   "- Transactions: approve pressed twice → once; left at once → nothing lands\n"
                    "- Security check (security-check.cjs): storage 1→0 · proposals: none\n"
                    "## Independent review\nCritical 0 · major 2 (fixed) · minor 3\n")
 
@@ -64,7 +65,6 @@ def write_project(tmp_path: Path, design: str | None, record: str | None) -> lis
     if record is not None:
         (tmp_path / "app" / "qa-screenshots").mkdir(exist_ok=True)
         (tmp_path / "app" / "qa-screenshots" / "premium-pass.md").write_text(record)
-        (tmp_path / "app" / "qa-screenshots" / "walk-checkin.mp4").write_bytes(b"")
     return events
 
 
@@ -104,7 +104,8 @@ def test_redesign_missing_review_motion_and_walk_is_blocked(tmp_path):
     reason = json.loads(run_gate(tmp_path, events))["reason"]
     assert "Independent review" in reason
     assert "film" in reason
-    assert "experience walk" in reason
+    assert "use check" in reason
+    assert "transaction list" in reason
 
 
 def test_complete_redesign_passes(tmp_path):
@@ -393,18 +394,18 @@ def test_test_fixtures_are_not_product_ui(tmp_path):
     assert run_gate(tmp_path, events) == ""
 
 
-def test_an_experience_walk_without_videos_is_sent_back(tmp_path):
-    # Seen in eval runs: flows walked with step screenshots only, so timing was never seen.
-    events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, COMPLETE_DESIGN, COMPLETE_RECORD)
-    (tmp_path / "app" / "qa-screenshots" / "walk-checkin.mp4").unlink()
-    assert "no videos" in json.loads(run_gate(tmp_path, events))["reason"]
-
-
-def test_a_walk_without_videos_passes_when_the_record_says_why(tmp_path):
-    record = COMPLETE_RECORD + "Experience walk: couldn't record video (no browser video support here).\n"
+def test_a_record_without_the_use_check_is_sent_back(tmp_path):
+    # Defects were found by using the product, not by looking at it: the use check is the floor.
+    record = COMPLETE_RECORD.replace("- Use check (use-check.cjs): queue, detail, form → 2 FIX fixed, 1 LOOK decided\n", "")
     events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, COMPLETE_DESIGN, record)
-    (tmp_path / "app" / "qa-screenshots" / "walk-checkin.mp4").unlink()
-    assert run_gate(tmp_path, events) == ""
+    assert "use check" in json.loads(run_gate(tmp_path, events))["reason"]
+
+
+def test_a_record_without_the_transaction_list_is_sent_back(tmp_path):
+    # Seen in test builds: a save that landed after Discard, a submitted permit that reverted to draft.
+    record = COMPLETE_RECORD.replace("- Transactions: approve pressed twice → once; left at once → nothing lands\n", "")
+    events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, COMPLETE_DESIGN, record)
+    assert "transaction list" in json.loads(run_gate(tmp_path, events))["reason"]
 
 
 def test_a_record_without_the_security_check_is_sent_back(tmp_path):

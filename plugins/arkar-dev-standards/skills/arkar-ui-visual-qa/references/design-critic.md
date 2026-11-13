@@ -87,7 +87,9 @@ and redesigns.
 > (**critical**: visibly broken, covered, blank, unreadable, a missing core
 > state, or — for a new product or redesign — a screen that looks like a
 > generic template, including a detail panel, sheet or form that reads
-> like a printed document; **major**: clearly below premium for its mode;
+> like a printed document; **major**: clearly below premium for its mode —
+> including a table, form or list that could sit in any admin panel under a
+> designed header, or a browser-default dropdown or date field;
 > **minor**: polish) · screen/section · what's wrong · a concrete fix within
 > the brief (not a copy of any existing product). Then the scores (overall
 > = mean of the dimensions) and section scores, as a diagnostic.

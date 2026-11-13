@@ -67,7 +67,11 @@ constraints. Note existing brand assets that must be kept
    Composition row (`arkar-ui-intelligence/references/build-sheet.md`):
    the obvious layout named and kept or rejected with why, two different
    ideas weighed in a sentence each, one chosen with its hero moment —
-   never built as variations to compare.
+   never built as variations to compare. **The direction covers the working
+   surface too:** say how the canvas, type, accent and material carry into
+   the tables, forms and lists (the `--ws-*` tokens of
+   `arkar-ui-design-system/assets/surface-kit.css`). An identity that lives
+   in one band above a white sheet is not yet an identity.
 4. **Aim to impress** — read `references/visual-ambition.md`: every main
    screen passes the three-second "wow" test, has a hero moment, colour with
    conviction, contrast range and depth; none of the boring signals. Enterprise,

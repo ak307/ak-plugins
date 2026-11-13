@@ -206,9 +206,11 @@ predictable, and still delightful in its one or two signature moments.
 
 ## How it's checked
 
-During the premium pass, walk each main flow as a user — happy path,
-invalid input, failure and retry, cancel/back/undo, refresh mid-task,
-keyboard only, phone size — recording it with
-`arkar-ui-visual-qa/scripts/record.cjs` (real speed) and filming key moments
-with `film.cjs`. Judge every moment above; record a table in
-`qa-screenshots/premium-pass.md` (moment → what happens → verdict → fix).
+During the premium pass, `arkar-ui-visual-qa/scripts/use-check.cjs` uses
+each surface the way a tester would (load, widths, keyboard, phone, slow and
+failed requests, refresh, Back, a double press), every action that commits
+gets the transaction list (pressed twice, left at once, failed and retried,
+refreshed mid-way), and the key moments are filmed with `film.cjs`. The
+independent reviewer then walks each main flow as a first-time user. Judge
+every moment above; record a table in `qa-screenshots/premium-pass.md`
+(moment → what happens → verdict → fix).

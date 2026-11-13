@@ -28,7 +28,15 @@ it replaced by the cold review below.
    the product and its users, and the mode with the design system's name.
    Never the code, `DESIGN.md` or your reasoning.
 3. It returns one list of defects ranked **critical / major / minor**, and
-   the visual and experience rubric scores as a diagnostic.
+   the visual and experience rubric scores as a diagnostic. Whatever the
+   scores, it also names **the most ordinary-looking surface** (look
+   hardest at tables, forms, lists and inner screens — a designed header
+   over a generic sheet is the usual shortfall) and **the least considered
+   interaction**, and it walks **the transaction list** on every action
+   that saves, sends, assigns or deletes: pressed twice, left at once
+   (Back, Cancel, Discard, another tab), failed and retried, refreshed
+   mid-way, returned to later. A commit that lands twice, lands after the
+   user left, or shows a state that isn't true is critical.
 
 ## After the review
 

@@ -56,7 +56,16 @@ sake.
    contrast, data-visualisation colours, dark theme.
 4. **Components** (`references/component-guidelines.md`): reusable, with
    consistent variants and every interaction state; library components
-   restyled through tokens.
+   restyled through tokens. Web builds start from the working-surface kit —
+   `assets/surface-kit.css` and `assets/surface-kit.js` (fields, dropdown,
+   date picker, menu, ticks and switches, buttons, chips, table, list rows,
+   toolbar, selection bar, status, meter, empty and skeleton states; call
+   `enhance()` once) — themed through its `--ws-*` tokens from `DESIGN.md`,
+   set from the same values as the `--lg-*` glass tokens. It replaces
+   browser-default selects and date fields and hand-made versions of these
+   controls; the product's signature components are still its own. A
+   product without a designed dark theme pins `data-theme="light"` on
+   `<html>`, or both kits follow the system into a half-dark page.
 5. **Materials** (`references/materials-glass.md`): solid surfaces and,
    where the direction calls for it, Liquid Glass for the floating control
    layer (bars, sheets, menus, palette) — with legibility guards and

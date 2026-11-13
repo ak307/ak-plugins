@@ -17,6 +17,17 @@ visual inconsistencies and technical limits.
 know, working workflows, effective component architecture, useful tokens,
 all functionality.
 
+**A plain look is lifted, not copied.** When the product's look is plain —
+browser-default controls, flat white cards, no material — and no redesign
+was asked for, keep its colours, type, navigation and page layout, and build
+the screens you add or change to the working-surface standard
+(`arkar-ui-design-system/assets/surface-kit.css` and `.js`, themed to the
+product's own colours and type; or the product's component library restyled
+through its theme). The new work belongs to the product and is still
+premium. AK looked at two careful builds that copied a plain look and
+liked neither. Untouched screens stay as they are; lifting them is a 🟠
+proposal.
+
 **Improve (within scope):** weak hierarchy, inconsistent spacing, outdated
 type, poor responsiveness, unclear interactions, weak accessibility,
 inconsistent components, poor loading experiences, inappropriate or missing

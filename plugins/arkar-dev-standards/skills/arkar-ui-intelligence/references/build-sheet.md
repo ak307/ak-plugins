@@ -57,7 +57,7 @@ needs its row, not "just in case".
 |---|---|---|
 | **Job** | Who uses it, the question they bring, what must be noticed first | ux-engineering |
 | **Direction** | Existing product: the design system and patterns it follows (named). New product / redesign: the one chosen direction and why | discovery / art-direction |
-| **Composition** | The layout, built from the content; the hero moment; the visual that isn't just text and icons. Name the obvious layout and say why it was kept or rejected — on paper, never as built variations | art-direction |
+| **Composition** | The layout, built from the content; the hero moment; the visual that isn't just text and icons. Name the obvious layout and say why it was kept or rejected — on paper, never as built variations. For a table, form or list: how the product's canvas, type and material carry into it (one world), what each row leads with and how it shows its state, what floats on glass | art-direction |
 | **Components** | Which planned components the screen is composed of; anything screen-specific (and why it isn't a shared component) — no one-off styles | design-system |
 | **Figma** | The Figma frames it implements, if AK provided a design (the design wins) | Figma skills |
 | **Data & latency** | What loads, from where; fast / noticeable / long / timeout handling; refresh and stale responses | ux-engineering |

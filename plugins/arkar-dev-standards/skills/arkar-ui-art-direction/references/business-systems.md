@@ -79,7 +79,12 @@ Glass (`arkar-ui-design-system/references/materials-glass.md`):
 - a rich, deep background beneath (gradient field, the canvas itself), so
   the glass has something to refract — glass over flat white is grey;
 - working surfaces people read for long — dense tables, forms, long text
-  — stay solid, or sit on a strongly tinted glass panel that reads as solid.
+  — stay solid for reading, and are designed all the same: the product's
+  canvas and type carried through, grouped and layered surfaces, the
+  kit's fields, dropdowns, date pickers and rows
+  (`arkar-ui-design-system/assets/surface-kit.css` and `.js`), a glass
+  toolbar and sticky header the rows scroll under. Solid never means a
+  plain white card with browser controls.
 
 Legibility, reduced-transparency and no-backdrop-filter fallbacks are not
 optional.
@@ -124,7 +129,8 @@ its own section.
 Glass follows the default above: the whole floating layer is glass, plus
 floating content panels when the screen is built around a visual canvas
 such as a site map or floor plan. Tables, forms and working grids stay
-solid for legibility. The signature motion moment is tied to the core
+solid for legibility — built with the working-surface kit, in the same
+world as the rest of the screen, never as plain white cards. The signature motion moment is tied to the core
 action — a work order sliding into "Done", an approval stamping, a roster
 gap filling as an officer is assigned — fast enough to enjoy the fiftieth
 time.

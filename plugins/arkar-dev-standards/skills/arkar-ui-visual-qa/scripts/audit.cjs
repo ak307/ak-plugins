@@ -107,7 +107,8 @@ async function main() {
   const report = { url, sizes: [], axeAvailable: Boolean(axePath) };
   try {
     for (const [width, height] of sizes) {
-      const page = await browser.newPage({ viewport: { width, height } });
+      // bypassCSP: a page with a strict Content-Security-Policy would otherwise refuse the axe script.
+      const page = await browser.newPage({ viewport: { width, height }, bypassCSP: true });
       const problems = { consoleErrors: [], failedRequests: [] };
       page.on("console", (message) => { if (message.type() === "error") problems.consoleErrors.push(message.text().slice(0, 160)); });
       page.on("pageerror", (error) => problems.consoleErrors.push(error.message.slice(0, 160)));

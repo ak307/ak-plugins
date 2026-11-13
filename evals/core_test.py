@@ -151,7 +151,10 @@ def summarise(stream: str) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--brief")
-    parser.add_argument("--setup", choices=["current", "core"])
+    parser.add_argument("--setup", choices=["current", "core", "surface"],
+                        help="current: the plugin as it is in this working copy; core: the draft core in place of the "
+                             "UI skills; surface: a frozen copy of this working copy's plugin (--variant), so later "
+                             "edits can't change a build that is still running")
     parser.add_argument("--out", type=Path)
     parser.add_argument("--variant", type=Path, help="where the test plugin copy lives (built if missing)")
     parser.add_argument("--variant-only", action="store_true")
@@ -162,9 +165,11 @@ def main() -> int:
         print(f"test plugin copy: {variant}")
         if args.variant_only:
             return 0
+    if args.setup == "surface" and not variant.exists():
+        shutil.copytree(PLUGIN, variant)
     briefs = {brief["id"]: brief for brief in yaml.safe_load((HERE / "core-briefs.yaml").read_text())["briefs"]}
     brief = briefs[args.brief]
-    plugin = variant if args.setup == "core" else PLUGIN
+    plugin = PLUGIN if args.setup == "current" else variant
     root = Path(tempfile.mkdtemp(prefix=f"arkar-core-{brief['id']}-{args.setup}-"))
     workspace = workspace_from(brief.get("fixture"), root / "workspace")
     started = time.time()

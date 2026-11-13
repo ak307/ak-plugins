@@ -192,11 +192,21 @@ A design this careful is only real if the engineering carries it:
   conventions, predictable state, edge cases and errors handled, performance
   where it is felt, accessibility built in, security (`arkar-security`) and
   tests (`arkar-testing`) as their standards require.
-- **Tools, not rules.** The plugin's kits and scripts — the glass, motion
-  and behaviour starting points, the accessibility and consistency audit,
-  the motion measurements and recordings — are there to save time and to
-  see what the eye can't. Use them when they help; never because a step
-  says so.
+- **Tools, not rules.** This skill's folder holds tools that save time and
+  show what the eye can't. Use them when they help, never because a step
+  says so (each script explains its options when run without arguments):
+  - `scripts/audit.cjs <url>` — accessibility violations, console errors,
+    overflow at four sizes, and how many distinct radii, shadows and font
+    sizes are really rendered;
+  - `scripts/screenshot.cjs`, `scripts/film.cjs`, `scripts/record.cjs` —
+    stills, slowed filmstrips and real-speed video of an interaction;
+  - `scripts/motion-metrics.cjs`, `scripts/interaction-probe.cjs` —
+    response time, frame pacing and jumps; hover, focus and press feedback
+    on every control;
+  - `assets/liquid-glass.css`, `assets/motion-kit.js`,
+    `assets/experience-kit.js` — tested starting points for the material,
+    for layout and overlay motion, and for mock data with latency, failure
+    and saved drafts. Adapt or replace them; they are not the design.
 
 ## Look at what you made
 

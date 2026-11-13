@@ -40,21 +40,24 @@ app before the change). `audit.cjs` cannot inject axe into a page with a strict 
 | Asset register (7 areas, /70) | 50 | 49 | Current after 3 fixes; untouched today, core is safer |
 | Energy dashboard (7 areas, /70) | 51 | 48 | Current after 1 blocker fix; untouched today, only core is safe |
 | Ops Desk feature (8 areas, /80) | 60 | 49 | Current after 3 fixes |
-| Permit to work | pending | pending | pending |
+| Permit to work (7 areas, /70) | 44 | 50 | Core; current confirmed permits that were not submitted |
 
-Pattern across the three finished briefs:
+Pattern across the four briefs:
 
 - **Current is ahead on** first impression and identity ("wow" vs "good"), motion (complete enter
   and exit, lists that move, numbers that transition), feedback states (loading, slow, failure,
   retry, rollback), kept state (address bar, refresh, Back), keyboard depth and touch targets.
-- **Core is ahead on** speed of response, information clarity, guard rails before committing,
-  fitting an existing app's look, and not breaking: the current builds each had a blocker or
-  near-blocker bug (a save that lands after Discard, an alerts list that goes blank, rows running
-  under a panel, text on glass at 2.8–3.6:1), plus artificial waits and a hero that hides the table.
+- **Core is ahead on** speed of response, information clarity, form design (validation on leaving a
+  field, rules stated first, honest save status), guard rails before committing, fitting an existing
+  app's look, and not breaking: three of the four current builds had a trust-breaking bug (a save
+  that lands after Discard, an alerts list that goes blank, a submitted permit that reverts to
+  draft), plus rows running under a panel, text on glass at 2.8–3.6:1, artificial waits, a phone
+  page that jumps to the top on every choice and a hero that hides the table.
 - **Core's own faults:** plain first screens, motion that stops halfway (things open with a
   transition and close without), missing loading and failure design and no kept state in one build,
-  a dialog that opens on the wrong record after Back, small touch targets, a CDN font, and a
-  grid-paper background in four of its new-product builds (a sameness of its own).
+  a dialog that opens on the wrong record after Back, drafts kept only in the current tab, small
+  touch targets, a CDN font, and a grid-paper background in four of its new-product builds (a
+  sameness of its own).
 - **Both:** native selects and date fields remain; toasts cover content.
 
 ## What this says about the design of the skill

@@ -14,7 +14,17 @@
   no fixed-height boxes, fonts that cover the script) and test with real
   text.
 - RTL-ready with logical properties (`margin-inline-start`) and
-  `EdgeInsetsDirectional`.
+  `EdgeInsetsDirectional`; mirror by hand only what has no logical form
+  (a switch's travel, "previous/next" arrows, where notices sit).
+- **The browser may not know the language.** Chrome has no date or number
+  data for some languages (Burmese and Khmer among them) and falls back to
+  English without an error — a translated screen with an English calendar.
+  Check `Intl.DateTimeFormat.supportedLocalesOf([locale])`; when it is
+  empty, take month and weekday names, their order and the digits from the
+  message catalogue (the surface kit: `configure({ calendar, digits })`).
+- Never cut a word to abbreviate it (a weekday's first two letters): use
+  the locale's own short or narrow form. No letter-spacing on joined
+  scripts (Arabic, Persian, Urdu).
 
 ## Text size and zoom
 

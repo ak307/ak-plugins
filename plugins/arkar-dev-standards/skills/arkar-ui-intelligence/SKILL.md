@@ -352,8 +352,10 @@ change runs through all seven in minutes.
      (`references/experience-standard.md`): web builds use
      `surface-kit.js` — `load` for data arriving (skeleton, refresh, empty,
      error and retry), `commit` for every button that saves, sends, assigns
-     or deletes ("Saving…", then a tick), `toast`, `progress`,
-     `errorDialog` — never loading logic written per screen. **Success is
+     or deletes ("Saving…", then a tick), `toast`, `progress`, `dialog`
+     (`errorDialog` when critical) — never loading logic written per
+     screen, and no wording fixed in a component: `configure({ locale,
+     labels, icons })` once, in the product's language. **Success is
      shown only after the server confirms it; one press is one request; a
      timeout is checked, not retried blindly; progress is never invented;**
    - Laravel Blade / Livewire: motion is written with Alpine — `x-transition`

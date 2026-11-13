@@ -15,6 +15,39 @@
 | Navigation item | default, hover, current, focus |
 | Toast / alert | info, success, warning, error; entering, dismissing |
 
+## A component is a template
+
+**The component defines how it looks and behaves. The product defines what
+it says, what it does and when it appears.** A dialog, toast, picker or
+empty state written with its wording, its two buttons or its width fixed
+inside is a one-off, not a component.
+
+| Decided by the product — never fixed in a component | How |
+|---|---|
+| Titles, messages, button labels, placeholders, names for screen readers | passed in, or from the message catalogue — a component holds no wording of its own, including its "small" words (Cancel, Try again, No matches, Saving…) |
+| How many actions, what each does, which is primary or destructive | a list of actions with values or callbacks |
+| Icons | named, from one configurable icon set |
+| Whether it is critical, and when it appears | an option set by the caller — the component never decides severity |
+| Language: wording, dates, numbers, plurals, first day of the week, digits, direction | the locale and the catalogue; logical properties so right-to-left needs no second stylesheet |
+| Colour, radius, blur and opacity, width and spacing, light and dark | design tokens — sizes as a few named steps (small, medium, large), not a free number per call |
+| Motion durations and curves | motion tokens, shared by CSS and script |
+
+| Fixed inside the component — not configurable | Why |
+|---|---|
+| Success shown only after the server confirms; one press, one request; errors stay until dealt with | trust: a caller must not be able to switch these off |
+| Focus handling, keyboard behaviour, roles and names; focus never starts on a destructive action | accessibility is part of the component, not an option |
+| Reduced motion, reduced transparency, more contrast | the user's settings outrank the product's |
+| Floors under the readability tokens (opacity of glass and solid surfaces, dimming, minimum sizes) | a theme can restyle, but can't make text unreadable |
+
+Fewer knobs in tiers: tokens for the system, a handful of named variants
+per component, per-call options only for content and actions. A test
+proves it: replace every label and assert that none of the default
+language is left anywhere a user reads or hears it.
+
+Web builds get this from the working-surface kit: `configure({ locale,
+labels, icons, calendar, digits })`, `dialog({ title, message, actions,
+critical, icon, size })`, the `--ws-*` tokens, `plural()` and `number()`.
+
 ## Variants
 
 - A small, named set per component (e.g. button: primary, secondary,

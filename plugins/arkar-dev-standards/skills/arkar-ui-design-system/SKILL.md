@@ -66,6 +66,13 @@ sake.
    controls; the product's signature components are still its own. A
    product without a designed dark theme pins `data-theme="light"` on
    `<html>`, or both kits follow the system into a half-dark page.
+   **A component is a template:** it defines how it looks and behaves; the
+   product defines what it says, what it does and when it appears — no
+   wording, icon, size or severity fixed inside a component, and the
+   behaviour that keeps people safe not configurable at all
+   (`references/component-guidelines.md`). In the kit: `configure({ locale,
+   labels, icons })` once for wording, language and icons; tokens for
+   everything visual, with floors; `dir="rtl"` mirrors it.
 5. **Materials** (`references/materials-glass.md` — the material map: glass
    for navigation and hierarchy, solid for content): solid surfaces and,
    where the direction calls for it, Liquid Glass for the floating control
@@ -92,6 +99,8 @@ short note of what was unified.
 - Text and UI contrast meet WCAG 2.2 AA in every theme.
 - No duplicate components doing the same job; no abstraction that only one
   place uses.
+- No user-facing wording, dimension or severity hard-coded in a reusable
+  component — and none of its safety behaviour left to the caller.
 - An existing effective system is extended, not replaced.
 - **Readable by default:** body text ≥ 16px (≥ 14px in dense work tools),
   secondary text ≥ 13px, and anything people must read at real contrast —

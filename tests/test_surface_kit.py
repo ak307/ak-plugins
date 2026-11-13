@@ -2,6 +2,7 @@
 and the real <select> and <input> underneath keep their values and events."""
 import json
 import os
+import re
 import shutil
 import subprocess
 import threading
@@ -38,6 +39,7 @@ def seen(tmp_path_factory):
     """Everything the driver observed on the kit's page, gathered in one browser run."""
     site = tmp_path_factory.mktemp("surface-kit")
     shutil.copy(PAGE, site / "index.html")
+    shutil.copy(PAGE.parent / "blank.html", site / "blank.html")
     for name in ("surface-kit.js", "surface-kit.css", "liquid-glass.css"):
         shutil.copy(ASSETS / name, site / name)
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(site)))
@@ -156,7 +158,7 @@ def test_a_failed_refresh_keeps_what_was_loaded(seen):
 
 def test_a_committing_button_sends_once_and_confirms_only_after_the_answer(seen):
     commit = seen["feedback"]["commit"]
-    assert commit["requests"] == 1 and commit["ignored"] is True
+    assert commit["requests"] == 1 and commit["ignored"] is True and commit["ignoredDuringTick"] is True
     assert commit["early"] == "Save changes"  # no flicker in the first moments
     assert commit["working"] == {"label": "Saving…", "spinner": True, "disabled": "true", "busy": "true", "focused": True,
                                  "sameWidth": True, "state": "processing"}
@@ -220,3 +222,79 @@ def test_no_serious_accessibility_violations(seen):
         pytest.skip("axe-core not installed")
     for state, violations in seen["axe"].items():
         assert [line for line in violations if line.startswith(("serious", "critical"))] == [], state
+
+
+# ---- configuration: the kit decides how things look and behave; the product decides what they say
+
+
+def test_nothing_the_user_reads_or_hears_is_left_in_english_once_every_label_is_replaced(seen):
+    localised = seen["localised"]
+    assert localised["latin"] == [], localised["latin"]
+    # The paths this test walks; the rest (offline, signed out, …) use the same lookup.
+    not_walked = {"stillWorking", "load.offline", "load.timeout", "load.signed-out", "load.denied", "load.invalid",
+                  "commit.offline", "commit.signed-out", "commit.denied", "commit.invalid"}
+    assert set(localised["all"]) - set(localised["seen"]) == not_walked
+    assert localised["dateShown"] == "၂၀၂၆ နိုဝင်ဘာ ၁၈"  # the product's own names, order and digits
+    # Burmese letters stack: controls get more room between lines.
+    assert round(float(localised["leading"].rstrip("px")) / float(localised["fontSize"].rstrip("px")), 2) == 1.6
+
+
+def test_the_script_and_the_stylesheet_hold_no_wording_of_their_own():
+    script = (ASSETS / "surface-kit.js").read_text()
+    code = re.sub(r"(^|\s)//.*$", "", script, flags=re.MULTILINE)
+    start = code.index("const DEFAULT_LABELS = {")
+    code = code[:start] + code[code.index("\n};", start):]
+    literals = re.findall(r'"([^"\n]*)"|\'([^\'\n]*)\'|`([^`]*)`', code)
+    for_developers = {"No answer in time", "error retrying", "tbody tr", "success refreshing"}
+    keys = {"Escape", "Enter", "Tab", "Home", "End"}
+    wording = []
+    for parts in literals:
+        text = "".join(parts)  # one of the three quote styles matched
+        if text in for_developers or text in keys or text.startswith("surface-kit:") or re.search(r"[\[\]()>=]|\.ws-", text):
+            continue  # messages for developers, key names, selectors and CSS values
+        if re.search(r"[A-Za-z]{2,} [A-Za-z]{2,}", text) or re.fullmatch(r"[A-Z][a-z]+[…!?.]?", text):
+            wording.append(text)
+    assert wording == []
+    styles = (ASSETS / "surface-kit.css").read_text()
+    assert re.findall(r'content:\s*"[^"]*[A-Za-z]{2,}[^"]*"', styles) == []
+
+
+def test_right_to_left_the_kit_mirrors_itself_and_dates_follow_the_locale(seen):
+    rtl = seen["rtl"]
+    assert rtl["list"] == {"alignedRight": True, "widerThanButton": True}
+    assert rtl["thumbRests"] == "2px" and rtl["thumbMoves"].startswith("-20px")
+    calendar = rtl["calendar"]
+    assert calendar["firstColumn"] == calendar["saturday"]  # the Egyptian week starts on Saturday
+    assert calendar["heading"] == 1  # one letter: an Arabic "short" day name is the whole word
+    assert re.fullmatch(r"[\u0660-\u0669]+", calendar["digits"])  # ١٨, not 18
+    assert calendar["arrowMirrored"] == "-1 1" and calendar["afterArrowLeft"] == "2026-11-19"
+    assert rtl["noticeOnTheLeft"] is True and rtl["sideways"] is False
+
+
+def test_tokens_have_floors_and_a_broken_token_never_breaks_the_page(seen):
+    tokens = seen["tokens"]
+    # Set far too low (0.3, 0.05, 0.1, 0.2): each is raised to its floor, so text stays readable.
+    assert tokens["solid"] == pytest.approx(0.88) and tokens["clear"] == pytest.approx(0.35)
+    assert tokens["frost"] == pytest.approx(0.6) and tokens["critical"] == pytest.approx(0.85)
+    assert tokens["control"] == 32  # a 12px control height is raised to something that can be pressed
+    assert tokens["emerge"] == 900  # the script's animations use the stylesheet's motion tokens
+    assert tokens["easing"].replace(" ", "") == "cubic-bezier(0.25,1.2,0.45,1)"  # "banana" is not an easing: the default is used
+    assert tokens["dialogWidth"] == 300
+
+
+def test_configure_takes_only_the_kits_own_labels_and_only_as_text(seen):
+    configured = seen["configured"]
+    assert configured["warnings"] == 4  # "nonsense", "load.other" and the two "__proto__" entries are not labels
+    assert configured["polluted"] is False and configured["frozen"] is True and configured["warnsAboutDates"] is True
+    assert configured["plural"] == ["1 row", "1,200 rows"] and configured["percent"] == "42%"
+    assert configured["dual"] == "صفّان"  # Arabic has a form for exactly two
+    assert configured["weekStartsUS"] == "Sun" and configured["weekStartsSet"] == "Mon"
+
+
+def test_a_dialog_says_and_does_what_the_product_decides_and_never_starts_on_a_destructive_action(seen):
+    dialog = seen["asked"]
+    assert dialog["role"] == "alertdialog" and dialog["critical"] is False and dialog["mark"] is False and dialog["size"] == "medium"
+    assert dialog["buttons"] == ["Delete", "Keep them", "Archive instead"] and dialog["firstVariant"] == "danger"
+    assert dialog["focus"] == "Keep them"  # not the destructive one, even though it is marked primary
+    assert dialog["chosen"] == "archive" and dialog["defaultAction"] == "OK" and dialog["dismissed"] == "dismissed"
+    assert dialog["serious"] == {"critical": True, "icon": "M4 7h8v6H4zM6 7V5a2 2 0 0 1 4 0v2", "size": "large"}

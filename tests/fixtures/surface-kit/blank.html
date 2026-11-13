@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surface kit — an empty stage for the configuration tests</title>
+<link rel="stylesheet" href="surface-kit.css">
+</head>
+<body class="ws-canvas">
+<main id="stage"></main>
+<script type="module">
+  // The driver chooses the page's language and direction, then builds what each test needs.
+  import * as kit from "./surface-kit.js";
+  const query = new URLSearchParams(location.search);
+  document.documentElement.lang = query.get("lang") || "en";
+  document.documentElement.dir = query.get("dir") || "ltr";
+  window.kit = kit;
+</script>
+</body>
+</html>

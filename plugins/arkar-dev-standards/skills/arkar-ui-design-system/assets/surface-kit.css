@@ -39,6 +39,15 @@
    things that loop are the indicators of work really in progress (a spinner, a skeleton's
    shimmer), and they stop the moment it ends. With reduced motion, things change at once or fade.
 
+   The kit decides how things look and behave; the product decides what they say, what they do
+   and when they appear. Nothing here is fixed that a product needs to change:
+     colour, material, radius, size, spacing, motion   the tokens below
+     wording, language, icons                          configure() in surface-kit.js
+     right-to-left languages                           dir="rtl" — the kit mirrors itself
+   What stays fixed is what keeps it readable: content is solid, text is full contrast, and the
+   opacity tokens have floors (a value below its floor is raised to it), so no theme can make
+   glass too thin to read on.
+
    Theme it through the tokens below — set at least the accent, the three field colours, the
    canvas, the radii and the font from the product's DESIGN.md, on :root or on the element that
    carries data-theme — so two products never share a look, only the material and the craft.
@@ -54,11 +63,14 @@
   --ws-field-a: var(--ws-accent);  /* RGB of the three soft lights of the atmosphere: */
   --ws-field-b: 112 96 255;        /* the product's own colours, not these defaults */
   --ws-field-c: 255 168 92;
-  --ws-atmosphere: 0.3;            /* how strong those lights are: restrained; 0 for none */
+  --ws-atmosphere: 0.3;            /* how strong those lights are: restrained; 0 for none. Ceiling 0.5 */
   --ws-surface: 255 255 255;       /* RGB of surfaces and of the glass tint */
-  --ws-solid: 0.94;                /* content: tables, forms, lists — near-opaque, never blurred */
-  --ws-clear: 0.5;                 /* navigation glass over the calm page */
-  --ws-frost: 0.74;                /* floating glass (menus, pickers, dialogs), and navigation glass with content under it */
+  --ws-solid: 0.94;                /* content: tables, forms, lists — near-opaque, never blurred. Floor 0.88 */
+  --ws-clear: 0.5;                 /* navigation glass over the calm page. Floor 0.35 */
+  --ws-frost: 0.74;                /* floating glass (menus, pickers, dialogs), and navigation glass with content under it. Floor 0.6 */
+  --ws-critical: 0.9;              /* the thick glass of a critical dialog. Floor 0.85 */
+  --ws-dim: 0.26;                  /* how far the page dims behind a dialog … */
+  --ws-critical-dim: 0.42;         /* … and behind a critical one */
   --ws-rim: 255 255 255;           /* RGB of the light on glass edges */
   --ws-rim-strength: 1;            /* 1 on light themes; lower on dark */
   --ws-blur: 24px;
@@ -69,12 +81,33 @@
   --ws-info: 26 96 196;
   --ws-radius: 14px;               /* fields, options, list rows */
   --ws-radius-group: 22px;         /* grouped surfaces, bars */
-  --ws-height: 44px;               /* controls */
-  --ws-fast: 140ms;
-  --ws-base: 220ms;
+  --ws-height: 44px;               /* controls. Floor 32px */
+  /* Sizes and spacing */
+  --ws-dialog-small: 440px;        /* dialog widths: data-size="small" | "medium" (the default) | "large" */
+  --ws-dialog-medium: 520px;
+  --ws-dialog-large: 720px;
+  --ws-dialog-pad: 24px;           /* the space inside a dialog */
+  --ws-popover-width: 420px;       /* the widest a list or menu grows */
+  --ws-calendar-width: 308px;
+  --ws-notice-width: 380px;        /* toasts and background work */
+  /* Type: line height for controls and for running text; the tightening of titles; the mark on a problem */
+  --ws-leading-control: 1.3;
+  --ws-leading-text: 1.5;
+  --ws-tracking: -0.02em;
+  --ws-alert-glyph: "!";
+  /* Motion: four durations and three curves — every transition and animation here, and in surface-kit.js, uses them */
+  --ws-fast: 140ms;                /* presses; things leaving */
+  --ws-base: 220ms;                /* changes of state */
+  --ws-emerge: 300ms;              /* things arriving: pop-ups, dialogs, notices */
+  --ws-flow: 460ms;                /* long travel: the lens, the glow of a press, the page arriving */
   --ws-ease: cubic-bezier(.2, .8, .2, 1);
-  --ws-spring: cubic-bezier(.34, 1.36, .64, 1);
+  --ws-settle: cubic-bezier(.25, 1.2, .45, 1);     /* openings: a soft overshoot */
+  --ws-spring: cubic-bezier(.34, 1.36, .64, 1);    /* small things that pop: a tick, a switch */
 }
+/* Scripts with tall or joined letters: more room between lines, and no tightening (letter-spacing
+   breaks joined scripts apart). Set the same tokens for any other script that needs it. */
+:root:lang(my), :root:lang(th), :root:lang(km), :root:lang(lo) { --ws-leading-control: 1.6; --ws-leading-text: 1.8; --ws-tracking: 0em; }
+:root:lang(ar), :root:lang(fa), :root:lang(ur), :root:lang(he) { --ws-tracking: 0em; }
 
 [data-theme="dark"] {
   --ws-ink: 240 244 250;
@@ -121,13 +154,14 @@
    the navigation glass is: enough to give the glass something to refract, never a show of its own. */
 .ws-canvas::before {
   content: ""; position: fixed; inset: -14px; z-index: -1; pointer-events: none;
+  --ws-air: clamp(0, var(--ws-atmosphere), 0.5);
   /* It shifts a few pixels against the pointer (surface-kit.js): the glass in front seems to float. */
   translate: var(--ws-parallax-x, 0px) var(--ws-parallax-y, 0px);
-  transition: translate 700ms var(--ws-ease);
+  transition: translate calc(var(--ws-flow) * 1.5) var(--ws-ease);
   background:
-    radial-gradient(48% 56% at 8% 0%, rgb(var(--ws-field-a) / var(--ws-atmosphere)), transparent 72%),
-    radial-gradient(44% 52% at 94% 2%, rgb(var(--ws-field-b) / calc(var(--ws-atmosphere) * 0.85)), transparent 72%),
-    radial-gradient(64% 44% at 62% 106%, rgb(var(--ws-field-c) / calc(var(--ws-atmosphere) * 0.7)), transparent 74%);
+    radial-gradient(48% 56% at 8% 0%, rgb(var(--ws-field-a) / var(--ws-air)), transparent 72%),
+    radial-gradient(44% 52% at 94% 2%, rgb(var(--ws-field-b) / calc(var(--ws-air) * 0.85)), transparent 72%),
+    radial-gradient(64% 44% at 62% 106%, rgb(var(--ws-field-c) / calc(var(--ws-air) * 0.7)), transparent 74%);
 }
 
 /* Content is solid: near-opaque, so it belongs to the page's light without ever being blurred.
@@ -136,7 +170,7 @@
   position: relative;
   color: var(--ws-text);
   background: linear-gradient(180deg, rgb(var(--ws-rim) / calc(0.5 * var(--ws-rim-strength))), rgb(var(--ws-rim) / 0) 96px),
-    rgb(var(--ws-surface) / var(--ws-solid));
+    rgb(var(--ws-surface) / clamp(0.88, var(--ws-solid), 1));
   border-radius: var(--ws-radius-group);
   box-shadow: var(--ws-edge), var(--ws-lift);
 }
@@ -152,15 +186,15 @@
 .ws-field { display: grid; gap: 6px; min-width: 0; }
 .ws-label { font-size: 0.875rem; font-weight: 600; color: var(--ws-text); }
 .ws-label small { font-size: inherit; font-weight: 400; color: var(--ws-muted); }
-.ws-hint { margin: 0; font-size: 0.8125rem; line-height: 1.4; color: var(--ws-muted); }
+.ws-hint { margin: 0; font-size: 0.8125rem; line-height: calc(var(--ws-leading-text) - 0.1); color: var(--ws-muted); }
 .ws-error {
   display: flex; align-items: baseline; gap: 6px;
-  min-height: 1.4em; margin: 0; font-size: 0.8125rem; font-weight: 550; line-height: 1.4;
+  min-height: calc((var(--ws-leading-text) - 0.1) * 1em); margin: 0; font-size: 0.8125rem; font-weight: 550; line-height: calc(var(--ws-leading-text) - 0.1);
   color: rgb(var(--ws-bad));
   transition: opacity var(--ws-base) var(--ws-ease);
 }
 .ws-error::before {
-  content: "!";
+  content: var(--ws-alert-glyph);
   flex: none; display: grid; place-items: center;
   width: 15px; height: 15px; border-radius: 50%;
   font-size: 0.6875rem; font-weight: 800; line-height: 1;
@@ -180,10 +214,10 @@
 
 .ws-input, .ws-textarea, .ws-select, .ws-date {
   box-sizing: border-box;
-  width: 100%; min-width: 0; min-height: var(--ws-height);
+  width: 100%; min-width: 0; min-height: max(32px, var(--ws-height));
   margin: 0; padding: 0 14px;
   border: 0; border-radius: var(--ws-radius);
-  font: inherit; font-size: 0.9375rem; line-height: 1.3; text-align: start;
+  font: inherit; font-size: 0.9375rem; line-height: var(--ws-leading-control); text-align: start;
   color: var(--ws-text);
   background: var(--ws-fill);
   /* A well cut into the glass: shaded inside its top edge, lit along its lower lip. */
@@ -196,7 +230,7 @@
 @media (pointer: coarse) {
   .ws-input, .ws-textarea, .ws-select, .ws-date, .ws-popover-search { font-size: 1rem; } /* no zoom on focus on phones */
 }
-.ws-textarea { min-height: 96px; padding: 11px 14px; line-height: 1.5; resize: vertical; }
+.ws-textarea { min-height: 96px; padding: 11px 14px; line-height: var(--ws-leading-text); resize: vertical; }
 .ws-input::placeholder, .ws-textarea::placeholder { color: var(--ws-muted); opacity: 1; }
 .ws-input:hover, .ws-textarea:hover, .ws-select:hover, .ws-date:hover { background: var(--ws-fill-strong); }
 .ws-input:focus-visible, .ws-textarea:focus-visible, .ws-select:focus-visible, .ws-date:focus-visible,
@@ -235,13 +269,13 @@ button.ws-select { justify-content: space-between; }
 .ws-select[aria-expanded="true"] > .ws-icon { rotate: 180deg; color: rgb(var(--ws-accent)); }
 .ws-date[aria-expanded="true"] > .ws-icon { color: rgb(var(--ws-accent)); }
 select.ws-select:not(.ws-native) {
-  appearance: none; padding-right: 38px; cursor: pointer;
+  appearance: none; padding-inline-end: 38px; cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23767a85' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;
 }
 
 /* Tick, radio and switch: the browser's own inputs, restyled, so they keep their behaviour. */
-.ws-choice { display: flex; align-items: center; gap: 12px; min-height: var(--ws-height); cursor: pointer; }
+.ws-choice { display: flex; align-items: center; gap: 12px; min-height: max(32px, var(--ws-height)); cursor: pointer; }
 .ws-check, .ws-radio, .ws-switch {
   appearance: none; position: relative; flex: none; margin: 0; cursor: pointer;
   background: var(--ws-fill);
@@ -279,7 +313,7 @@ select.ws-select:not(.ws-native) {
   background: rgb(var(--ws-ink) / 0.2); box-shadow: inset 0 1px 2px rgb(var(--ws-shadow) / 0.12);
 }
 .ws-switch::after {
-  content: ""; position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 999px;
+  content: ""; position: absolute; top: 2px; inset-inline-start: 2px; width: 24px; height: 24px; border-radius: 999px;
   background: #fff;
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.25), 0 3px 8px -2px rgb(15 23 42 / 0.3);
   transition: translate var(--ws-base) var(--ws-spring), width var(--ws-fast) var(--ws-ease);
@@ -303,7 +337,7 @@ select.ws-select:not(.ws-native) {
     box-shadow var(--ws-fast) var(--ws-ease), scale var(--ws-fast) var(--ws-ease), filter var(--ws-fast) var(--ws-ease);
 }
 .ws-button {
-  min-height: var(--ws-height); padding: 0 18px; font-size: 0.9375rem;
+  min-height: max(32px, var(--ws-height)); padding: 0 18px; font-size: 0.9375rem;
   color: var(--ws-text);
   background: linear-gradient(180deg, rgb(var(--ws-rim) / calc(0.5 * var(--ws-rim-strength))), rgb(var(--ws-rim) / 0) 70%), rgb(var(--ws-surface) / 0.5);
   box-shadow: inset 0 1px 0 rgb(var(--ws-rim) / calc(0.9 * var(--ws-rim-strength))), 0 0 0 1px rgb(var(--ws-ink) / 0.07), 0 1px 2px rgb(var(--ws-shadow) / 0.10);
@@ -315,7 +349,7 @@ select.ws-select:not(.ws-native) {
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
   background: radial-gradient(110px circle at var(--ws-press-x, 50%) var(--ws-press-y, 50%), rgb(var(--ws-rim) / 0.7), transparent 72%);
 }
-.ws-button[data-ws-pressed]::before, .ws-chip[data-ws-pressed]::before { animation: ws-glow 460ms ease-out; }
+.ws-button[data-ws-pressed]::before, .ws-chip[data-ws-pressed]::before { animation: ws-glow var(--ws-flow) ease-out; }
 /* A press: it gives way, brightens, and the light leaves its top edge for the bottom one. */
 .ws-button:active, .ws-chip:active { scale: 0.97; filter: brightness(1.06); }
 .ws-button:active:not([data-variant="quiet"]) {
@@ -394,11 +428,11 @@ select.ws-select:not(.ws-native) {
   transition: background-color var(--ws-base) var(--ws-ease), box-shadow var(--ws-base) var(--ws-ease);
 }
 /* Navigation glass is translucent over the calm page; what floats over content is frosted. */
-.ws-toolbar { --ws-glass-tint: var(--ws-clear); }
-.ws-bulk, .ws-popover, dialog.ws-dialog { --ws-glass-tint: var(--ws-frost); }
+.ws-toolbar { --ws-glass-tint: clamp(0.35, var(--ws-clear), 1); }
+.ws-bulk, .ws-popover, dialog.ws-dialog { --ws-glass-tint: clamp(0.6, var(--ws-frost), 1); }
 /* Glass answers to what is behind it: with content under it, or over a busy background, it frosts. */
-.ws-toolbar[data-ws-over] { --ws-glass-tint: var(--ws-frost); }
-[data-ws-over="busy"] { --ws-glass-tint: calc(var(--ws-frost) + 0.1); }
+.ws-toolbar[data-ws-over] { --ws-glass-tint: clamp(0.6, var(--ws-frost), 1); }
+[data-ws-over="busy"] { --ws-glass-tint: clamp(0.7, var(--ws-frost) + 0.1, 1); }
 .ws-toolbar {
   position: sticky; top: var(--ws-toolbar-top, 12px); z-index: 20;
   display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
@@ -409,25 +443,25 @@ select.ws-select:not(.ws-native) {
 .ws-toolbar .ws-input, .ws-toolbar .ws-select { border-radius: 999px; }
 .ws-toolbar > .ws-select { width: auto; } /* a filter is as wide as its words, before and after the script upgrades it */
 .ws-search { position: relative; flex: 1 1 240px; min-width: 0; }
-.ws-search > .ws-input { padding-left: 40px; }
-.ws-search > .ws-icon { position: absolute; left: 14px; top: 50%; translate: 0 -50%; color: var(--ws-muted); pointer-events: none; }
+.ws-search > .ws-input { padding-inline-start: 40px; }
+.ws-search > .ws-icon { position: absolute; inset-inline-start: 14px; top: 50%; translate: 0 -50%; color: var(--ws-muted); pointer-events: none; }
 
 .ws-bulk {
   position: sticky; bottom: 16px; z-index: 30;
   display: flex; align-items: center; gap: 12px;
   width: fit-content; max-width: calc(100% - 24px); margin: 12px auto 0;
-  padding: 8px 8px 8px 18px; border-radius: 999px;
+  padding: 8px; padding-inline-start: 18px; border-radius: 999px;
   font-size: 0.9375rem; font-weight: 550;
   box-shadow: var(--ws-edge), var(--ws-float);
   /* It emerges when a selection exists and recedes when it is cleared (browsers that can't animate display switch at once). */
-  transition: opacity 240ms var(--ws-ease), translate 320ms var(--ws-spring), scale 320ms var(--ws-spring), display 240ms allow-discrete;
+  transition: opacity var(--ws-base) var(--ws-ease), translate var(--ws-emerge) var(--ws-spring), scale var(--ws-emerge) var(--ws-spring), display var(--ws-base) allow-discrete;
 }
 .ws-bulk[hidden] { display: none; opacity: 0; translate: 0 14px; scale: 0.96; }
 @starting-style { .ws-bulk { opacity: 0; translate: 0 14px; scale: 0.96; } }
 
 .ws-popover {
   position: fixed; inset: auto; z-index: 2147483000;
-  box-sizing: border-box; max-width: min(420px, calc(100vw - 16px));
+  box-sizing: border-box; max-width: min(var(--ws-popover-width), calc(100vw - 16px));
   margin: 0; padding: 6px; border: 0;
   overflow: auto; overscroll-behavior: contain;
   border-radius: calc(var(--ws-radius) + 6px);
@@ -452,53 +486,56 @@ select.ws-select:not(.ws-native) {
    focus, and solid fields, lists and groups inside the sheet. Use the browser's own <dialog>
    (showModal), so focus is held and Escape closes it. */
 dialog.ws-dialog {
-  box-sizing: border-box; width: 100%; max-width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 48px);
+  box-sizing: border-box; width: 100%; max-width: min(var(--ws-dialog-medium), calc(100vw - 32px)); max-height: calc(100dvh - 48px);
   margin: auto; padding: 0; border: 0; overflow: auto;
   border-radius: calc(var(--ws-radius-group) + 4px);
   box-shadow: var(--ws-edge), 0 0 0 1px rgb(var(--ws-ink) / 0.08), 0 4px 10px rgb(var(--ws-shadow) / 0.10), 0 44px 90px -28px rgb(var(--ws-shadow) / 0.55);
 }
 dialog.ws-dialog::backdrop {
-  background: rgb(var(--ws-shadow) / 0.26);
+  background: rgb(var(--ws-shadow) / clamp(0.12, var(--ws-dim), 0.6));
   -webkit-backdrop-filter: blur(2px) saturate(0.9);
   backdrop-filter: blur(2px) saturate(0.9);
 }
 /* The sheet emerges from just below its place and recedes the same way; the page behind dims with it. */
 dialog.ws-dialog {
   opacity: 0; translate: 0 16px; scale: 0.96;
-  transition: opacity 220ms var(--ws-ease), translate 300ms var(--ws-ease), scale 300ms var(--ws-ease),
-    overlay 300ms allow-discrete, display 300ms allow-discrete;
+  transition: opacity var(--ws-base) var(--ws-ease), translate var(--ws-emerge) var(--ws-ease), scale var(--ws-emerge) var(--ws-ease),
+    overlay var(--ws-emerge) allow-discrete, display var(--ws-emerge) allow-discrete;
 }
 dialog.ws-dialog[open] { opacity: 1; translate: none; scale: none; }
 @starting-style { dialog.ws-dialog[open] { opacity: 0; translate: 0 16px; scale: 0.96; } }
-dialog.ws-dialog::backdrop { opacity: 0; transition: opacity 260ms ease-out, overlay 260ms allow-discrete, display 260ms allow-discrete; }
+dialog.ws-dialog::backdrop { opacity: 0; transition: opacity var(--ws-emerge) ease-out, overlay var(--ws-emerge) allow-discrete, display var(--ws-emerge) allow-discrete; }
 dialog.ws-dialog[open]::backdrop { opacity: 1; }
 @starting-style { dialog.ws-dialog[open]::backdrop { opacity: 0; } }
-.ws-dialog-body { display: grid; gap: 16px; padding: 24px 24px 8px; }
-.ws-dialog-title { margin: 0; font-size: 1.25rem; font-weight: 650; letter-spacing: -0.02em; }
-.ws-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 16px 24px 22px; }
-.ws-dialog-text { margin: 0; color: var(--ws-muted); line-height: 1.5; }
+dialog.ws-dialog[data-size="small"], dialog.ws-dialog[data-critical]:not([data-size]) { max-width: min(var(--ws-dialog-small), calc(100vw - 32px)); }
+dialog.ws-dialog[data-size="large"] { max-width: min(var(--ws-dialog-large), calc(100vw - 32px)); }
+.ws-dialog-body { display: grid; gap: 16px; padding: var(--ws-dialog-pad) var(--ws-dialog-pad) 8px; }
+.ws-dialog-title { margin: 0; font-size: 1.25rem; font-weight: 650; letter-spacing: var(--ws-tracking); line-height: var(--ws-leading-control); }
+.ws-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 16px var(--ws-dialog-pad) calc(var(--ws-dialog-pad) - 2px); }
+.ws-dialog-text { margin: 0; color: var(--ws-muted); line-height: var(--ws-leading-text); }
 /* A critical error: thick glass. The same material as every other pop-up — so it belongs — but
    dense enough to keep its text above 7:1 over anything behind it, with the page dimmed further
    and a mark that says it is serious. Never a plain card; never as light as a routine dialog. */
 dialog.ws-dialog[data-critical] {
-  --ws-glass-tint: 0.9; max-width: min(440px, calc(100vw - 32px));
+  --ws-glass-tint: clamp(0.85, var(--ws-critical), 1);
   -webkit-backdrop-filter: blur(calc(var(--ws-blur) * 1.4)) saturate(1.7);
   backdrop-filter: blur(calc(var(--ws-blur) * 1.4)) saturate(1.7);
 }
 dialog.ws-dialog[data-critical] .ws-dialog-text { color: var(--ws-text); }
-dialog.ws-dialog[data-critical]::backdrop { background: rgb(var(--ws-shadow) / 0.42); }
+dialog.ws-dialog[data-critical]::backdrop { background: rgb(var(--ws-shadow) / clamp(0.3, var(--ws-critical-dim), 0.7)); }
 .ws-dialog-mark {
   display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
-  font-size: 1.4rem; font-weight: 700; color: rgb(var(--ws-bad)); background: rgb(var(--ws-bad) / 0.12);
+  color: rgb(var(--ws-bad)); background: rgb(var(--ws-bad) / 0.12);
   box-shadow: inset 0 1px 0 rgb(var(--ws-rim) / calc(0.7 * var(--ws-rim-strength))), inset 0 0 0 1px rgb(var(--ws-bad) / 0.16);
 }
+.ws-dialog-mark path { stroke-width: 2.2; }
 /* Inside the glass, what is read sits on solid ground. */
 dialog.ws-dialog .ws-group, dialog.ws-dialog .ws-list { background: rgb(var(--ws-surface) / 0.96); box-shadow: 0 0 0 1px rgb(var(--ws-ink) / 0.06); border-radius: var(--ws-radius); }
 
 .ws-options { display: grid; gap: 1px; outline: none; }
 .ws-option, .ws-menu [role="menuitem"] {
   box-sizing: border-box; display: flex; align-items: center; gap: 12px;
-  width: 100%; min-height: 40px; margin: 0; padding: 0 10px 0 12px;
+  width: 100%; min-height: 40px; margin: 0; padding: 0; padding-inline: 12px 10px;
   border: 0; border-radius: calc(var(--ws-radius) - 4px);
   font: inherit; text-align: start; color: inherit; background: none; cursor: default;
 }
@@ -513,7 +550,7 @@ dialog.ws-dialog .ws-group, dialog.ws-dialog .ws-list { background: rgb(var(--ws
 .ws-option[data-active] > .ws-icon { color: inherit; }
 .ws-option[aria-disabled="true"], .ws-menu [role="menuitem"]:disabled { opacity: 0.45; }
 .ws-option-heading { padding: 10px 12px 4px; font-size: 0.75rem; font-weight: 600; color: var(--ws-muted); }
-.ws-options[data-empty]::after { content: "No matches"; padding: 14px 12px; color: var(--ws-muted); }
+.ws-options[data-empty]::after { content: attr(data-empty); padding: 14px 12px; color: var(--ws-muted); } /* the words come from surface-kit.js */
 .ws-popover[data-sheet="true"] .ws-option, .ws-popover[data-sheet="true"] [role="menuitem"] { min-height: 48px; }
 
 .ws-menu { display: grid; gap: 1px; min-width: 200px; }
@@ -521,10 +558,10 @@ dialog.ws-dialog .ws-group, dialog.ws-dialog .ws-list { background: rgb(var(--ws
 .ws-menu [role="menuitem"][data-tone="bad"]:hover, .ws-menu [role="menuitem"][data-tone="bad"]:focus-visible { color: #fff; background: rgb(var(--ws-bad)); }
 .ws-menu hr { height: 1px; margin: 5px 10px; border: 0; background: var(--ws-line); }
 
-.ws-calendar { width: 308px; padding: 12px; }
+.ws-calendar { width: var(--ws-calendar-width); padding: 12px; }
 .ws-popover[data-sheet="true"].ws-calendar { width: auto; }
-.ws-calendar-header { display: flex; align-items: center; gap: 2px; padding: 0 0 8px 8px; }
-.ws-calendar-title { flex: 1; font-size: 1rem; font-weight: 650; letter-spacing: -0.01em; }
+.ws-calendar-header { display: flex; align-items: center; gap: 2px; padding: 0 0 8px; padding-inline-start: 8px; }
+.ws-calendar-title { flex: 1; font-size: 1rem; font-weight: 650; letter-spacing: calc(var(--ws-tracking) / 2); }
 .ws-calendar-step {
   display: grid; place-items: center; width: 36px; height: 36px; padding: 0;
   border: 0; border-radius: 50%; color: rgb(var(--ws-accent)); background: none; cursor: pointer;
@@ -551,7 +588,7 @@ dialog.ws-dialog .ws-group, dialog.ws-dialog .ws-list { background: rgb(var(--ws
   min-height: 36px; padding: 0 10px; border: 0; border-radius: 999px;
   font: inherit; font-size: 0.875rem; font-weight: 600; color: rgb(var(--ws-accent)); background: none; cursor: pointer;
 }
-.ws-calendar-action:last-child { margin-left: auto; }
+.ws-calendar-action:last-child { margin-inline-start: auto; }
 .ws-calendar-action:hover { background: rgb(var(--ws-accent) / 0.1); }
 .ws-calendar-action:disabled { opacity: 0.4; cursor: default; }
 .ws-popover[data-sheet="true"] .ws-day { min-height: 44px; }
@@ -566,7 +603,7 @@ dialog.ws-dialog .ws-group, dialog.ws-dialog .ws-list { background: rgb(var(--ws
   border-radius: var(--ws-radius); pointer-events: none; opacity: 0;
   background: rgb(var(--ws-ink) / 0.045);
   box-shadow: inset 0 0 0 1px rgb(var(--ws-ink) / 0.04);
-  transition: translate 200ms var(--ws-ease), height 200ms var(--ws-ease), opacity var(--ws-fast) var(--ws-ease);
+  transition: translate var(--ws-base) var(--ws-ease), height var(--ws-base) var(--ws-ease), opacity var(--ws-fast) var(--ws-ease);
 }
 .ws-table-wrap[data-ws-glide="on"]::before { opacity: 1; }
 .ws-table-wrap[data-ws-glide] tbody tr:hover td { background: none; }
@@ -644,7 +681,7 @@ th.ws-num { text-align: end; }
 [data-tone="info"] { --tone: var(--ws-info); }
 .ws-status {
   display: inline-flex; align-items: center; gap: 7px;
-  min-height: 26px; padding: 0 10px 0 9px; border-radius: 999px;
+  min-height: 26px; padding: 0; padding-inline: 9px 10px; border-radius: 999px;
   font-size: 0.8125rem; font-weight: 600; white-space: nowrap;
   color: color-mix(in srgb, rgb(var(--tone)) 80%, rgb(var(--ws-ink)));
   background: rgb(var(--tone) / 0.1);
@@ -681,7 +718,7 @@ th.ws-num { text-align: end; }
 .ws-list-item[aria-current], .ws-list-item[aria-selected="true"], .ws-list-item:has(:checked) { font-weight: 600; background: rgb(var(--ws-accent) / 0.11); }
 .ws-list-item:has(:focus-visible) { outline: 2px solid rgb(var(--ws-accent)); outline-offset: -2px; }
 .ws-list-item:focus-visible { outline: 2px solid rgb(var(--ws-accent)); outline-offset: -2px; }
-.ws-list-item > :last-child:not(:first-child) { margin-left: auto; }
+.ws-list-item > :last-child:not(:first-child) { margin-inline-start: auto; }
 
 /* ---------- states */
 
@@ -699,7 +736,7 @@ th.ws-num { text-align: end; }
 
 /* Arrival: when the page opens, each surface in view rises into place once — the answer to
    having navigated here (surface-kit.js adds .ws-arrive and takes it off again). */
-.ws-arrive { animation: ws-arrive 420ms var(--ws-ease) both; animation-delay: calc(var(--ws-order, 0) * 60ms); }
+.ws-arrive { animation: ws-arrive var(--ws-flow) var(--ws-ease) both; animation-delay: calc(var(--ws-order, 0) * var(--ws-fast) * 0.4); }
 @keyframes ws-arrive { from { opacity: 0; translate: 0 10px; } }
 
 /* ---------- feedback: one state model, shown the same way everywhere
@@ -754,9 +791,9 @@ th.ws-num { text-align: end; }
   animation: ws-spin 0.7s linear infinite;
 }
 .ws-mark { flex: none; }
-.ws-mark path { stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: 1; animation: ws-draw 360ms var(--ws-ease) 60ms forwards; }
-.ws-button[data-state="success"] .ws-mark { animation: ws-pop 360ms var(--ws-spring); }
-.ws-button[data-state="error"] { animation: ws-nudge 360ms var(--ws-ease); } /* noticeable, not aggressive */
+.ws-mark path { stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: 1; animation: ws-draw var(--ws-emerge) var(--ws-ease) 60ms forwards; }
+.ws-button[data-state="success"] .ws-mark { animation: ws-pop var(--ws-emerge) var(--ws-spring); }
+.ws-button[data-state="error"] { animation: ws-nudge var(--ws-emerge) var(--ws-ease); } /* noticeable, not aggressive */
 
 /* Notices: toasts and background work share one stack, clear of the page's own controls. */
 /* Bottom right by default (set --ws-notice-inset: top right bottom left to move it). If a notice
@@ -764,7 +801,7 @@ th.ws-num { text-align: end; }
 .ws-stack {
   position: fixed; inset: var(--ws-notice-inset, auto 20px max(20px, env(safe-area-inset-bottom)) auto); z-index: 2147483100;
   display: grid; justify-items: end; gap: 10px;
-  width: min(380px, calc(100vw - 24px)); margin: 0; padding: 0; border: 0; overflow: visible;
+  width: min(var(--ws-notice-width), calc(100vw - 24px)); margin: 0; padding: 0; border: 0; overflow: visible;
   color: inherit; background: none; pointer-events: none;
 }
 .ws-stack[popover]:not(:popover-open) { display: none; }
@@ -776,12 +813,12 @@ th.ws-num { text-align: end; }
   /* Glass: a soft glow under the pointer, light from the top edge, then the frosted tint. */
   background: radial-gradient(260px circle at var(--ws-light-x, -400px) var(--ws-light-y, -400px), rgb(var(--ws-rim) / calc(0.26 * var(--ws-rim-strength) + 0.04)), transparent 72%),
     linear-gradient(180deg, rgb(var(--ws-rim) / calc(0.34 * var(--ws-rim-strength))), rgb(var(--ws-rim) / 0) 140px),
-    rgb(var(--ws-surface) / var(--ws-frost));
+    rgb(var(--ws-surface) / clamp(0.6, var(--ws-frost), 1));
   -webkit-backdrop-filter: blur(var(--ws-blur)) saturate(1.8);
   backdrop-filter: blur(var(--ws-blur)) saturate(1.8);
   box-shadow: var(--ws-edge), var(--ws-float);
 }
-.ws-toast { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: 999px; font-weight: 550; }
+.ws-toast { display: flex; align-items: center; gap: 10px; padding: 8px; padding-inline-start: 16px; border-radius: 999px; font-weight: 550; }
 .ws-toast-text { flex: 1; padding: 6px 0; }
 .ws-toast .ws-mark, .ws-progress .ws-mark { color: rgb(var(--ws-ok)); }
 /* A failure is not glass: a restrained tinted surface, solid enough to read at once. */
@@ -791,7 +828,7 @@ th.ws-num { text-align: end; }
   box-shadow: inset 0 0 0 1px rgb(var(--ws-bad) / 0.22), var(--ws-float);
 }
 .ws-toast[data-tone="bad"]::before {
-  content: "!"; flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  content: var(--ws-alert-glyph); flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
   font-size: 0.8125rem; font-weight: 800; color: rgb(var(--ws-surface)); background: rgb(var(--ws-bad));
 }
 .ws-toast-action, .ws-notice-close {
@@ -806,14 +843,14 @@ th.ws-num { text-align: end; }
 .ws-toast-action:active, .ws-notice-close:active { scale: 0.94; }
 .ws-toast-action:focus-visible, .ws-notice-close:focus-visible { outline: 2px solid rgb(var(--ws-accent)); outline-offset: 1px; }
 
-.ws-progress { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px 10px; width: 100%; padding: 14px 12px 14px 18px; border-radius: 20px; }
+.ws-progress { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px 10px; width: 100%; padding: 14px 12px; padding-inline-start: 18px; border-radius: 20px; }
 .ws-progress-title { display: flex; align-items: center; gap: 8px; font-weight: 600; }
 .ws-progress-status { grid-column: 1 / -1; font-size: 0.8125rem; color: var(--ws-muted); font-variant-numeric: tabular-nums; }
 .ws-progress-status:empty { display: none; }
 .ws-progress-bar { grid-column: 1 / -1; position: relative; height: 6px; overflow: hidden; border-radius: 999px; background: rgb(var(--ws-ink) / 0.1); }
 .ws-progress-bar::after {
   content: ""; position: absolute; inset: 0; width: calc(var(--value, 0) * 100%); border-radius: inherit;
-  background: rgb(var(--ws-accent)); transition: width 260ms var(--ws-ease);
+  background: rgb(var(--ws-accent)); transition: width var(--ws-base) var(--ws-ease);
 }
 /* No real figure from the work: the bar shows that it is going on, and claims nothing more. */
 .ws-progress[data-indeterminate] .ws-progress-bar::after { width: 38%; animation: ws-slide 1.2s ease-in-out infinite; }
@@ -824,6 +861,20 @@ th.ws-num { text-align: end; }
 @keyframes ws-draw { to { stroke-dashoffset: 0; } }
 @keyframes ws-pop { 0% { scale: 0.6; } 60% { scale: 1.12; } 100% { scale: 1; } }
 @keyframes ws-nudge { 20% { translate: -4px 0; } 50% { translate: 3px 0; } 80% { translate: -1px 0; } }
+
+/* ---------- right-to-left languages (dir="rtl" on <html> or on any part of the page)
+   Layout follows the direction by itself (logical properties throughout); these are the few
+   things that have to be mirrored by hand. */
+select.ws-select:not(.ws-native):dir(rtl) { background-position: left 12px center; }
+.ws-switch:dir(rtl):checked::after { translate: -20px 0; }
+.ws-switch:dir(rtl):checked:active::after { translate: -15px 0; }
+.ws-calendar-step:dir(rtl) > .ws-icon { scale: -1 1; } /* "previous" points to where earlier months are */
+.ws-stack:dir(rtl) { inset: var(--ws-notice-inset, auto auto max(20px, env(safe-area-inset-bottom)) 20px); }
+.ws-stack:dir(rtl)[data-side="other"] { inset: auto 20px max(20px, env(safe-area-inset-bottom)) auto; }
+.ws-meter:dir(rtl)::after { background: linear-gradient(270deg, rgb(var(--tone) / 0.7), rgb(var(--tone))); }
+.ws-progress[data-indeterminate]:dir(rtl) .ws-progress-bar::after { animation-name: ws-slide-back; }
+@keyframes ws-slide-back { from { translate: 110% 0; } to { translate: -280% 0; } }
+@media (max-width: 640px) { .ws-stack:dir(rtl), .ws-stack:dir(rtl)[data-side="other"] { inset: auto 12px max(12px, env(safe-area-inset-bottom)) 12px; } }
 
 /* ---------- fallbacks */
 

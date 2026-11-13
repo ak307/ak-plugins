@@ -82,8 +82,11 @@ its text stays above 7:1 over anything, with a mark that says it is serious
 Web builds get all of this from `arkar-ui-design-system/assets/surface-kit.js`
 — `load(region, fetcher)` (skeleton, refresh, empty, error and retry,
 offline, latest request only), `commit(button, work)` (the working
-button), `toast`, `progress`, `errorDialog`, `setState` — rather than
-writing it per screen. Frameworks keep the same model and rules with their
+button), `toast`, `progress`, `dialog` (the product gives the words, the
+actions and whether it is critical; `errorDialog` is the critical one),
+`setState` — rather than writing it per screen. The kit holds no wording of
+its own: `configure({ locale, labels, icons })` sets it once, in the
+product's language. Frameworks keep the same model and rules with their
 own stores and components (one `useOperation`-style hook or composable, one
 set of feedback components).
 

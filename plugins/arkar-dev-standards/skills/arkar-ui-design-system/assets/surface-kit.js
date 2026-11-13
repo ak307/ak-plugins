@@ -16,7 +16,8 @@
 //                                         "Saving…", and "Saved" only once the server has answered
 //   toast(message, { tone, action })      a small confirmation, or an error that stays until dealt with
 //   progress(title, { onCancel })         long work in the background, with real progress or none
-//   errorDialog({ title, message })       critical errors only (thick glass, with a mark)
+//   dialog({ title, message, actions })   a question that needs an answer; errorDialog() for the
+//                                         critical ones (thick glass, with a mark)
 // and it makes the material answer the user — motion that always follows an action, never loops
 // (an indicator moves only while work is really going on):
 //   a press        the control gives way and lights up where it was touched
@@ -28,13 +29,21 @@
 // The real <select> and <input> stay in the page and keep their value, name, label and events
 // (input and change still fire on them), so forms, validation and data binding are unchanged.
 //
-// Mechanics only: colour, radius and type come from the --ws-* tokens in surface-kit.css.
+// The kit decides how a control looks and behaves; the product decides what it says, what it
+// does and when it appears:
+//   wording, language, icons   configure({ locale, labels, icons }) — once, before enhance()
+//   colour, material, radius,  the --ws-* tokens in surface-kit.css (this script reads its
+//   size, motion               durations and easings from them too)
+//   content and actions        the page's own markup, and the options of each call
+//   fixed, on purpose          what keeps people safe: success only after the server confirms, one
+//                              press one request, errors that stay, keyboard and screen-reader
+//                              behaviour, reduced motion, and the floors under the readability tokens
 // Frameworks: keep the CSS, and use the framework's own accessible primitives (or call
 // enhance() on mount; in Livewire wrap the control in wire:ignore). Multiple selects stay native.
 
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 const narrow = () => matchMedia("(max-width: 480px)").matches;
-const EASE = "cubic-bezier(.2,.8,.2,1)";
+const rightToLeft = (element) => getComputedStyle(element).direction === "rtl";
 
 let counter = 0;
 const nextId = (prefix) => `${prefix}-${++counter}`;
@@ -46,31 +55,231 @@ function el(tag, className, text) {
   return node;
 }
 
-// Icons are built as elements, never as HTML strings: nothing in this file writes markup into the
-// page, so it works under a strict Content-Security-Policy and with Trusted Types.
-const SVG = "http://www.w3.org/2000/svg";
-const PATHS = {
+// ---------------------------------------------------------------------------------------------
+// Configuration. Nothing a user reads or hears is fixed in this file: every word comes from
+// `labels` below, from the page's own markup, or from the options of a call.
+//
+//   configure({
+//     locale: "th-TH",                                       // dates, numbers, plurals, first day of the week
+//     labels: { tryAgain: "ลองอีกครั้ง", commit: { offline: "…" } },     // any of defaults.labels
+//     icons: { critical: "M8 3.75v5M8 11.9v.2" },            // 16 × 16 outlines; add the product's own names too
+//   });
+//
+// Translate defaults.labels in full for each language the product ships. Text in {braces} is filled
+// in by the kit. Call configure() again when the user changes language; controls built after that use it.
+//
+// Dates are formatted by the browser in the locale — when the browser knows the language. Chrome
+// has no date data for some (Burmese and Khmer among them) and falls back to English without
+// saying so; configure() warns in the console when that is the case. For such a language the
+// product gives the names and the order itself, and the digits to count in:
+//   configure({ locale: "my-MM", digits: "mymr", calendar: {
+//     months: [12 names, January first], weekdays: [7 short names, Sunday first],
+//     value: "{year} {month} {day}", title: "{month} {year}", spoken: "{weekday} {day} {month} {year}" } });
+
+const DEFAULT_LABELS = {
+  options: "Options", // names a list that has no label of its own
+  search: "Search",
+  searchOptions: "Search options",
+  noMatches: "No matches",
+  chooseDate: "Choose a date",
+  previousMonth: "Previous month",
+  nextMonth: "Next month",
+  today: "Today",
+  clear: "Clear",
+  tryAgain: "Try again",
+  dismiss: "Dismiss",
+  cancel: "Cancel",
+  ok: "OK",
+  saving: "Saving…",
+  saved: "Saved",
+  stillWorking: "Still working…",
+  checking: "Checking…",
+  jobDone: "{title}: done",
+  jobFailed: "{title}: failed",
+  jobCancelled: "{title}: cancelled",
+  // A field's problem, when the field has no data-error of its own. Empty: the browser's own
+  // message, which is in the browser's language, not the product's — so translated products set these.
+  field: { required: "", format: "", range: "" },
+  // Wording never claims more than is known: a timeout does not say the work failed, because nobody knows yet.
+  load: {
+    failed: "This couldn't be loaded.",
+    offline: "You're offline. This will load when the connection is back.",
+    timeout: "This is taking too long to load.",
+    "signed-out": "You've been signed out. Sign in again to see this.",
+    denied: "You don't have permission to see this.",
+    invalid: "This couldn't be loaded.",
+    empty: "Nothing here yet.",
+  },
+  commit: {
+    failed: "That didn't go through. Your details are still here.",
+    offline: "You're offline, so nothing was sent. Your details are still here.",
+    timeout: "We couldn't confirm that went through. Check before trying again.",
+    "signed-out": "You've been signed out. Sign in again — your details are still here.",
+    denied: "You don't have permission to do this.",
+    invalid: "Some details need fixing before this can go through.",
+  },
+};
+
+// Outlines on a 16 × 16 grid, drawn with the text colour.
+const DEFAULT_ICONS = {
   chevron: "M4 6l4 4 4-4",
   check: "M3.5 8.5l3 3 6-7",
   left: "M10 3.5L5.5 8l4.5 4.5",
   right: "M6 3.5L10.5 8 6 12.5",
   calendar: "M2.5 6.5h11M5 1.75v2.5M11 1.75v2.5M3.5 3h9a1 1 0 0 1 1 1v8.5a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z",
   close: "M4 4l8 8M12 4l-8 8",
+  critical: "M8 3.75v5M8 11.9v.2",
 };
 
-function icon(path, { size = 16, className = "ws-icon" } = {}) {
+const copyLabels = (labels) => ({ ...labels, field: { ...labels.field }, load: { ...labels.load }, commit: { ...labels.commit } });
+
+// What a product starts from — the full list of labels to translate. Read-only: change the kit through configure().
+const readOnly = (labels) => Object.freeze(Object.fromEntries(Object.entries(labels).map(([name, value]) => [name, typeof value === "object" ? Object.freeze({ ...value }) : value])));
+export const defaults = Object.freeze({ labels: readOnly(DEFAULT_LABELS), icons: Object.freeze({ ...DEFAULT_ICONS }) });
+const settings = { locale: "", weekStart: null, digits: "", calendar: null, labels: copyLabels(DEFAULT_LABELS), icons: { ...DEFAULT_ICONS } };
+
+// Translations often arrive as a file from a server, so only the kit's own label names are
+// taken, and only as text: nothing else in the object can reach the page or the kit's internals.
+function takeLabels(known, target, given, path = "") {
+  for (const [name, value] of Object.entries(given || {})) {
+    if (!Object.hasOwn(known, name)) console.warn(`surface-kit: "${path}${name}" is not one of the kit's labels (see defaults.labels)`);
+    else if (typeof known[name] === "object") takeLabels(known[name], target[name], value, `${name}.`);
+    else if (typeof value === "string") target[name] = value;
+  }
+}
+
+const names = (list, length) => Array.isArray(list) && list.length === length && list.every((name) => typeof name === "string");
+
+export function configure({ locale, weekStart, digits, calendar, labels, icons } = {}) {
+  if (locale !== undefined) settings.locale = typeof locale === "string" ? locale : "";
+  if (weekStart !== undefined) settings.weekStart = weekStart === null ? null : ((Number(weekStart) % 7) + 7) % 7; // 0 Sunday … 6 Saturday; null: the locale's own
+  if (digits !== undefined) settings.digits = typeof digits === "string" ? digits : ""; // a numbering system: "mymr", "arab", "latn", …
+  if (calendar === null) settings.calendar = null;
+  else if (calendar !== undefined) {
+    if (names(calendar.months, 12) && names(calendar.weekdays, 7)) {
+      const order = (text, usual) => (typeof text === "string" ? text : usual);
+      settings.calendar = { months: [...calendar.months], weekdays: [...calendar.weekdays], value: order(calendar.value, "{day} {month} {year}"),
+        title: order(calendar.title, "{month} {year}"), spoken: order(calendar.spoken, "{weekday} {day} {month} {year}") };
+    } else console.warn("surface-kit: calendar needs months (12 names, January first) and weekdays (7 names, Sunday first)");
+  }
+  takeLabels(DEFAULT_LABELS, settings.labels, labels);
+  for (const [name, path] of Object.entries(icons || {})) {
+    if (typeof path === "string" && name !== "__proto__") settings.icons[name] = path;
+  }
+  if (settings.locale && !settings.calendar && Intl.DateTimeFormat.supportedLocalesOf([settings.locale]).length === 0) {
+    console.warn(`surface-kit: this browser cannot format dates in "${settings.locale}" and would show them in English — give configure() a calendar (month and weekday names)`);
+  }
+}
+
+const wording = (name) => settings.labels[name];
+const fill = (template, values) => template.replace(/\{(\w+)\}/g, (whole, name) => (name in values ? values[name] : whole));
+
+// The language everything is formatted in: the one configured, else the page's own (<html lang>).
+const localeNow = () => settings.locale || document.documentElement.lang || undefined;
+
+// Monday unless told otherwise; once a locale is configured, the week starts where that locale's does.
+function firstDayOfWeek() {
+  if (settings.weekStart !== null) return Number(settings.weekStart);
+  if (!settings.locale) return 1;
+  try {
+    const place = new Intl.Locale(settings.locale);
+    const week = typeof place.getWeekInfo === "function" ? place.getWeekInfo() : place.weekInfo;
+    return week ? week.firstDay % 7 : 1;
+  } catch (error) {
+    return 1;
+  }
+}
+
+// For the page's own wording, in the same language as the kit's:
+//   plural(3, { one: "{count} row selected", other: "{count} rows selected" })   → "3 rows selected"
+//   number(0.42, { style: "percent" })                                           → "42%"
+// Languages have up to six plural forms (zero, one, two, few, many, other); give the ones the
+// language uses, and always `other`.
+export function plural(count, forms) {
+  const form = new Intl.PluralRules(localeNow()).select(count);
+  return fill(forms[form] ?? forms.other ?? "", { count: number(count) });
+}
+
+export function number(value, options) {
+  return new Intl.NumberFormat(localeNow(), { ...numerals(), ...options }).format(value);
+}
+
+const numerals = () => (settings.digits ? { numberingSystem: settings.digits } : {});
+
+// How the calendar writes dates: the browser's formatting in the locale, or the product's own
+// names and order where the browser has none for the language (see configure).
+function dateWords() {
+  const language = localeNow();
+  const count = new Intl.NumberFormat(language, { ...numerals(), useGrouping: false });
+  const own = settings.calendar;
+  if (own) {
+    const parts = (date) => ({ day: count.format(date.getDate()), month: own.months[date.getMonth()], year: count.format(date.getFullYear()), weekday: own.weekdays[date.getDay()] });
+    return { value: (date) => fill(own.value, parts(date)), title: (date) => fill(own.title, parts(date)), spoken: (date) => fill(own.spoken, parts(date)),
+      weekday: (date) => own.weekdays[date.getDay()], weekdayName: (date) => own.weekdays[date.getDay()], day: (date) => count.format(date.getDate()) };
+  }
+  const format = (options) => {
+    const formatter = new Intl.DateTimeFormat(language, { ...numerals(), ...options });
+    return (date) => formatter.format(date);
+  };
+  // A column heading is the short name where the language has a short one ("Mon", "月", "lun"),
+  // and the single letter where its short name is a whole word (Arabic, Persian).
+  const short = format({ weekday: "short" });
+  const narrow = format({ weekday: "narrow" });
+  return { value: format({ day: "numeric", month: "short", year: "numeric" }), title: format({ month: "long", year: "numeric" }),
+    spoken: format({ weekday: "long", day: "numeric", month: "long", year: "numeric" }),
+    weekday: (date) => ([...short(date)].length <= 4 ? short(date) : narrow(date)), weekdayName: format({ weekday: "long" }), day: (date) => count.format(date.getDate()) };
+}
+
+// Motion. Durations and easings are the stylesheet's motion tokens, read where the animation
+// happens — so a product retunes motion in one place, for the whole page or for one part of it.
+const MOTION = {
+  "--ws-fast": 140, // presses, things leaving
+  "--ws-base": 220, // changes of state
+  "--ws-emerge": 300, // things arriving
+  "--ws-flow": 460, // long travel: the lens, a glow
+  "--ws-ease": "cubic-bezier(.2,.8,.2,1)",
+  "--ws-settle": "cubic-bezier(.25,1.2,.45,1)", // openings: a soft overshoot
+};
+const FADE = 100; // with reduced motion: a short fade, whatever the tokens say
+
+function motion(element, timeToken, easeToken = "--ws-ease") {
+  const style = getComputedStyle(element);
+  const written = style.getPropertyValue(timeToken).trim();
+  const amount = parseFloat(written);
+  const milliseconds = written.endsWith("ms") ? amount : amount * 1000;
+  return {
+    duration: Number.isFinite(milliseconds) && milliseconds >= 0 ? milliseconds : MOTION[timeToken],
+    easing: style.getPropertyValue(easeToken).trim() || MOTION[easeToken],
+  };
+}
+
+function play(element, frames, timeToken, easeToken = "--ws-ease") {
+  if (reduced()) return element.animate(frames, { duration: FADE });
+  const timing = motion(element, timeToken, easeToken);
+  try {
+    return element.animate(frames, timing);
+  } catch (error) {
+    return element.animate(frames, { duration: timing.duration, easing: MOTION[easeToken] }); // a token that isn't an easing
+  }
+}
+
+// Icons are built as elements, never as HTML strings: nothing in this file writes markup into the
+// page, so it works under a strict Content-Security-Policy and with Trusted Types.
+const SVG = "http://www.w3.org/2000/svg";
+
+function icon(name, { size = 16, className = "ws-icon" } = {}) {
   const svg = document.createElementNS(SVG, "svg");
   const shape = document.createElementNS(SVG, "path");
-  const set = (node, attributes) => Object.entries(attributes).forEach(([name, value]) => node.setAttribute(name, value));
+  const set = (node, attributes) => Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, value));
   set(svg, { class: className, viewBox: "0 0 16 16", width: size, height: size, "aria-hidden": "true" });
-  set(shape, { d: path, fill: "none", stroke: "currentColor", "stroke-width": "1.75", "stroke-linecap": "round", "stroke-linejoin": "round" });
+  set(shape, { d: Object.hasOwn(settings.icons, name) ? settings.icons[name] : "", fill: "none", stroke: "currentColor", "stroke-width": "1.75", "stroke-linecap": "round", "stroke-linejoin": "round" });
   svg.append(shape);
   return svg;
 }
 
 // The tick that confirms something really happened; the stylesheet draws it in.
 function tick() {
-  const mark = icon(PATHS.check, { size: 18, className: "ws-mark" });
+  const mark = icon("check", { size: 18, className: "ws-mark" });
   mark.firstChild.setAttribute("pathLength", "1");
   return mark;
 }
@@ -105,7 +314,9 @@ export function popover(trigger, panel, { matchWidth = true, onOpen, onClose } =
     const above = box.top - gap - edge;
     const opensUp = size.height > below && above > below;
     const room = Math.max(160, opensUp ? above : below);
-    const left = Math.min(Math.max(edge, box.left), Math.max(edge, innerWidth - size.width - edge));
+    // It lines up with the edge of its button that text starts from: the left, or the right in right-to-left languages.
+    const start = rightToLeft(trigger) ? box.right - size.width : box.left;
+    const left = Math.min(Math.max(edge, start), Math.max(edge, innerWidth - size.width - edge));
     panel.style.maxHeight = `${Math.round(room)}px`;
     panel.style.left = `${Math.round(left)}px`;
     panel.dataset.opensUp = String(opensUp);
@@ -118,12 +329,12 @@ export function popover(trigger, panel, { matchWidth = true, onOpen, onClose } =
 
   // It pours out of its button: uncovered from the edge nearest the button while it grows to size.
   function animate(opening) {
-    if (reduced()) return panel.animate([{ opacity: opening ? 0 : 1 }, { opacity: opening ? 1 : 0 }], { duration: 100 });
+    if (reduced()) return panel.animate([{ opacity: opening ? 0 : 1 }, { opacity: opening ? 1 : 0 }], { duration: FADE });
     const radius = getComputedStyle(panel).borderTopLeftRadius;
     const covered = panel.dataset.opensUp === "true" ? `inset(62% 0 0 0 round ${radius})` : `inset(0 0 62% 0 round ${radius})`;
     const hidden = narrow() ? { opacity: 0, transform: "translateY(28px)" } : { opacity: 0, transform: "scale(.9)", clipPath: covered };
     const shown = narrow() ? { opacity: 1, transform: "none" } : { opacity: 1, transform: "none", clipPath: `inset(0 0 0 0 round ${radius})` };
-    return panel.animate(opening ? [hidden, shown] : [shown, hidden], { duration: opening ? 280 : 140, easing: opening ? "cubic-bezier(.25,1.2,.45,1)" : EASE });
+    return opening ? play(panel, [hidden, shown], "--ws-emerge", "--ws-settle") : play(panel, [shown, hidden], "--ws-fast");
   }
 
   const pressedOutside = (event) => {
@@ -233,7 +444,7 @@ export function select(native, { searchAfter = 12 } = {}) {
   const value = el("span", "ws-select-value");
   value.id = nextId("ws-value");
   trigger.append(value);
-  trigger.append(icon(PATHS.chevron));
+  trigger.append(icon("chevron"));
   wrapNative(native, trigger, "ws-select-wrap");
 
   const panel = el("div", "ws-listbox");
@@ -241,7 +452,7 @@ export function select(native, { searchAfter = 12 } = {}) {
   list.setAttribute("role", "listbox");
   list.id = nextId("ws-list");
   const labelId = nameFromLabel(native, trigger, value.id);
-  if (labelId) list.setAttribute("aria-labelledby", labelId); else list.setAttribute("aria-label", trigger.getAttribute("aria-label") || "Options");
+  if (labelId) list.setAttribute("aria-labelledby", labelId); else list.setAttribute("aria-label", trigger.getAttribute("aria-label") || wording("options"));
   trigger.setAttribute("aria-controls", list.id);
   panel.append(list);
   trigger.after(panel);
@@ -260,7 +471,7 @@ export function select(native, { searchAfter = 12 } = {}) {
     row.id = nextId("ws-option");
     row.dataset.value = option.value;
     row.append(el("span", "ws-option-label", option.textContent.trim()));
-    row.append(icon(PATHS.check));
+    row.append(icon("check"));
     if (option.disabled) row.setAttribute("aria-disabled", "true");
     return row;
   }
@@ -282,8 +493,8 @@ export function select(native, { searchAfter = 12 } = {}) {
     if (wantsSearch && !search) {
       search = el("input", "ws-popover-search");
       search.type = "search";
-      search.placeholder = native.dataset.search || "Search";
-      search.setAttribute("aria-label", "Search options");
+      search.placeholder = native.dataset.search || wording("search");
+      search.setAttribute("aria-label", wording("searchOptions"));
       search.setAttribute("aria-controls", list.id);
       search.addEventListener("input", () => filter(search.value));
       search.addEventListener("keydown", onKey);
@@ -315,7 +526,8 @@ export function select(native, { searchAfter = 12 } = {}) {
     const wanted = text.trim().toLowerCase();
     for (const row of list.querySelectorAll('[role="option"]')) row.hidden = !row.textContent.toLowerCase().includes(wanted);
     for (const group of list.querySelectorAll(".ws-option-group")) group.hidden = !group.querySelector('[role="option"]:not([hidden])');
-    list.toggleAttribute("data-empty", usable().length === 0);
+    // The stylesheet shows this attribute's text in the empty list.
+    if (usable().length === 0) list.setAttribute("data-empty", wording("noMatches")); else list.removeAttribute("data-empty");
     setActive(usable()[0]);
   }
 
@@ -422,20 +634,16 @@ function addMonths(date, months) {
 
 export function datePicker(native) {
   if (native.wsTrigger) return null;
-  const language = document.documentElement.lang || undefined;
-  const shown = new Intl.DateTimeFormat(language, { day: "numeric", month: "short", year: "numeric" });
-  const monthName = new Intl.DateTimeFormat(language, { month: "long", year: "numeric" });
-  const dayName = new Intl.DateTimeFormat(language, { weekday: "short" });
-  const fullDay = new Intl.DateTimeFormat(language, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const weekStart = Number(native.dataset.weekStart || 1);
-  const placeholder = native.dataset.placeholder || "Choose a date";
+  const words = dateWords();
+  const weekStart = native.dataset.weekStart ? Number(native.dataset.weekStart) : firstDayOfWeek();
+  const placeholder = native.dataset.placeholder || wording("chooseDate");
 
   const trigger = el("button", "ws-date");
   trigger.type = "button";
   trigger.setAttribute("aria-haspopup", "dialog");
   const value = el("span", "ws-date-value");
   value.id = nextId("ws-value");
-  trigger.append(icon(PATHS.calendar));
+  trigger.append(icon("calendar"));
   trigger.append(value);
   wrapNative(native, trigger, "ws-date-wrap");
   nameFromLabel(native, trigger, value.id);
@@ -448,16 +656,16 @@ export function datePicker(native) {
   const previous = el("button", "ws-calendar-step");
   const next = el("button", "ws-calendar-step");
   previous.type = next.type = "button";
-  previous.append(icon(PATHS.left));
-  next.append(icon(PATHS.right));
-  previous.setAttribute("aria-label", "Previous month");
-  next.setAttribute("aria-label", "Next month");
+  previous.append(icon("left"));
+  next.append(icon("right"));
+  previous.setAttribute("aria-label", wording("previousMonth"));
+  next.setAttribute("aria-label", wording("nextMonth"));
   const header = el("div", "ws-calendar-header");
   header.append(title, previous, next);
   const grid = el("div", "ws-calendar-grid");
   grid.setAttribute("role", "grid");
-  const todayButton = el("button", "ws-calendar-action", "Today");
-  const clearButton = el("button", "ws-calendar-action", "Clear");
+  const todayButton = el("button", "ws-calendar-action", wording("today"));
+  const clearButton = el("button", "ws-calendar-action", wording("clear"));
   todayButton.type = clearButton.type = "button";
   const footer = el("div", "ws-calendar-footer");
   footer.append(clearButton, todayButton);
@@ -477,18 +685,18 @@ export function datePicker(native) {
 
   function showValue() {
     const chosen = fromIso(native.value);
-    value.textContent = chosen ? shown.format(chosen) : placeholder;
+    value.textContent = chosen ? words.value(chosen) : placeholder;
     trigger.toggleAttribute("data-empty", !chosen);
     trigger.disabled = native.disabled;
     clearButton.hidden = native.required || !chosen;
   }
 
   function dayButton(date) {
-    const button = el("button", "ws-day", String(date.getDate()));
+    const button = el("button", "ws-day", words.day(date));
     button.type = "button";
     button.setAttribute("role", "gridcell");
     button.dataset.date = toIso(date);
-    button.setAttribute("aria-label", fullDay.format(date));
+    button.setAttribute("aria-label", words.spoken(date));
     button.tabIndex = -1;
     if (toIso(date) === toIso(new Date())) button.setAttribute("aria-current", "date");
     button.setAttribute("aria-selected", String(toIso(date) === native.value));
@@ -507,15 +715,17 @@ export function datePicker(native) {
     row.setAttribute("role", "row");
     const sunday = new Date(2023, 0, 1); // a known Sunday, to read the day names from
     for (let index = 0; index < 7; index += 1) {
-      const name = el("span", "ws-weekday", dayName.format(addDays(sunday, weekStart + index)).slice(0, 2));
+      const day = addDays(sunday, weekStart + index);
+      const name = el("span", "ws-weekday", words.weekday(day));
       name.setAttribute("role", "columnheader");
+      name.setAttribute("aria-label", words.weekdayName(day));
       row.append(name);
     }
     return row;
   }
 
   function render(direction = 0) {
-    title.textContent = monthName.format(view);
+    title.textContent = words.title(view);
     const first = new Date(view.getFullYear(), view.getMonth(), 1);
     const blanks = (first.getDay() - weekStart + 7) % 7;
     const days = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
@@ -531,7 +741,9 @@ export function datePicker(native) {
     }
     grid.replaceChildren(...rows);
     if (direction && !reduced()) {
-      grid.animate([{ opacity: 0, transform: `translateX(${direction * 14}px)` }, { opacity: 1, transform: "none" }], { duration: 180, easing: EASE });
+      // The new month comes in from the side it lies on: later months from the end of the line.
+      const from = direction * (rightToLeft(grid) ? -14 : 14);
+      play(grid, [{ opacity: 0, transform: `translateX(${from}px)` }, { opacity: 1, transform: "none" }], "--ws-base");
     }
   }
 
@@ -576,7 +788,8 @@ export function datePicker(native) {
 
   grid.addEventListener("keydown", (event) => {
     const fromWeekStart = (focused.getDay() - weekStart + 7) % 7;
-    const steps = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7, Home: -fromWeekStart, End: 6 - fromWeekStart };
+    const forward = rightToLeft(grid) ? -1 : 1; // the arrow keys follow the days as they are laid out
+    const steps = { ArrowLeft: -forward, ArrowRight: forward, ArrowUp: -7, ArrowDown: 7, Home: -fromWeekStart, End: 6 - fromWeekStart };
     let target = null;
     if (event.key in steps) target = addDays(focused, steps[event.key]);
     else if (event.key === "PageUp" || event.key === "PageDown") target = addMonths(focused, (event.key === "PageUp" ? -1 : 1) * (event.shiftKey ? 12 : 1));
@@ -714,16 +927,19 @@ export function selection(table, { onChange } = {}) {
 // Form feedback: a field is checked when the user leaves it — never while they are still typing
 // — the message sits under the field and says how to fix it, and a submit with problems moves
 // focus to the first one. Wording: data-error on the field, or data-error-required /
-// -format / -range for each kind of problem; otherwise the browser's own message.
+// -format / -range for each kind of problem; then the product's labels.field; otherwise the
+// browser's own message (which is in the browser's language, not the page's).
 
 function problemWith(field) {
   const state = field.validity;
   if (state.valid) return "";
   const data = field.dataset;
-  if (state.valueMissing && data.errorRequired) return data.errorRequired;
-  if ((state.typeMismatch || state.patternMismatch || state.badInput) && data.errorFormat) return data.errorFormat;
-  if ((state.rangeUnderflow || state.rangeOverflow || state.tooShort || state.tooLong || state.stepMismatch) && data.errorRange) return data.errorRange;
-  return data.error || field.validationMessage;
+  const words = wording("field");
+  const kind = state.valueMissing ? "required"
+    : state.typeMismatch || state.patternMismatch || state.badInput ? "format"
+      : state.rangeUnderflow || state.rangeOverflow || state.tooShort || state.tooLong || state.stepMismatch ? "range" : "";
+  const own = { required: data.errorRequired, format: data.errorFormat, range: data.errorRange }[kind];
+  return own || data.error || words[kind] || field.validationMessage;
 }
 
 // The place a field's message goes. The stylesheet keeps a line free for it under every field
@@ -857,26 +1073,6 @@ export function problem(error) {
   return { kind: "failed", detail: error ? error.userMessage : undefined };
 }
 
-// Default wording — replace it with the product's own through `messages`. It never claims more
-// than is known: a timeout does not say the work failed, because nobody knows yet.
-const LOAD_MESSAGES = {
-  failed: "This couldn't be loaded.",
-  offline: "You're offline. This will load when the connection is back.",
-  timeout: "This is taking too long to load.",
-  "signed-out": "You've been signed out. Sign in again to see this.",
-  denied: "You don't have permission to see this.",
-  invalid: "This couldn't be loaded.",
-  empty: "Nothing here yet.",
-};
-const COMMIT_MESSAGES = {
-  failed: "That didn't go through. Your details are still here.",
-  offline: "You're offline, so nothing was sent. Your details are still here.",
-  timeout: "We couldn't confirm that went through. Check before trying again.",
-  "signed-out": "You've been signed out. Sign in again — your details are still here.",
-  denied: "You don't have permission to do this.",
-  invalid: "Some details need fixing before this can go through.",
-};
-
 // --- data arriving
 
 // The blocks a region shows for the states its markup didn't provide.
@@ -892,7 +1088,7 @@ function defaultBlocks(region, messages) {
   if (!has("empty")) {
     const block = el("div", "ws-empty");
     block.setAttribute("data-ws-when", "empty");
-    block.append(el("strong", "", messages.empty || LOAD_MESSAGES.empty));
+    block.append(el("strong", "", messages.empty || wording("load").empty));
     region.append(block);
   }
   if (!has("error")) {
@@ -901,7 +1097,7 @@ function defaultBlocks(region, messages) {
     block.setAttribute("role", "alert");
     const text = el("strong");
     text.setAttribute("data-ws-message", "");
-    const retry = el("button", "ws-button", "Try again");
+    const retry = el("button", "ws-button", wording("tryAgain"));
     retry.type = "button";
     retry.setAttribute("data-ws-retry", "");
     block.append(text, retry);
@@ -917,6 +1113,7 @@ function defaultBlocks(region, messages) {
 //   • offline: it retries by itself when the connection returns
 //   • only the latest request counts; an older answer arriving late is dropped
 // `fetcher({ signal })` returns a promise of the data; `render(data)` puts it on the page.
+// Wording: labels.load, or `messages` for this one region ({ empty, failed, offline, timeout, … }).
 export function load(region, fetcher, { render, isEmpty = (data) => Array.isArray(data) && data.length === 0, timeout = 15000, messages = {} } = {}) {
   region.classList.add("ws-region");
   defaultBlocks(region, messages);
@@ -925,12 +1122,12 @@ export function load(region, fetcher, { render, isEmpty = (data) => Array.isArra
   let hasData = false;
 
   function showProblem(found) {
-    const text = messages[found.kind] || found.detail || LOAD_MESSAGES[found.kind];
+    const text = messages[found.kind] || found.detail || wording("load")[found.kind];
     if (found.kind === "offline") addEventListener("online", () => attempt({ retrying: true }), { once: true });
     if (hasData) {
       // A failed refresh never takes away what the user is looking at.
       setState(region, "success", { stale: true });
-      toast(text, { tone: "bad", action: { label: "Try again", run: () => attempt({ retrying: true }) } });
+      toast(text, { tone: "bad", action: { label: wording("tryAgain"), run: () => attempt({ retrying: true }) } });
       return;
     }
     const slot = region.querySelector(':scope > [data-ws-when~="error"] [data-ws-message]');
@@ -1000,7 +1197,7 @@ function showWorking(label, text) {
 // A button that saves, sends, confirms or deletes. Call it from the button's own handler:
 //   const result = await commit(button, ({ signal }) => api.save(data, { signal }), { busyLabel: "Saving…", doneLabel: "Saved" });
 //   if (result.ok) …
-// One press, one request: a second press while it works is ignored. It acknowledges at once, says
+// One press, one request: a second press while it works, or while it shows the tick, is ignored. It acknowledges at once, says
 // what it is doing ("Saving…", then "Still working…" after three seconds), waits for the real
 // answer, and only then shows the tick. On failure the button is ready again, nothing the user
 // typed is touched, and the message says what happened (onError to show it yourself — for field
@@ -1008,8 +1205,12 @@ function showWorking(label, text) {
 // A timeout is not a failure — nobody knows whether it went through. Give `verify` (a function
 // that asks the server) and it checks before saying anything; without it the message says so and
 // offers no automatic retry, because repeating an unknown could do the thing twice.
-export async function commit(button, work, { busyLabel = "Saving…", doneLabel = "Saved", slowLabel = "Still working…", timeout = 20000, verify, onError, messages = {} } = {}) {
-  if (button.dataset.state === "processing") return { ok: false, ignored: true };
+export async function commit(button, work, {
+  busyLabel = wording("saving"), doneLabel = wording("saved"), slowLabel = wording("stillWorking"), timeout = 20000, verify, onError, messages = {},
+} = {}) {
+  // One press, one request — also while the tick is still showing: a second click that lands just
+  // after a fast answer is the classic double submission.
+  if (button.dataset.state === "processing" || button.dataset.state === "success") return { ok: false, ignored: true };
   const label = labelOf(button);
   const original = [...label.childNodes];
   button.style.minWidth = `${Math.ceil(button.getBoundingClientRect().width)}px`;
@@ -1031,7 +1232,7 @@ export async function commit(button, work, { busyLabel = "Saving…", doneLabel 
   clearTimeout(reveal);
   clearTimeout(explain);
   if (outcome.error && problem(outcome.error).kind === "timeout" && verify) {
-    showWorking(label, "Checking…");
+    showWorking(label, wording("checking"));
     try {
       if (await verify()) outcome = { data: undefined };
     } catch (error) { /* still unknown: the timeout message stands */ }
@@ -1055,10 +1256,10 @@ export async function commit(button, work, { busyLabel = "Saving…", doneLabel 
   ready();
   setState(button, "error", found);
   setTimeout(() => { if (button.dataset.state === "error") setState(button, "idle"); }, 600);
-  const text = messages[found.kind] || found.detail || COMMIT_MESSAGES[found.kind];
+  const text = messages[found.kind] || found.detail || wording("commit")[found.kind];
   const canRetry = found.kind === "failed" || found.kind === "offline";
   if (onError) onError({ ...found, message: text, error: outcome.error });
-  else if (found.kind !== "cancelled") toast(text, { tone: "bad", action: canRetry ? { label: "Try again", run: () => button.click() } : undefined });
+  else if (found.kind !== "cancelled") toast(text, { tone: "bad", action: canRetry ? { label: wording("tryAgain"), run: () => button.click() } : undefined });
   return { ok: false, error: outcome.error, problem: found };
 }
 
@@ -1107,13 +1308,13 @@ function keepClear() {
 function arriveNotice(notice) {
   keepClear();
   const from = reduced() ? { opacity: 0 } : { opacity: 0, transform: "translateY(14px) scale(.96)" };
-  notice.animate([from, { opacity: 1, transform: "none" }], { duration: reduced() ? 100 : 280, easing: EASE });
+  play(notice, [from, { opacity: 1, transform: "none" }], "--ws-emerge");
 }
 
 async function leaveNotice(notice) {
   if (!notice.isConnected) return;
   const to = reduced() ? { opacity: 0 } : { opacity: 0, transform: "translateY(8px) scale(.97)" };
-  await notice.animate([{ opacity: 1, transform: "none" }, to], { duration: reduced() ? 100 : 180, easing: EASE }).finished.catch(() => {});
+  await play(notice, [{ opacity: 1, transform: "none" }, to], "--ws-fast").finished.catch(() => {});
   notice.remove();
   if (stack && !stack.children.length && stack.hasAttribute("popover")) {
     try { stack.hidePopover(); } catch (error) { /* already hidden */ }
@@ -1123,8 +1324,8 @@ async function leaveNotice(notice) {
 function closeButton(onClose) {
   const close = el("button", "ws-notice-close");
   close.type = "button";
-  close.setAttribute("aria-label", "Dismiss");
-  close.append(icon(PATHS.close));
+  close.setAttribute("aria-label", wording("dismiss"));
+  close.append(icon("close"));
   close.addEventListener("click", onClose);
   return close;
 }
@@ -1194,11 +1395,11 @@ export function progress(title, { onCancel } = {}) {
     return leaveNotice(card);
   };
   if (onCancel) {
-    const cancel = el("button", "ws-toast-action", "Cancel");
+    const cancel = el("button", "ws-toast-action", wording("cancel"));
     cancel.type = "button";
     cancel.addEventListener("click", () => {
       onCancel();
-      finish("cancelled", `${title}: cancelled`);
+      finish("cancelled", fill(wording("jobCancelled"), { title }));
     });
     card.append(cancel);
   }
@@ -1227,7 +1428,7 @@ export function progress(title, { onCancel } = {}) {
     bar.remove();
     for (const button of card.querySelectorAll(".ws-toast-action")) button.remove();
     if (retry) {
-      const again = el("button", "ws-toast-action", "Try again");
+      const again = el("button", "ws-toast-action", wording("tryAgain"));
       again.type = "button";
       again.addEventListener("click", () => {
         close();
@@ -1242,49 +1443,77 @@ export function progress(title, { onCancel } = {}) {
 
   return {
     update,
-    done: (message = `${title}: done`) => finish("success", message),
-    fail: (message = `${title}: failed`, { retry } = {}) => finish("error", message, retry),
+    done: (message = fill(wording("jobDone"), { title })) => finish("success", message),
+    fail: (message = fill(wording("jobFailed"), { title }), { retry } = {}) => finish("error", message, retry),
     close,
     element: card,
   };
 }
 
-// A critical error that must be dealt with before anything else: a dialog of thick glass, with a
-// mark — the same material as other pop-ups, dense enough to read over anything. Everything
-// else is a message beside the field, in the region, or a toast. Resolves with the
-// chosen action's value, or "dismissed". actions: [{ label, value, primary }].
-export function errorDialog({ title, message, actions = [{ label: "OK", value: "ok", primary: true }] }) {
+// A message that needs an answer before anything else goes on. The kit gives the material, the
+// motion, the focus handling and the keyboard; the product gives everything it says and does:
+//   const answer = await dialog({
+//     title: "Delete 3 work orders?", message: "This can't be undone.",
+//     actions: [{ label: "Cancel", value: "cancel" }, { label: "Delete", value: "delete", danger: true }],
+//   });
+// actions: any number of { label, value, primary, danger, focus }. Resolves with the chosen
+// action's value, or "dismissed" (Escape). Focus starts on the action marked `focus`, else the
+// primary one — never on a destructive one, so a stray Enter can't delete anything.
+// critical: true — thick glass with a mark, for an error that must be dealt with before the user
+// can carry on (see errorDialog); whether something is critical is the product's decision.
+// icon: a name from the icon set (configure({ icons })) for the mark; size: "small" | "medium" | "large".
+// A dialog with fields in it is the page's own <dialog class="ws-dialog">, not this.
+export function dialog({ title, message, actions, critical = false, icon: mark = critical ? "critical" : "", size = critical ? "small" : "medium" } = {}) {
+  const choices = actions && actions.length ? actions : [{ label: wording("ok"), value: "ok", primary: true }];
   return new Promise((resolve) => {
-    const dialog = el("dialog", "ws-dialog");
-    dialog.setAttribute("data-critical", "");
-    dialog.setAttribute("role", "alertdialog");
+    const sheet = el("dialog", "ws-dialog");
+    sheet.dataset.size = size;
+    if (critical) sheet.setAttribute("data-critical", "");
+    sheet.setAttribute("role", "alertdialog");
     const heading = el("h2", "ws-dialog-title", title);
     heading.id = nextId("ws-title");
-    const text = el("p", "ws-dialog-text", message);
-    text.id = nextId("ws-text");
-    dialog.setAttribute("aria-labelledby", heading.id);
-    dialog.setAttribute("aria-describedby", text.id);
-    const mark = el("span", "ws-dialog-mark", "!");
-    mark.setAttribute("aria-hidden", "true");
+    sheet.setAttribute("aria-labelledby", heading.id);
     const body = el("div", "ws-dialog-body");
-    body.append(mark, heading, text);
+    if (mark) {
+      const badge = el("span", "ws-dialog-mark");
+      badge.setAttribute("aria-hidden", "true");
+      badge.append(icon(mark, { size: 22 }));
+      body.append(badge);
+    }
+    body.append(heading);
+    if (message) {
+      const text = el("p", "ws-dialog-text", message);
+      text.id = nextId("ws-text");
+      sheet.setAttribute("aria-describedby", text.id);
+      body.append(text);
+    }
     const row = el("div", "ws-dialog-actions");
-    for (const action of actions) {
+    const buttons = choices.map((action) => {
       const button = el("button", "ws-button", action.label);
       button.type = "button";
-      if (action.primary) button.dataset.variant = "primary";
-      button.addEventListener("click", () => dialog.close(action.value));
+      if (action.danger) button.dataset.variant = "danger"; else if (action.primary) button.dataset.variant = "primary";
+      button.addEventListener("click", () => sheet.close(action.value));
       row.append(button);
-    }
-    dialog.append(body, row);
-    dialog.addEventListener("close", () => {
-      resolve(dialog.returnValue || "dismissed");
-      setTimeout(() => dialog.remove(), 400);
+      return button;
     });
-    document.body.append(dialog);
-    dialog.showModal();
+    const safe = (action) => !action.danger;
+    const first = choices.findIndex((action) => action.focus && safe(action));
+    const primary = choices.findIndex((action) => action.primary && safe(action));
+    const start = [first, primary, choices.findIndex(safe), 0].find((index) => index >= 0);
+    buttons[start].autofocus = true;
+    sheet.append(body, row);
+    sheet.addEventListener("close", () => {
+      resolve(sheet.returnValue || "dismissed");
+      setTimeout(() => sheet.remove(), 2 * motion(sheet, "--ws-emerge").duration); // after it has receded
+    });
+    document.body.append(sheet);
+    sheet.showModal();
   });
 }
+
+// A critical error — the dialog above in thick glass, with the mark. Everything that isn't
+// critical is a message beside the field, in the region, or a toast.
+export const errorDialog = (options) => dialog({ ...options, critical: true });
 
 // ---------------------------------------------------------------------------------------------
 // Liquid Glass behaviour: none of it changes what a control does, only how the glass answers.
@@ -1311,11 +1540,11 @@ export function segmented(container) {
       const end = Math.max(last.left + last.width, next.left + next.width);
       // Its reflection crosses it in the direction it travels, so the light moves because the glass does.
       const glint = next.left > last.left ? ["160% 0", "-60% 0"] : ["-60% 0", "160% 0"];
-      thumb.animate([
+      play(thumb, [
         { left: `${last.left}px`, width: `${last.width}px`, backgroundPosition: `${glint[0]}, 0 0` },
         { left: `${start}px`, width: `${end - start}px`, offset: 0.42 },
         { left: `${next.left}px`, width: `${next.width}px`, backgroundPosition: `${glint[1]}, 0 0` },
-      ], { duration: 460, easing: "cubic-bezier(.3,.7,.2,1)" });
+      ], "--ws-flow");
     }
     last = next;
   }

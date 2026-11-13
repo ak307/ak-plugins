@@ -291,8 +291,10 @@ const fs = require("fs");
       busy: button.getAttribute("aria-busy"), focused: document.activeElement === button, sameWidth: width() === before, state: button.dataset.state };
     const done = await first;
     const confirmed = { label: button.innerText.trim(), tick: Boolean(button.querySelector(".ws-mark")), state: button.dataset.state };
+    // A press that lands while the tick is showing (a double click after a fast answer) sends nothing.
+    const duringTick = await kit.commit(button, () => { requests += 1; return after(10)(); });
     await pause(1600);
-    result.commit = { requests, ignored: second.ignored === true, early, working, ok: done.ok, data: done.data, confirmed,
+    result.commit = { requests, ignored: second.ignored === true, ignoredDuringTick: duringTick.ignored === true, early, working, ok: done.ok, data: done.data, confirmed,
       after: { label: button.innerText.trim(), state: button.dataset.state, disabled: button.hasAttribute("aria-disabled") } };
     const quick = kit.commit(button, after(40, "x"));
     await pause(20);
@@ -452,6 +454,258 @@ const fs = require("fs");
     out.axe.calendar = await audit();
     await page.close();
   }
+  // ---- Configuration: wording, language, icons, tokens, direction (blank.html: an empty stage).
+  async function blank({ lang = "en", dir = "ltr" } = {}) {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const stage = await context.newPage();
+    stage.on("pageerror", (error) => errors.push(String(error)));
+    await stage.goto(url.replace(/index\.html.*$/, `blank.html?lang=${lang}&dir=${dir}`), { waitUntil: "load" });
+    await stage.waitForFunction(() => window.kit);
+    return stage;
+  }
+
+  // Every label replaced, a Burmese locale, and Burmese content: no English may be left anywhere
+  // the user can read or hear it — text, names for screen readers, placeholders.
+  page = await blank({ lang: "my" });
+  out.localised = await page.evaluate(async () => {
+    const kit = window.kit;
+    const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const marked = (labels, path = "") => Object.fromEntries(Object.entries(labels).map(([name, value]) => [name,
+      typeof value === "object" ? marked(value, `${path}${name}.`) : `⟦${path}${name}⟧${value.includes("{title}") ? "{title}" : ""}`]));
+    // Chrome has no Burmese date data, so the product gives the calendar its names, order and digits.
+    kit.configure({ locale: "my-MM", digits: "mymr", labels: marked(kit.defaults.labels), calendar: {
+      months: ["ဇန်နဝါရီ", "ဖေဖော်ဝါရီ", "မတ်", "ဧပြီ", "မေ", "ဇွန်", "ဇူလိုင်", "ဩဂုတ်", "စက်တင်ဘာ", "အောက်တိုဘာ", "နိုဝင်ဘာ", "ဒီဇင်ဘာ"],
+      weekdays: ["နွေ", "လာ", "ဂါ", "ဟူး", "တေး", "ကြာ", "နေ"], value: "{year} {month} {day}", title: "{month} {year}", spoken: "{weekday} {year} {month} {day}" } });
+    const stage = document.getElementById("stage");
+    stage.innerHTML = `<form data-ws-validate novalidate>
+      <div class="ws-field"><label class="ws-label" for="name">အမည်</label><input class="ws-input" id="name" required></div>
+      <div class="ws-field"><label class="ws-label" for="mail">အီးမေးလ်</label><input class="ws-input" id="mail" type="email"></div>
+      <div class="ws-field"><label class="ws-label" for="count">အရေအတွက်</label><input class="ws-input" id="count" type="number" min="5"></div>
+      <select class="ws-select" id="place" aria-label="နေရာ" data-search><option>တစ်</option><option>နှစ်</option></select>
+      <select class="ws-select" id="bare"><option>သုံး</option></select>
+      <input type="date" class="ws-date" id="day" aria-label="နေ့စွဲ">
+      <input type="date" class="ws-date" id="chosen" aria-label="ရက်" value="2026-11-18">
+      <button class="ws-button" type="button" id="go">သိမ်းမည်</button></form>`;
+    kit.enhance(stage);
+    const heard = [];
+    const snap = () => {
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      while (walker.nextNode()) if (!walker.currentNode.parentElement.closest("script, style")) heard.push(walker.currentNode.nodeValue);
+      for (const element of document.querySelectorAll("*")) {
+        for (const name of ["aria-label", "placeholder", "title", "alt", "data-empty", "aria-valuetext"]) if (element.hasAttribute(name)) heard.push(element.getAttribute(name));
+      }
+    };
+    const escape = (target) => target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    const fail = () => Promise.reject(Object.assign(new Error("x"), { status: 500 }));
+    const region = () => stage.appendChild(document.createElement("div"));
+
+    document.getElementById("mail").value = "x";
+    document.getElementById("count").value = "1";
+    for (const id of ["name", "mail", "count"]) kit.checkField(document.getElementById(id));
+    snap();
+    document.querySelector("#place ~ button").click();
+    await pause(60);
+    const search = document.querySelector(".ws-popover-search");
+    search.value = "zzz";
+    search.dispatchEvent(new Event("input"));
+    snap();
+    escape(search);
+    document.querySelector("#day ~ button").click();
+    await pause(60);
+    snap();
+    escape(document.querySelector(".ws-calendar"));
+
+    kit.load(region(), fail);
+    kit.load(region(), () => Promise.resolve([]));
+    let calls = 0;
+    const list = kit.load(region(), () => ((calls += 1) === 1 ? Promise.resolve([1]) : fail()), { render() {} });
+    await pause(700);
+    list.reload();
+    await pause(700);
+    snap();
+
+    const button = document.getElementById("go");
+    const saving = kit.commit(button, () => pause(600));
+    await pause(400);
+    snap();
+    await saving;
+    snap();
+    await pause(1600);
+    await kit.commit(button, fail);
+    snap();
+    const checking = kit.commit(button, () => new Promise(() => {}), { timeout: 100, verify: () => pause(250).then(() => false) });
+    await pause(230);
+    snap();
+    await checking;
+    snap();
+
+    kit.toast("အောင်မြင်", { tone: "ok" });
+    const job = kit.progress("အစီရင်ခံစာ", { onCancel() {} });
+    snap();
+    job.element.querySelector(".ws-toast-action").click();
+    kit.progress("အစီရင်ခံစာ").done();
+    kit.progress("အစီရင်ခံစာ").fail(undefined, { retry() {} });
+    snap();
+    const asked = kit.dialog({ title: "ခေါင်းစဉ်", message: "စာသား" });
+    snap();
+    document.querySelector("dialog[open] .ws-button").click();
+    await asked;
+
+    const all = heard.join(" ");
+    return { seen: [...new Set(all.match(/⟦[^⟧]*⟧/g))].map((mark) => mark.slice(1, -1)).sort(),
+      latin: [...new Set(all.replace(/⟦[^⟧]*⟧/g, "").match(/[A-Za-z]{2,}/g) || [])],
+      all: Object.entries(kit.defaults.labels).flatMap(([name, value]) => (typeof value === "object" ? Object.keys(value).map((key) => `${name}.${key}`) : [name])),
+      dateShown: document.querySelector("#chosen ~ button .ws-date-value").textContent,
+      leading: getComputedStyle(document.getElementById("name")).lineHeight, fontSize: getComputedStyle(document.getElementById("name")).fontSize };
+  });
+  await page.close();
+
+  // Right to left: the kit mirrors itself, and dates follow the locale (digits, first day of the week).
+  page = await blank({ lang: "ar", dir: "rtl" });
+  out.rtl = await page.evaluate(async () => {
+    const kit = window.kit;
+    const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    kit.configure({ locale: "ar-EG" });
+    const stage = document.getElementById("stage");
+    stage.innerHTML = `<div class="ws-toolbar"><select class="ws-select" id="place" aria-label="الموقع"><option>برج</option><option>مبنى المكتبة المدنية الرئيسي</option></select></div>
+      <p><input type="checkbox" class="ws-switch" id="on" aria-label="تشغيل"></p>
+      <p><input type="date" class="ws-date" id="day" aria-label="التاريخ" value="2026-11-18"></p>`;
+    kit.enhance(stage);
+    const facts = {};
+    const trigger = document.querySelector("#place ~ button");
+    trigger.click();
+    await pause(500);
+    const list = document.querySelector(".ws-listbox").getBoundingClientRect();
+    const box = trigger.getBoundingClientRect();
+    facts.list = { alignedRight: Math.abs(list.right - box.right) <= 1, widerThanButton: list.width > box.width + 20 };
+    trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    const toggle = document.getElementById("on");
+    facts.thumbRests = getComputedStyle(toggle, "::after").right;
+    toggle.checked = true;
+    await pause(500); // its travel is a transition
+    facts.thumbMoves = getComputedStyle(toggle, "::after").translate;
+    document.querySelector("#day ~ button").click();
+    await pause(500);
+    const saturday = new Date(2026, 10, 14);
+    facts.calendar = { firstColumn: document.querySelector(".ws-weekday").getAttribute("aria-label"), saturday: new Intl.DateTimeFormat("ar-EG", { weekday: "long" }).format(saturday),
+      heading: document.querySelector(".ws-weekday").textContent.length,
+      digits: document.querySelector('.ws-day[data-date="2026-11-18"]').textContent, arrowMirrored: getComputedStyle(document.querySelector(".ws-calendar-step .ws-icon")).scale };
+    document.querySelector(".ws-calendar-grid").dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+    facts.calendar.afterArrowLeft = document.activeElement.dataset.date;
+    document.querySelector(".ws-calendar").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    const note = kit.toast("تم الحفظ", { tone: "ok" });
+    await pause(450);
+    const where = note.element.getBoundingClientRect();
+    facts.noticeOnTheLeft = where.right < innerWidth / 2;
+    facts.sideways = document.documentElement.scrollWidth > innerWidth;
+    return facts;
+  });
+  await page.close();
+
+  // Tokens: floors hold, sizes and motion follow the tokens, and a broken token never breaks the page.
+  page = await blank();
+  out.tokens = await page.evaluate(async () => {
+    const kit = window.kit;
+    const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const root = document.documentElement.style;
+    const set = { "--ws-solid": "0.3", "--ws-clear": "0.05", "--ws-frost": "0.1", "--ws-critical": "0.2", "--ws-atmosphere": "3", "--ws-height": "12px",
+      "--ws-emerge": "900ms", "--ws-settle": "banana", "--ws-dialog-small": "300px" };
+    for (const [name, value] of Object.entries(set)) root.setProperty(name, value);
+    const stage = document.getElementById("stage");
+    stage.innerHTML = `<div class="ws-toolbar" id="bar">Bar</div><div class="ws-group" id="group">Group</div>
+      <select class="ws-select" id="site" aria-label="Site"><option>One</option><option>Two</option></select>`;
+    kit.enhance(stage);
+    const alpha = (element) => {
+      const parts = getComputedStyle(element).backgroundColor.match(/[\d.]+/g).map(Number);
+      return parts.length > 3 ? parts[3] : 1;
+    };
+    document.querySelector("#site ~ button").click();
+    const panel = document.querySelector(".ws-listbox");
+    const opening = panel.wsMotion.effect.getTiming();
+    const facts = { solid: alpha(document.getElementById("group")), clear: alpha(document.getElementById("bar")), frost: alpha(panel), control: document.querySelector("#site ~ button").offsetHeight,
+      emerge: opening.duration, easing: opening.easing };
+    document.querySelector("#site ~ button").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    const shown = kit.errorDialog({ title: "Deleted", message: "Someone removed it." });
+    await pause(50);
+    const sheet = document.querySelector("dialog[data-critical]");
+    facts.critical = alpha(sheet);
+    facts.dialogWidth = sheet.offsetWidth; // its laid-out width: it is still growing into place
+    sheet.querySelector(".ws-button").click();
+    await shown;
+    return facts;
+  });
+  await page.close();
+
+  // configure(): only the kit's own labels, only as text; helpers follow the locale.
+  page = await blank();
+  out.configured = await page.evaluate(() => {
+    const kit = window.kit;
+    const warnings = [];
+    const warn = console.warn;
+    console.warn = (text) => warnings.push(String(text));
+    kit.configure({ labels: JSON.parse('{"nonsense":"x","__proto__":{"polluted":"yes"},"today":42,"load":{"__proto__":{"polluted":"yes"},"empty":"Nothing to show","other":"x"}}'),
+      icons: JSON.parse('{"__proto__":{"polluted":"yes"},"star":"M2 2h12"}') });
+    console.warn = warn;
+    const facts = { warnings: warnings.length, polluted: "polluted" in {}, frozen: Object.isFrozen(kit.defaults.labels) && Object.isFrozen(kit.defaults.labels.load) };
+    // A language this browser has no date data for: the developer is told, instead of users getting English dates.
+    console.warn = (text) => warnings.push(String(text));
+    kit.configure({ locale: "my-MM" });
+    console.warn = warn;
+    facts.warnsAboutDates = warnings.length === facts.warnings + 1 && warnings.at(-1).includes("my-MM");
+    kit.configure({ locale: "en" });
+    facts.plural = [kit.plural(1, { one: "{count} row", other: "{count} rows" }), kit.plural(1200, { one: "{count} row", other: "{count} rows" })];
+    facts.percent = kit.number(0.42, { style: "percent" });
+    kit.configure({ locale: "ar" });
+    facts.dual = kit.plural(2, { two: "صفّان", other: "{count} صفوف" });
+    const firstColumn = () => {
+      const stage = document.getElementById("stage");
+      stage.innerHTML = '<input type="date" class="ws-date" aria-label="Day" value="2026-11-18">';
+      kit.enhance(stage);
+      stage.querySelector("button.ws-date").click();
+      const name = document.querySelector(".ws-calendar .ws-weekday").textContent;
+      stage.replaceChildren();
+      document.querySelectorAll(".ws-calendar").forEach((panel) => panel.remove());
+      return name;
+    };
+    kit.configure({ locale: "en-US" });
+    facts.weekStartsUS = firstColumn();
+    kit.configure({ weekStart: 1 });
+    facts.weekStartsSet = firstColumn();
+    return facts;
+  });
+  await page.close();
+
+  // dialog(): the product decides the words, the buttons, the icon and whether it is critical.
+  page = await blank();
+  out.asked = await page.evaluate(async () => {
+    const kit = window.kit;
+    const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const asked = kit.dialog({ title: "Delete 3 work orders?", message: "This can't be undone.",
+      actions: [{ label: "Delete", value: "delete", danger: true, primary: true }, { label: "Keep them", value: "keep" }, { label: "Archive instead", value: "archive" }] });
+    await pause(100);
+    let sheet = document.querySelector("dialog[open]");
+    const buttons = [...sheet.querySelectorAll(".ws-button")];
+    const facts = { role: sheet.getAttribute("role"), critical: sheet.hasAttribute("data-critical"), mark: Boolean(sheet.querySelector(".ws-dialog-mark")),
+      buttons: buttons.map((button) => button.textContent), focus: document.activeElement.textContent, size: sheet.dataset.size, firstVariant: buttons[0].dataset.variant };
+    buttons[2].click();
+    facts.chosen = await asked;
+    const plain = kit.dialog({ title: "Saved on another device" });
+    await pause(50);
+    sheet = document.querySelector("dialog[open]");
+    facts.defaultAction = sheet.querySelector(".ws-button").textContent;
+    sheet.close();
+    facts.dismissed = await plain;
+    kit.configure({ icons: { locked: "M4 7h8v6H4zM6 7V5a2 2 0 0 1 4 0v2" } });
+    const serious = kit.errorDialog({ title: "Signed out", message: "Sign in again.", icon: "locked", size: "large" });
+    await pause(50);
+    sheet = document.querySelector("dialog[open]");
+    facts.serious = { critical: sheet.hasAttribute("data-critical"), icon: sheet.querySelector(".ws-dialog-mark path").getAttribute("d"), size: sheet.dataset.size };
+    sheet.querySelector(".ws-button").click();
+    await serious;
+    return facts;
+  });
+  await page.close();
+
   out.pageErrors = errors;
   await browser.close();
   console.log(JSON.stringify(out));

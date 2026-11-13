@@ -184,5 +184,29 @@ What the builds are like:
   bubble; it uses the kit's fields but not its form feedback.
 
 Blind comparison (released plugin against revised, random A/B per brief, same journey states,
-one recording each) is published for AK; the key is kept outside the page. Verdict: pending.
+one recording each), judged by AK on 13 Nov 2026:
+
+| Brief | Looks better | Feels better to use | Would ship | AK's note |
+|---|---|---|---|---|
+| Asset register | Released | Released | Released | Needs refinement to reach top tier, but better |
+| Permit to work | Released | Released | Released | Motion looks stuck and is a little dizzying; still better overall |
+| Energy dashboard | Released | Same | Released | UI bugs on the lower page; still better overall |
+| Ops Desk (existing app) | Same | Same | Neither | "Both are boring designs. No innovation at all." |
+
+**The revised plugin was preferred on no brief.** By the rule agreed before the test, the
+working-surface standard and its kit are not released; `main` stays at v3.5.0.
+
+What the result says:
+
+- The kit made the inner screens tidier and more alike. The released builds' inner screens are
+  bolder and specific to the product (the permit's ticket summary, the asset's dark service
+  card with its life line), and that is what AK prefers — even with their defects.
+- Every build AK chose still "needs refinement": motion that sticks, a layout bug. The bug he saw
+  on the energy dashboard (table rows running under the side panel at 1280 px) is one the use
+  check reports. Polish and correctness are what checking is for; it costs most of each build
+  and still lets these through.
+- Ops Desk: both builds put a list in a dialog. The step that rejects the obvious layout is
+  applied to new products, not to a feature added to an existing app.
+- Not tested by this round: the feedback state model, the critical dialog and the configuration
+  layer, which came after the frozen copy. They are tested as code, and unproven as design.
 

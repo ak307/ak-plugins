@@ -38,8 +38,8 @@ class QuietHandler(SimpleHTTPRequestHandler):
 def seen(tmp_path_factory):
     """Everything the driver observed on the kit's page, gathered in one browser run."""
     site = tmp_path_factory.mktemp("surface-kit")
-    shutil.copy(PAGE, site / "index.html")
-    shutil.copy(PAGE.parent / "blank.html", site / "blank.html")
+    for name in ("index.html", "page.js", "blank.html", "blank.js"):  # scripts in files, not in the page: ready for a CSP
+        shutil.copy(PAGE.parent / name, site / name)
     for name in ("surface-kit.js", "surface-kit.css", "liquid-glass.css"):
         shutil.copy(ASSETS / name, site / name)
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(site)))

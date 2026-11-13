@@ -161,14 +161,30 @@ hierarchy**, so it must feel native to the product, never decorative.
   aim for its depth, light and response, not a pixel copy. Where glass
   would hurt the experience, use less and say so.
 
-## Every action gets an answer
+## Interaction excellence — every action, every transition
 
-Apple's craft is that no action is left unconsidered. For each thing the
-user can do, walk it as the user: what do they see the instant they act;
-where does the new thing come from and where does the old one go; what
-happens while they wait; how do they know it worked, or didn't; can they
-change their mind?
+A UI is not how it looks; it is how it responds. Apple's craft is that no
+interaction is left unconsidered: a press, a drag, a scroll, a submission
+and a navigation should each feel **intentional, responsive, predictable
+and satisfying**. For each thing the user can do, walk it as the user: what
+do they see the instant they act; where does the new thing come from and
+where does the old one go; what happens while they wait; how do they know
+it worked, or didn't; can they change their mind?
 
+- **Acknowledge at once.** Every press, tap, key and gesture is answered
+  immediately — visibly, and with haptics where the platform has them —
+  before any work has finished.
+- **Follow the user.** What is dragged, swiped or scrolled moves with the
+  finger or pointer, shows where it may and may not go, and settles
+  naturally when released. Scrolling is smooth, nothing jumps or shifts
+  unexpectedly, and what should stay within reach stays.
+- **Make operations reliable.** A submission is acknowledged, shows that it
+  is working, cannot be sent twice by accident, confirms success in a way
+  that means something, and on failure says what happened and how to
+  recover — without losing the user's work.
+- **Keep people oriented.** Things open from, and close back to, where they
+  came from; Back goes where expected; position, selection and input
+  survive a trip away. Nothing appears or vanishes abruptly.
 - **Motion explains** origin and destination, cause and effect. If it
   explains nothing, leave it out.
 - **Use the lowest level that does the job.** Frequent actions are fast and
@@ -211,15 +227,22 @@ change their mind?
 
 ## Look at what you made
 
-Render it. Look at it at the sizes people use, in every state and overlay
-you built, and use it yourself — with the keyboard too.
+Judge it twice, because a screen can look beautiful and feel terrible:
 
-Then, from what you see rather than what you intended, **name the weakest
-surface and the most generic-looking element.** Fix each, or say why it
-stays. A review that finds nothing wasn't a review. Also ask:
+- **How it looks** — from the rendered screens, at the sizes people use, in
+  every state and overlay you built.
+- **How it feels** — from using it: press, type, submit, make it fail and
+  retry, go back, scroll, drag, with the keyboard and at phone size. Motion
+  and timing can't be judged from a still: watch it at real speed (record
+  it when it matters) and measure what the eye can't — response time,
+  dropped frames, layout shift.
+
+Then, from what you saw rather than what you intended, **name the weakest
+surface, the most generic-looking element, and the interaction that feels
+least considered.** Fix each, or say why it stays. A review that finds
+nothing wasn't a review. Also ask:
 
 - Does the eye go to the right thing first?
-- Is every action answered, and does anything feel abrupt or slow?
 - Would a first-time user hesitate anywhere?
 - Does it feel like one product?
 - Would a teammate be glad to maintain this code?

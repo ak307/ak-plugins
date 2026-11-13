@@ -151,7 +151,7 @@ def summarise(stream: str) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--brief")
-    parser.add_argument("--setup", choices=["current", "core", "surface"],
+    parser.add_argument("--setup", choices=["current", "core", "surface", "patched"],
                         help="current: the plugin as it is in this working copy; core: the draft core in place of the "
                              "UI skills; surface: a frozen copy of this working copy's plugin (--variant), so later "
                              "edits can't change a build that is still running")
@@ -165,7 +165,7 @@ def main() -> int:
         print(f"test plugin copy: {variant}")
         if args.variant_only:
             return 0
-    if args.setup == "surface" and not variant.exists():
+    if args.setup in ("surface", "patched") and not variant.exists():  # both: a frozen copy of this working copy's plugin
         shutil.copytree(PLUGIN, variant)
     briefs = {brief["id"]: brief for brief in yaml.safe_load((HERE / "core-briefs.yaml").read_text())["briefs"]}
     brief = briefs[args.brief]

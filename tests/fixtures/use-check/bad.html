@@ -22,6 +22,9 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .fine-print { font-size: 10px; }
   .filler { height: 500px; background: #f4f4f4; }
+  /* Defect: this card follows the system's dark setting, on a page designed light only. */
+  .card { padding: 16px; background: #ffffff; color: #111111; }
+  @media (prefers-color-scheme: dark) { .card { background: #10141c; color: #f2f4f8; } }
   [hidden] { display: none; }
 </style>
 </head>
@@ -35,6 +38,10 @@
   <button id="tiny" aria-label="Dismiss">×</button>
   <select aria-label="Building"><option>Tower A</option><option>Tower B</option></select>
   <p class="fine-print">Updated by the facilities team.</p>
+  <!-- Words about waiting and failing that are always on the page: not a loading or failure state. -->
+  <div class="card">The loading bay door failed its inspection on Monday. Raise an order for the facilities team to repair it before the next delivery.</div>
+  <!-- Defect: a field nobody has named. -->
+  <input type="text" id="unnamed">
   <div class="wide">A table that does not fit a phone</div>
   <div role="row" tabindex="0">Chiller valve, level four — mechanical team — due Friday</div>
   <div role="row" tabindex="0">Lift inspection, lobby — vendor — due Monday</div>

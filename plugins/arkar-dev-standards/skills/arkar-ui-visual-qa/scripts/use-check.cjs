@@ -1,33 +1,44 @@
 // Uses a local page the way a careful tester would and reports what it found, in one run:
 // what a screenshot can't show. It does not judge taste — only behaviour that can be measured.
 //
-// Usage (from the project folder):
-//   node <path-to>/use-check.cjs <url> [<step> ...] [--commit=<step> --count=<selector>] [--json]
+// Usage (from the project folder), once per surface:
+//   node <path-to>/use-check.cjs <url> [<step> ...] [--shots=<name>] [--commit=<step> --count=<selector>] [--json]
 //
 // Without steps it checks the page as it loads:
-//   load        console errors, failed requests, anything fetched from another server, layout shift
+//   load        console errors, its own files that failed, public servers it depends on, layout shift
+//   a11y        serious and critical accessibility violations (axe-core, WCAG 2.2 AA), if axe is installed
+//   dark        what happens when the system is in dark mode: nothing, a full dark version, or a broken half
 //   widths      sideways overflow from 320 to 1920 px, and controls covered by a fixed or sticky panel
-//   phone       touch targets under 44 px (under 24 px is a defect), text under 12 px
 //   keyboard    every Tab stop shows focus; focus is never dropped to the page
+//   phone       touch targets under 44 px (under 24 px is a defect), text under 12 px
 //   controls    browser-default selects, date, time and file inputs left in the page
 //   slow, fail  what the user sees with ?latency=slow and ?fail=always, if the app has those switches
 //   reduced     motion still running when the user asked for reduced motion
 //
-// With steps that open a view (click=<selector>, type=<selector>=<text>, press=<key>,
-// hover=<selector>, scroll=<pixels>, wait=<ms>) it also checks, from that view:
-//   refresh     the same view comes back
+// With steps that open a view — a detail, a tab, a filter, a step of a form, a dialog —
+// (click=<selector>, type=<selector>=<text>, press=<key>, hover=<selector>, scroll=<pixels>,
+// wait=<ms>) the a11y and phone checks look at that view, and it also checks:
+//   refresh     the view comes back
 //   back        Back stays in the app and returns to where the user was; Forward re-opens the view
 //   shift       nothing jumps while the steps run
 // With --commit (the step that saves, sends or confirms) and --count (a selector whose matches
 // grow by one each time it really happens) it presses twice quickly and counts the results.
+// With --shots=<name> it saves the view at desktop and phone size (and dark, if there is one) as
+// qa-screenshots/<name>-*.png, to look at once.
 //
 // Each line is PASS, FIX (a defect) or LOOK (decide by looking). Safety: local URLs only; it
 // runs only the steps you give it; --commit really commits, so use test data.
+// axe-core, if missing: npm install --prefix ~/.arkar/axe axe-core
 
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
 const { chromium } = require("playwright");
 
 const WIDTHS = [320, 375, 390, 768, 1024, 1200, 1280, 1366, 1440, 1920];
 const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\]|.*\.localhost|.*\.test)$/;
+const WAITING = /loading|checking|fetching|please wait/i;
+const FAILED = /couldn.t|could not|failed|didn.t load|went wrong|unable to|try again/i;
 
 function parseArgs(argv) {
   const options = { steps: [], json: false };
@@ -35,10 +46,18 @@ function parseArgs(argv) {
     if (arg === "--json") options.json = true;
     else if (arg.startsWith("--commit=")) options.commit = arg.slice(9);
     else if (arg.startsWith("--count=")) options.count = arg.slice(8);
+    else if (arg.startsWith("--shots=")) options.shots = arg.slice(8).replace(/[^\w.-]+/g, "-");
     else if (!options.url) options.url = arg;
     else options.steps.push(arg);
   }
   return options;
+}
+
+function findAxe() {
+  const candidates = [path.join(process.cwd(), "node_modules", "axe-core", "axe.min.js"),
+    path.join(os.homedir(), ".arkar", "axe", "node_modules", "axe-core", "axe.min.js")];
+  try { candidates.unshift(require.resolve("axe-core/axe.min.js")); } catch (error) { /* not installed beside the script */ }
+  return candidates.find((candidate) => fs.existsSync(candidate)) || null;
 }
 
 async function perform(page, raw) {
@@ -54,6 +73,16 @@ async function perform(page, raw) {
   else if (action === "wait") await page.waitForTimeout(Number(value));
   else throw new Error(`unknown step: ${raw}`);
   if (action !== "wait") await page.waitForTimeout(450);
+}
+
+const firstLine = (error) => String(error).split("\n")[0].slice(0, 90);
+
+// Runs the journey's steps. Returns the step that could not run, or null when all of them did.
+async function runSteps(page, steps) {
+  for (const step of steps) {
+    try { await perform(page, step); } catch (error) { return `${step}: ${firstLine(error)}`; }
+  }
+  return null;
 }
 
 // Runs in the page before its scripts: adds up layout shift that the user did not cause.
@@ -77,12 +106,20 @@ function sameView(first, second) {
   return shared / Math.max(first.length, second.length);
 }
 
+// How much of `lines` is on screen in `view` (1 when there is nothing to look for).
+function share(lines, view) {
+  if (!lines.length) return 1;
+  const there = new Set(view);
+  return lines.filter((line) => there.has(line)).length / lines.length;
+}
+
 async function readView(page) {
   return page.evaluate(`(${viewLines.toString()})()`).catch(() => []);
 }
 
 async function open(browser, url, contextOptions = {}) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, ...contextOptions });
+  // bypassCSP lets the checks add their own script (axe) to a page with a strict policy; the page's own behaviour is unchanged.
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, bypassCSP: true, ...contextOptions });
   await context.addInitScript(watchShift);
   const page = await context.newPage();
   const seen = { errors: [], lost: [], foreign: new Set() };
@@ -145,15 +182,30 @@ const phoneFacts = () => {
     return box.width > 0 && box.height > 0 && style.visibility !== "hidden" && style.opacity !== "0";
   };
   const name = (element) => (element.getAttribute("aria-label") || element.innerText || element.value || element.tagName).trim().replace(/\s+/g, " ").slice(0, 28);
+  const shortSide = (element) => Math.min(element.getBoundingClientRect().width, element.getBoundingClientRect().height);
   const tiny = [], small = [];
   for (const control of document.querySelectorAll("button, a[href], [role=button], [role=tab], input:not([type=hidden]), select, summary")) {
     if (!visible(control)) continue;
-    // A small checkbox or radio inside a label is pressed through its label.
-    const target = control.closest("label") || (control.id && document.querySelector(`label[for="${CSS.escape(control.id)}"]`)) || control;
+    // A control can also be pressed through its label, so the larger of the two is the target
+    // (a small checkbox inside a tall label is fine; a text field is not judged by its short label).
+    const label = control.closest("label") || (control.id && document.querySelector(`label[for="${CSS.escape(control.id)}"]`));
+    const target = label && shortSide(label) > shortSide(control) ? label : control;
     const box = target.getBoundingClientRect();
-    const size = Math.min(box.width, box.height);
+    let size = Math.min(box.width, box.height);
     // Not a touch target: hidden from sight until focused (a skip link, a screen-reader-only input).
     if (size <= 2 || box.right <= 0 || box.bottom <= 0 || box.left >= innerWidth) continue;
+    // The press area can be larger than the box (padding drawn by a pseudo-element): bring the
+    // control into view and try 21 px each way from its centre.
+    if (size < 44) {
+      target.scrollIntoView({ block: "center", inline: "center" });
+      const shown = target.getBoundingClientRect();
+      const centreX = shown.left + shown.width / 2, centreY = shown.top + shown.height / 2;
+      const reaches = (x, y) => {
+        const hit = document.elementFromPoint(x, y);
+        return Boolean(hit) && (hit === control || control.contains(hit) || (label && label.contains(hit)));
+      };
+      if (reaches(centreX - 21, centreY) && reaches(centreX + 21, centreY) && reaches(centreX, centreY - 21) && reaches(centreX, centreY + 21)) size = 44;
+    }
     if (size < 24) tiny.push(name(control)); else if (size < 44) small.push(name(control));
   }
   let smallText = 0;
@@ -166,7 +218,26 @@ const phoneFacts = () => {
     if (parseFloat(getComputedStyle(parent).fontSize) < 12) smallText += 1;
   }
   const native = [...document.querySelectorAll("select, input[type=date], input[type=time], input[type=datetime-local], input[type=file]")].filter(visible).length;
+  window.scrollTo(0, 0);
   return { tiny, small, smallText, native };
+};
+
+// Each visible element's background and text colour, to tell what a change of colour scheme does.
+const colourFacts = () => {
+  const light = (colour) => {
+    const parts = (colour.match(/[\d.]+/g) || []).map(Number);
+    if (parts.length < 3 || (parts.length > 3 && parts[3] < 0.5)) return null; // see-through: not a surface
+    return (0.2126 * parts[0] + 0.7152 * parts[1] + 0.0722 * parts[2]) / 255;
+  };
+  const page = light(getComputedStyle(document.body).backgroundColor) ?? light(getComputedStyle(document.documentElement).backgroundColor) ?? 1;
+  const surfaces = [];
+  for (const element of [...document.querySelectorAll("body *")].slice(0, 1500)) {
+    const box = element.getBoundingClientRect();
+    if (box.width * box.height < 2000 || box.bottom < 0 || box.top > innerHeight) continue;
+    const style = getComputedStyle(element);
+    surfaces.push({ background: light(style.backgroundColor), signature: `${style.backgroundColor}|${style.color}` });
+  }
+  return { page, surfaces };
 };
 
 // Tabs through the page; a stop passes when focusing it visibly changes it — in its own styles or,
@@ -217,27 +288,29 @@ async function keyboardWalk(page) {
   return { count, unseen, dropped };
 }
 
-function report(options, lines) {
+async function saveShot(page, options, kind, saved) {
+  if (!options.shots) return;
+  const folder = path.join(process.cwd(), "qa-screenshots");
+  fs.mkdirSync(folder, { recursive: true });
+  const ignore = path.join(folder, ".gitignore");
+  if (!fs.existsSync(ignore)) fs.writeFileSync(ignore, "*\n"); // evidence is never committed
+  const file = path.join("qa-screenshots", `${options.shots}-${kind}.png`);
+  await page.screenshot({ path: path.join(process.cwd(), file), animations: "disabled" });
+  saved.push(file);
+}
+
+function report(options, lines, saved) {
   const fixes = lines.filter((line) => line.level === "FIX").length;
   const looks = lines.filter((line) => line.level === "LOOK").length;
   if (options.json) {
-    console.log(JSON.stringify({ url: options.url, steps: options.steps, fix: fixes, look: looks, lines }));
+    console.log(JSON.stringify({ url: options.url, steps: options.steps, fix: fixes, look: looks, lines, shots: saved }));
     return;
   }
   console.log(`Use check — ${options.url}${options.steps.length ? `  (journey: ${options.steps.join(" → ")})` : ""}`);
   for (const line of lines) console.log(`  ${line.level.padEnd(4)} ${line.area.padEnd(9)} ${line.text}`);
+  if (saved.length) console.log(`  Saved to look at: ${saved.join(" · ")}`);
   console.log(`${fixes} to fix, ${looks} to look at. A tool can't judge how it looks or whether the wording helps: use it yourself as well.`);
   if (!options.steps.length) console.log("Add the steps that open a view to check refresh and Back, and --commit/--count to check a double press.");
-}
-
-const firstLine = (error) => String(error).split("\n")[0].slice(0, 90);
-
-// Runs the journey's steps. Returns the step that could not run, or null when all of them did.
-async function runSteps(page, steps) {
-  for (const step of steps) {
-    try { await perform(page, step); } catch (error) { return `${step}: ${firstLine(error)}`; }
-  }
-  return null;
 }
 
 function checkLoad(seen, shift, say) {
@@ -248,6 +321,44 @@ function checkLoad(seen, shift, say) {
   }
   if (seen.lost.length) say("FIX", "load", `${seen.lost.length} of its own files failed to load: ${seen.lost[0]}`);
   say(shift > 0.1 ? "FIX" : "PASS", "load", `layout shift while loading ${shift.toFixed(2)}${shift > 0.1 ? " (content jumps: reserve its space)" : ""}`);
+}
+
+async function checkAccessibility(page, axePath, say) {
+  if (!axePath) return say("LOOK", "a11y", "axe-core is not installed, so accessibility rules were not checked (npm install --prefix ~/.arkar/axe axe-core)");
+  try {
+    await page.addScriptTag({ path: axePath });
+    const violations = await page.evaluate(async () => {
+      const output = await window.axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] } });
+      return output.violations.filter((violation) => violation.impact === "serious" || violation.impact === "critical")
+        .map((violation) => `${violation.id} (${violation.nodes.length})`);
+    });
+    return say(violations.length ? "FIX" : "PASS", "a11y", violations.length
+      ? `${violations.length} serious or critical accessibility violation(s): ${violations.slice(0, 5).join(", ")}`
+      : "no serious or critical accessibility violations (axe, WCAG 2.2 AA)");
+  } catch (error) {
+    return say("LOOK", "a11y", `axe could not run on this page: ${firstLine(error)}`);
+  }
+}
+
+// What the system's dark setting does to the page: nothing (fine), a full dark version (look at it), or only
+// parts turning dark on a light page (broken — the classic result of a kit that follows the system on a
+// product that was designed light only).
+async function checkDark(page, options, saved, say) {
+  const light = await page.evaluate(`(${colourFacts.toString()})()`);
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.waitForTimeout(300);
+  const dark = await page.evaluate(`(${colourFacts.toString()})()`);
+  const changed = dark.surfaces.filter((surface, index) => light.surfaces[index] && surface.signature !== light.surfaces[index].signature).length;
+  if (!changed) say("PASS", "dark", "the system's dark setting does not change the page");
+  else {
+    const turnedDark = dark.surfaces.filter((surface, index) => light.surfaces[index] && surface.background !== null && surface.background < 0.3
+      && (light.surfaces[index].background ?? 1) > 0.6).length;
+    if (dark.page > 0.5 && turnedDark) {
+      say("FIX", "dark", `with the system in dark mode ${turnedDark} surface(s) turn dark on a page that stays light: design the dark theme, or pin the theme (data-theme="light" on <html>)`);
+    } else say("LOOK", "dark", "the page has a dark version (the system's dark setting restyles it): look at that version too");
+    await saveShot(page, options, "dark", saved);
+  }
+  await page.emulateMedia({ colorScheme: "light" });
 }
 
 async function checkWidths(page, say) {
@@ -278,16 +389,20 @@ async function checkKeyboard(page, say) {
   say(walk.unseen.length ? "FIX" : "PASS", "keyboard", walk.unseen.length
     ? `${walk.unseen.length} of ${walk.count} Tab stops show no focus: ${walk.unseen.slice(0, 4).join(", ")}` : `all ${walk.count} Tab stops show focus`);
   if (walk.dropped > 1) say("LOOK", "keyboard", `focus fell to the page ${walk.dropped} times while tabbing`);
+  return undefined;
 }
 
-async function checkPhone(browser, options, say) {
+async function checkPhone(browser, options, saved, say) {
   const phone = await open(browser, options.url, { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const broken = await runSteps(phone.page, options.steps);
+  if (broken) say("LOOK", "phone", `on the phone size a step could not run, so this is the page before it — ${broken}`);
   const facts = await phone.page.evaluate(`(${phoneFacts.toString()})()`);
   say(facts.tiny.length ? "FIX" : "PASS", "phone", facts.tiny.length
     ? `${facts.tiny.length} touch targets under 24 px: ${facts.tiny.slice(0, 4).join(", ")}` : "no touch target under 24 px");
   if (facts.small.length) say("LOOK", "phone", `${facts.small.length} touch targets under 44 px: ${facts.small.slice(0, 4).join(", ")}`);
   if (facts.smallText) say("LOOK", "phone", `${facts.smallText} pieces of text under 12 px`);
   if (facts.native) say("LOOK", "controls", `${facts.native} browser-default control(s) (select, date, time or file): their pop-ups are not the product's`);
+  await saveShot(phone.page, options, "phone", saved);
   await phone.context.close();
 }
 
@@ -297,24 +412,29 @@ async function withSwitch(browser, options, name, wait, read) {
   const page = await context.newPage();
   await page.goto(options.url + (options.url.includes("?") ? "&" : "?") + name, { waitUntil: "load", timeout: 30000 });
   await page.waitForTimeout(wait);
-  const result = await page.evaluate(read);
+  const result = { lines: await readView(page), ...(await page.evaluate(read)) };
   await context.close();
   return result;
 }
 
-async function checkSlowAndFail(browser, options, say) {
-  const waiting = await withSwitch(browser, options, "latency=slow", 500, () => Boolean(document.querySelector(
-    "[aria-busy=true], [role=progressbar], [class*=skeleton i], [class*=loading i], [class*=shimmer i]"))
-    || /loading|checking|fetching/i.test(document.body.innerText));
+// Words about waiting or failing count only when they are not on the page anyway (a row called "Loading bay").
+async function checkSlowAndFail(browser, options, rest, say) {
+  const usual = new Set(rest);
+  const saysNew = (view, words) => view.lines.some((line) => words.test(line) && !usual.has(line));
+  const slow = await withSwitch(browser, options, "latency=slow", 500, () => ({
+    busy: [...document.querySelectorAll("[aria-busy=true], [role=progressbar], [class*=skeleton i], [class*=loading i], [class*=shimmer i]")]
+      .some((element) => element.getBoundingClientRect().width > 0),
+  }));
+  const waiting = slow.busy || saysNew(slow, WAITING);
   say(waiting ? "PASS" : "LOOK", "slow", waiting ? "a loading state shows while requests are slow (?latency=slow)"
     : "no loading state seen with ?latency=slow: either the app has no slow switch, or the wait is not designed");
-  const failure = await withSwitch(browser, options, "fail=always", 3500, () => ({
-    message: /couldn.t|could not|failed|didn.t load|went wrong|unable to|try again/i.test(document.body.innerText),
-    retry: [...document.querySelectorAll("button, a")].some((control) => /try again|retry|reload/i.test(control.innerText)),
+  const fail = await withSwitch(browser, options, "fail=always", 3500, () => ({
+    retry: [...document.querySelectorAll("button, a")].some((control) => /try again|retry|reload/i.test(control.innerText) && control.getBoundingClientRect().width > 0),
   }));
-  say(failure.message && failure.retry ? "PASS" : "LOOK", "fail", failure.message && failure.retry
+  const message = saysNew(fail, FAILED);
+  say(message && fail.retry ? "PASS" : "LOOK", "fail", message && fail.retry
     ? "a failed load shows a message and a way to retry (?fail=always)"
-    : `with ?fail=always: ${failure.message ? "a message but no retry" : "no failure message"} — either the app has no fail switch, or failure is not designed`);
+    : `with ?fail=always: ${message ? "a message but no retry" : "no failure message"} — either the app has no fail switch, or failure is not designed`);
 }
 
 async function checkReducedMotion(browser, options, say) {
@@ -328,22 +448,23 @@ async function checkReducedMotion(browser, options, say) {
   await calm.context.close();
 }
 
-// Back and Forward from a view the address records.
-async function checkHistory(page, options, start, opened, say) {
+// Back and Forward from a view the address records. `added` is what the steps put on screen.
+async function checkHistory(page, options, start, added, say) {
   await page.goBack({ waitUntil: "load" }).catch(() => {});
   await page.waitForTimeout(1200);
   if (!page.url().startsWith(new URL(options.url).origin)) return say("FIX", "back", "Back leaves the app");
-  const back = sameView(start, await readView(page));
-  say(back >= 0.85 ? "PASS" : "LOOK", "back", back >= 0.85 ? "Back returns to where the user was"
-    : `Back stays in the app but shows a different view (${Math.round(back * 100)}% match)`);
+  const behind = await readView(page);
+  const returned = sameView(start, behind) >= 0.85 && (added.length < 2 || share(added, behind) <= 0.4);
+  say(returned ? "PASS" : "LOOK", "back", returned ? "Back returns to where the user was"
+    : `Back stays in the app but does not return to where the user was (${Math.round(sameView(start, behind) * 100)}% match)`);
   await page.goForward({ waitUntil: "load" }).catch(() => {});
   await page.waitForTimeout(1200);
-  const forward = sameView(opened, await readView(page));
-  say(forward >= 0.85 ? "PASS" : "LOOK", "back", forward >= 0.85 ? "Forward re-opens the view" : "Forward does not re-open the view");
+  const again = share(added, await readView(page)) >= 0.6;
+  return say(again ? "PASS" : "LOOK", "back", again ? "Forward re-opens the view" : "Forward does not re-open the view");
 }
 
 // The journey: what the steps open must survive a refresh and answer to Back, and nothing may jump on the way.
-async function checkJourney(browser, options, say) {
+async function checkJourney(browser, options, axePath, saved, say) {
   const trip = await open(browser, options.url);
   const start = await readView(trip.page);
   const startUrl = trip.page.url();
@@ -358,22 +479,28 @@ async function checkJourney(browser, options, say) {
   const opened = await readView(trip.page);
   const recorded = trip.page.url() !== startUrl;
   const known = new Set(start);
-  const fresh = opened.filter((line) => !known.has(line)).length;
-  if (!recorded && fresh < 2 && sameView(start, opened) >= 0.97) {
+  const added = opened.filter((line) => !known.has(line));
+  await saveShot(trip.page, options, "desktop", saved);
+  await checkAccessibility(trip.page, axePath, say);
+  if (!recorded && added.length < 2 && sameView(start, opened) >= 0.97) {
     say("LOOK", "journey", "the steps did not change what is on screen, so refresh and Back were not checked: check the selectors");
     return trip.context.close();
   }
   say(recorded ? "PASS" : "LOOK", "refresh", recorded ? "the address records the view" : "the address did not change: the view can't be linked to or restored from it");
   await trip.page.reload({ waitUntil: "load" });
   await trip.page.waitForTimeout(2200);
-  const reloaded = sameView(opened, await readView(trip.page));
-  say(reloaded >= 0.85 ? "PASS" : "FIX", "refresh", reloaded >= 0.85 ? "a refresh returns to the same view" : `a refresh loses the view (${Math.round(reloaded * 100)}% of it came back)`);
-  if (recorded) await checkHistory(trip.page, options, start, opened, say);
+  const reloaded = await readView(trip.page);
+  // Judged by what the steps added: on a long page, a lost side sheet is a small part of all the text.
+  const kept = added.length >= 2 ? share(added, reloaded) : sameView(opened, reloaded);
+  say(kept >= 0.6 ? "PASS" : "FIX", "refresh", kept >= 0.6 ? "a refresh returns to the same view"
+    : `a refresh loses what was opened (${Math.round(kept * 100)}% of it came back) — a defect for a view; expected for a menu or tooltip`);
+  if (recorded) await checkHistory(trip.page, options, start, added, say);
   else {
     await trip.page.goBack({ waitUntil: "load" }).catch(() => {});
     await trip.page.waitForTimeout(800);
     const stayed = trip.page.url().startsWith(new URL(options.url).origin);
-    say(stayed ? "LOOK" : "FIX", "back", stayed ? "Back did nothing visible to the address" : "Back leaves the app instead of closing what was opened");
+    say(stayed ? "LOOK" : "FIX", "back", stayed ? "Back did nothing visible to the address"
+      : "Back leaves the app instead of closing what was opened — a defect for a view; expected for a menu or tooltip");
   }
   return trip.context.close();
 }
@@ -404,7 +531,7 @@ async function checkDoublePress(browser, options, say) {
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   if (!options.url) {
-    console.error("Usage: node use-check.cjs <url> [<step> ...] [--commit=<step> --count=<selector>] [--json]");
+    console.error("Usage: node use-check.cjs <url> [<step> ...] [--shots=<name>] [--commit=<step> --count=<selector>] [--json]");
     process.exit(1);
   }
   if (!LOCAL.test(new URL(options.url).hostname)) {
@@ -412,20 +539,28 @@ async function main() {
     process.exit(1);
   }
   const lines = [];
+  const saved = [];
   const say = (level, area, text) => { lines.push({ level, area, text }); };
+  const axePath = findAxe();
   const browser = await chromium.launch();
   const first = await open(browser, options.url);
+  const rest = await readView(first.page);
   checkLoad(first.seen, await first.page.evaluate(() => window.__shift || 0), say);
+  if (!options.steps.length) {
+    await saveShot(first.page, options, "desktop", saved);
+    await checkAccessibility(first.page, axePath, say);
+  }
+  await checkDark(first.page, options, saved, say);
   await checkWidths(first.page, say);
   await checkKeyboard(first.page, say);
   await first.context.close();
-  await checkPhone(browser, options, say);
-  await checkSlowAndFail(browser, options, say);
+  await checkPhone(browser, options, saved, say);
+  await checkSlowAndFail(browser, options, rest, say);
   await checkReducedMotion(browser, options, say);
-  if (options.steps.length) await checkJourney(browser, options, say);
+  if (options.steps.length) await checkJourney(browser, options, axePath, saved, say);
   if (options.commit && options.count) await checkDoublePress(browser, options, say);
   await browser.close();
-  report(options, lines);
+  report(options, lines, saved);
 }
 
 main().catch((error) => { console.error(String(error)); process.exit(1); });

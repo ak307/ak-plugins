@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "drafts/ui-core/arkar-ui-design-intelligence/scripts/use-check.cjs"
+SCRIPT = ROOT / "plugins/arkar-dev-standards/skills/arkar-ui-visual-qa/scripts/use-check.cjs"
 FIXTURES = Path(__file__).parent / "fixtures" / "use-check"
 JOURNEY = ("click=#open", "--commit=click=#add", "--count=.note")
 
@@ -37,8 +37,8 @@ def site():
     server.shutdown()
 
 
-def use_check(url: str, *arguments: str) -> dict:
-    result = subprocess.run(["node", str(SCRIPT), url, *arguments, "--json"], capture_output=True, text=True, timeout=300)
+def use_check(url: str, *arguments: str, cwd: Path | None = None) -> dict:
+    result = subprocess.run(["node", str(SCRIPT), url, *arguments, "--json"], capture_output=True, text=True, timeout=300, cwd=cwd)
     assert result.returncode == 0, result.stderr
     return json.loads(result.stdout.strip().splitlines()[-1])
 
@@ -48,13 +48,19 @@ def found(report: dict, level: str, area: str, words: str = "") -> bool:
 
 
 @pytest.fixture(scope="module")
-def good(site):
-    return use_check(f"{site}/good.html", *JOURNEY)
+def project(tmp_path_factory):
+    """The folder the tool is run from: its screenshots land in qa-screenshots/ there."""
+    return tmp_path_factory.mktemp("project")
 
 
 @pytest.fixture(scope="module")
-def bad(site):
-    return use_check(f"{site}/bad.html", *JOURNEY)
+def good(site, project):
+    return use_check(f"{site}/good.html", *JOURNEY, "--shots=orders", cwd=project)
+
+
+@pytest.fixture(scope="module")
+def bad(site, project):
+    return use_check(f"{site}/bad.html", *JOURNEY, cwd=project)
 
 
 def test_a_page_that_behaves_has_nothing_to_fix(good):
@@ -70,6 +76,16 @@ def test_a_page_that_behaves_has_nothing_to_fix(good):
 def test_designed_waiting_and_failure_are_recognised(good):
     assert found(good, "PASS", "slow", "loading state")
     assert found(good, "PASS", "fail", "a way to retry")
+
+
+def test_a_page_that_ignores_the_dark_setting_passes(good):
+    assert found(good, "PASS", "dark", "does not change the page")
+
+
+def test_the_view_is_saved_to_look_at_once(good, project):
+    assert good["shots"] == ["qa-screenshots/orders-phone.png", "qa-screenshots/orders-desktop.png"]
+    assert all((project / shot).stat().st_size > 2000 for shot in good["shots"])
+    assert (project / "qa-screenshots" / ".gitignore").read_text() == "*\n"  # evidence is never committed
 
 
 def test_a_view_kept_in_the_address_survives_refresh_back_and_forward(good):
@@ -103,15 +119,27 @@ def test_keyboard_and_touch_defects_are_named(bad):
 
 
 def test_missing_states_are_for_looking_at_not_defects(bad):
-    # The tool can't tell "no switch" from "not designed", so it asks instead of failing the page.
+    # The tool can't tell "no switch" from "not designed", so it asks instead of failing the page —
+    # and words such as "loading bay" or "failed its inspection" in the content don't count as a state.
     assert found(bad, "LOOK", "slow")
-    assert found(bad, "LOOK", "fail")
+    assert found(bad, "LOOK", "fail", "no failure message")
     assert found(bad, "LOOK", "reduced", "still running")
+
+
+def test_a_half_dark_page_is_a_defect(bad):
+    assert found(bad, "FIX", "dark", "turn dark on a page that stays light")
+
+
+def test_accessibility_rules_are_checked_on_the_opened_view(good, bad):
+    if found(good, "LOOK", "a11y", "not installed"):
+        pytest.skip("axe-core not installed")
+    assert found(good, "PASS", "a11y")
+    assert found(bad, "FIX", "a11y", "label")
 
 
 def test_a_view_that_is_not_in_the_address_is_lost(bad):
     assert found(bad, "LOOK", "refresh", "the address did not change")
-    assert found(bad, "FIX", "refresh", "a refresh loses the view")
+    assert found(bad, "FIX", "refresh", "a refresh loses what was opened")
     assert found(bad, "FIX", "back", "Back leaves the app")
 
 

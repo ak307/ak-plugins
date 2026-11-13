@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en-SG" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work orders — Harbour Facilities</title>
+<link rel="stylesheet" href="liquid-glass.css">
+<link rel="stylesheet" href="surface-kit.css">
+<style>
+  /* The product's own tokens: the kits take their colour, shape and type from here. */
+  :root {
+    --ws-accent: 0 116 122;
+    --ws-canvas: #edf2f1;
+    --ws-radius: 13px;
+    --lg-tint: 246 250 249;
+    --lg-tint-alpha: 0.62;
+  }
+  [data-theme="dark"] { --ws-accent: 64 196 190; --ws-on-accent: 6 28 30; --ws-canvas: #0a1113; --lg-tint: 20 30 32; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: -0.006em; }
+  h1, h2, p { margin: 0; }
+  .top { position: sticky; top: 12px; z-index: 40; display: flex; align-items: center; gap: 14px; max-width: 1320px; margin: 12px auto 0; padding: 10px 12px 10px 18px; }
+  .top strong { font-size: 1.0625rem; letter-spacing: -0.02em; }
+  .top span { color: var(--ws-muted); font-size: 0.9375rem; }
+  .top .ws-button { margin-left: auto; }
+  main { max-width: 1320px; margin: 0 auto; padding: 28px 16px 64px; }
+  .intro { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 40px; padding: 8px 6px 22px; }
+  .intro h1 { font-size: clamp(1.9rem, 3.4vw, 2.6rem); line-height: 1.05; letter-spacing: -0.035em; }
+  .intro p { color: var(--ws-muted); max-width: 46ch; }
+  .figures { display: flex; gap: 28px; margin-left: auto; }
+  .figures b { display: block; font-size: 1.6rem; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .figures span { font-size: 0.8125rem; color: var(--ws-muted); }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 20px; align-items: start; }
+  .place { white-space: nowrap; }
+  .orders { display: grid; gap: 12px; min-width: 0; --ws-toolbar-top: 78px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; }
+  .form { display: grid; gap: 16px; padding: 22px; position: sticky; top: 78px; }
+  .form h2 { font-size: 1.25rem; letter-spacing: -0.02em; }
+  .form .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form .ws-button { width: 100%; }
+  .row-actions { width: 44px; }
+  .icon-button { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; color: var(--ws-muted); background: none; cursor: pointer; transition: background-color 140ms; }
+  .icon-button:hover, .icon-button[aria-expanded="true"] { color: var(--ws-text); background: var(--ws-fill-strong); }
+  .icon-button:focus-visible { outline: 2px solid rgb(var(--ws-accent)); outline-offset: 2px; }
+  .saved { color: rgb(var(--ws-ok)); font-weight: 600; font-size: 0.875rem; min-height: 1.4em; }
+  @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } .form { position: static; } .figures { margin-left: 0; } }
+  @media (max-width: 640px) {
+    .hide-narrow, .ws-tile { display: none; }
+    .ws-table th, .ws-table td { padding-inline: 10px; }
+    .form .pair { grid-template-columns: 1fr; }
+    .top span { display: none; }
+  }
+  @media (pointer: coarse) { .icon-button { width: 44px; height: 44px; } }
+</style>
+</head>
+<body class="ws-canvas">
+<header class="lg-bar top">
+  <strong>Harbour Facilities</strong><span>Work orders</span>
+  <button class="ws-button" data-variant="primary" data-size="small" id="new-order" type="button">New work order</button>
+</header>
+<main>
+  <section class="intro">
+    <div>
+      <h1>Work orders</h1>
+      <p>Everything raised across six buildings this week, with who has it and when it is due.</p>
+    </div>
+    <div class="figures" aria-label="This week">
+      <div><b>24</b><span>raised</span></div>
+      <div><b>9</b><span>still open</span></div>
+      <div><b>3</b><span>overdue</span></div>
+    </div>
+  </section>
+
+  <div class="layout">
+    <section class="orders" aria-label="Work orders">
+      <div class="ws-toolbar">
+        <label class="ws-search">
+          <svg class="ws-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M7 12A5 5 0 1 0 7 2a5 5 0 0 0 0 10zm7 2l-3.4-3.4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+          <input class="ws-input" id="search" type="search" placeholder="Search orders" aria-label="Search work orders">
+        </label>
+        <select class="ws-select" id="building" aria-label="Building">
+          <option value="">All buildings</option>
+          <option>Harbour Tower</option><option>Kestrel House</option><option>Riverside Hall</option>
+          <option>Civic Library</option><option>North Annex</option><option>Mill Street Depot</option>
+        </select>
+        <div class="filters" role="group" aria-label="Status">
+          <button class="ws-chip" type="button" aria-pressed="true" data-status="">All <span class="ws-count">10</span></button>
+          <button class="ws-chip" type="button" aria-pressed="false" data-status="Open">Open <span class="ws-count">4</span></button>
+          <button class="ws-chip" type="button" aria-pressed="false" data-status="In progress">In progress <span class="ws-count">4</span></button>
+          <button class="ws-chip" type="button" aria-pressed="false" data-status="Done">Done <span class="ws-count">2</span></button>
+        </div>
+      </div>
+
+      <div class="ws-table-wrap" style="--ws-table-height: 470px" tabindex="0" role="region" aria-label="Work orders table">
+        <table class="ws-table" id="orders">
+          <thead>
+            <tr>
+              <th style="width: 48px"><input class="ws-check" type="checkbox" data-ws-all aria-label="Select all orders"></th>
+              <th aria-sort="none"><button class="ws-sort" type="button" data-sort="title">Order</button></th>
+              <th class="hide-narrow">Location</th>
+              <th>Status</th>
+              <th class="hide-narrow">Progress</th>
+              <th class="ws-num" aria-sort="ascending"><button class="ws-sort" type="button" data-sort="due">Due</button></th>
+              <th class="row-actions"><span hidden>Actions</span></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="ws-bulk" id="bulk" hidden>
+        <span id="bulk-count"></span>
+        <button class="ws-button" data-size="small" type="button">Assign</button>
+        <button class="ws-button" data-size="small" data-variant="quiet" type="button" id="bulk-clear">Clear</button>
+      </div>
+    </section>
+
+    <form class="ws-group form" id="order-form" data-ws-validate>
+      <h2>New work order</h2>
+      <div class="ws-field">
+        <label class="ws-label" for="title">What needs doing</label>
+        <input class="ws-input" id="title" name="title" required minlength="6" autocomplete="off"
+               data-error-required="Say what needs doing, in a few words." data-error-range="Add a little more detail: at least 6 letters.">
+      </div>
+      <div class="pair">
+        <div class="ws-field">
+          <label class="ws-label" for="where">Building</label>
+          <select class="ws-select" id="where" name="where" required data-error-required="Choose the building.">
+            <option value="">Choose…</option>
+            <option>Harbour Tower</option><option>Kestrel House</option><option>Riverside Hall</option>
+            <option>Civic Library</option><option>North Annex</option><option>Mill Street Depot</option>
+          </select>
+        </div>
+        <div class="ws-field">
+          <label class="ws-label" for="due">Due</label>
+          <input class="ws-date" id="due" name="due" type="date" required min="2026-11-13" max="2027-03-31"
+                 data-error-required="Choose a due date.">
+        </div>
+      </div>
+      <div class="ws-field">
+        <label class="ws-label" for="trade">Trade</label>
+        <select class="ws-select" id="trade" name="trade" data-search="Search trades">
+          <optgroup label="Mechanical">
+            <option>Air conditioning</option><option>Chillers</option><option>Lifts</option><option>Pumps</option><option>Ventilation</option>
+          </optgroup>
+          <optgroup label="Electrical">
+            <option>Fire alarm</option><option>Lighting</option><option>Power</option><option disabled>Solar (not on contract)</option>
+          </optgroup>
+          <optgroup label="Building">
+            <option>Carpentry</option><option>Cleaning</option><option>Landscaping</option><option>Plumbing</option><option>Roofing</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="ws-field">
+        <label class="ws-label" for="notes">Notes <small>Optional</small></label>
+        <textarea class="ws-textarea" id="notes" name="notes" placeholder="Access, safety or anything the technician should know"></textarea>
+      </div>
+      <label class="ws-choice"><input class="ws-switch" type="checkbox" role="switch" name="urgent" id="urgent"> Urgent: page the duty technician</label>
+      <label class="ws-choice"><input class="ws-check" type="checkbox" name="photo" id="photo" checked> Ask for a photo when it is done</label>
+      <button class="ws-button" data-variant="primary" type="submit" id="create">Create work order</button>
+      <p class="saved" id="saved" role="status"></p>
+    </form>
+  </div>
+</main>
+
+<div id="row-menu" aria-label="Order actions">
+  <button type="button" role="menuitem" data-action="open">Open</button>
+  <button type="button" role="menuitem" data-action="assign">Assign…</button>
+  <button type="button" role="menuitem" data-action="copy">Copy link</button>
+  <hr>
+  <button type="button" role="menuitem" data-action="cancel" data-tone="bad">Cancel order</button>
+</div>
+
+<script type="module">
+  import { enhance, selection, menu } from "./surface-kit.js";
+
+  const tones = { Open: "info", "In progress": "warn", Done: "ok", Overdue: "bad" };
+  const orders = [
+    { id: "WO-4810", title: "Lift stuck between floors", trade: "Lifts", where: "Harbour Tower", spot: "Lift lobby B", status: "Overdue", progress: 0.2, due: "2026-11-11" },
+    { id: "WO-4811", title: "Leaking pipe in pantry", trade: "Plumbing", where: "Kestrel House", spot: "Level 3 pantry", status: "In progress", progress: 0.6, due: "2026-11-13" },
+    { id: "WO-4816", title: "Door access reader offline", trade: "Power", where: "Civic Library", spot: "Staff entrance", status: "Open", progress: 0, due: "2026-11-14" },
+    { id: "WO-4817", title: "Water heater tripping", trade: "Power", where: "Riverside Hall", spot: "Kitchen", status: "In progress", progress: 0.4, due: "2026-11-14" },
+    { id: "WO-4822", title: "Chiller 2 running overnight", trade: "Chillers", where: "Harbour Tower", spot: "Roof plant deck", status: "Open", progress: 0, due: "2026-11-16" },
+    { id: "WO-4823", title: "Car park barrier slow to lift", trade: "Power", where: "Mill Street Depot", spot: "Gate 1", status: "In progress", progress: 0.8, due: "2026-11-17" },
+    { id: "WO-4828", title: "Roof gutter blocked", trade: "Roofing", where: "North Annex", spot: "East roof", status: "Open", progress: 0, due: "2026-11-18" },
+    { id: "WO-4829", title: "Emergency light failed test", trade: "Lighting", where: "Civic Library", spot: "Stair 2", status: "In progress", progress: 0.3, due: "2026-11-19" },
+    { id: "WO-4834", title: "Replace lobby air filter", trade: "Ventilation", where: "Kestrel House", spot: "Main lobby", status: "Done", progress: 1, due: "2026-11-10" },
+    { id: "WO-4835", title: "Repaint loading bay lines", trade: "Carpentry", where: "Mill Street Depot", spot: "Bay 2", status: "Done", progress: 1, due: "2026-11-09" },
+  ];
+  const view = { search: "", building: "", status: "", sort: "due", ascending: true };
+  const shortDate = new Intl.DateTimeFormat("en-SG", { day: "numeric", month: "short" });
+  const body = document.querySelector("#orders tbody");
+  const escapeHtml = (text) => text.replace(/[&<>"]/g, (letter) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[letter]));
+
+  function rowHtml(order) {
+    const [year, month, day] = order.due.split("-").map(Number);
+    return `<tr data-id="${order.id}">
+      <td><input class="ws-check" type="checkbox" data-ws-row aria-label="Select ${order.id}"></td>
+      <td><div class="ws-lead"><span class="ws-tile" aria-hidden="true">${order.trade.slice(0, 2)}</span>
+        <div><strong>${escapeHtml(order.title)}</strong><span class="ws-sub">${order.id} · ${escapeHtml(order.trade)}</span></div></div></td>
+      <td class="hide-narrow place">${escapeHtml(order.where)}<span class="ws-sub">${escapeHtml(order.spot)}</span></td>
+      <td><span class="ws-status" data-tone="${tones[order.status]}">${order.status}</span></td>
+      <td class="hide-narrow"><span class="ws-meter" data-tone="${tones[order.status]}" style="--value: ${order.progress}" role="img" aria-label="${Math.round(order.progress * 100)}% done"></span></td>
+      <td class="ws-num">${shortDate.format(new Date(year, month - 1, day))}</td>
+      <td class="row-actions"><button class="icon-button" type="button" data-ws-menu="row-menu" aria-label="Actions for ${order.id}">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8h.01M8 8h.01M13 8h.01" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button></td>
+    </tr>`;
+  }
+
+  let rows = null;
+  function render() {
+    const wanted = orders
+      .filter((order) => !view.building || order.where === view.building)
+      .filter((order) => !view.status || order.status === view.status || (view.status === "Open" && order.status === "Overdue"))
+      .filter((order) => `${order.title} ${order.id} ${order.trade}`.toLowerCase().includes(view.search.toLowerCase()))
+      .sort((first, second) => (first[view.sort] < second[view.sort] ? -1 : 1) * (view.ascending ? 1 : -1));
+    body.innerHTML = wanted.map(rowHtml).join("") || `<tr><td colspan="7"><div class="ws-empty"><strong>No orders match</strong>Try another building or clear the search.</div></td></tr>`;
+    for (const trigger of body.querySelectorAll("[data-ws-menu]")) menu(trigger, document.getElementById("row-menu"));
+    if (rows) rows.refresh();
+  }
+
+  render();
+  enhance();
+  rows = selection(document.getElementById("orders"), {
+    onChange(ids) {
+      document.getElementById("bulk").hidden = ids.length === 0;
+      document.getElementById("bulk-count").textContent = `${ids.length} selected`;
+    },
+  });
+
+  // What the page's own code hears from the real <select> and <input>: the tests read this.
+  window.kitEvents = [];
+  for (const field of document.querySelectorAll("select, input[type=date]")) {
+    field.addEventListener("change", () => window.kitEvents.push(`${field.id}=${field.value}`));
+  }
+  window.menuActions = [];
+  document.getElementById("row-menu").addEventListener("click", (event) => {
+    const item = event.target.closest("[data-action]");
+    if (item) window.menuActions.push(`${item.dataset.action}:${event.currentTarget.wsTrigger.closest("tr").dataset.id}`);
+  });
+
+  document.getElementById("search").addEventListener("input", (event) => { view.search = event.target.value; render(); });
+  document.getElementById("building").addEventListener("change", (event) => { view.building = event.target.value; render(); });
+  for (const chip of document.querySelectorAll(".ws-chip")) {
+    chip.addEventListener("click", () => {
+      for (const other of document.querySelectorAll(".ws-chip")) other.setAttribute("aria-pressed", String(other === chip));
+      view.status = chip.dataset.status;
+      render();
+    });
+  }
+  for (const button of document.querySelectorAll(".ws-sort")) {
+    button.addEventListener("click", () => {
+      view.ascending = view.sort === button.dataset.sort ? !view.ascending : true;
+      view.sort = button.dataset.sort;
+      for (const other of document.querySelectorAll(".ws-sort")) {
+        other.closest("th").setAttribute("aria-sort", other === button ? (view.ascending ? "ascending" : "descending") : "none");
+      }
+      render();
+    });
+  }
+  document.getElementById("bulk-clear").addEventListener("click", () => rows.clear());
+  document.getElementById("new-order").addEventListener("click", () => document.getElementById("title").focus());
+
+  const form = document.getElementById("order-form");
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const create = document.getElementById("create");
+    create.setAttribute("aria-busy", "true");
+    setTimeout(() => {
+      const data = new FormData(form);
+      orders.push({ id: `WO-${4836 + orders.length - 10}`, title: data.get("title"), trade: data.get("trade"), where: data.get("where"), spot: "To confirm", status: "Open", progress: 0, due: data.get("due") });
+      create.removeAttribute("aria-busy");
+      document.getElementById("saved").textContent = "Work order created.";
+      form.reset();
+      render();
+    }, 500);
+  });
+</script>
+</body>
+</html>

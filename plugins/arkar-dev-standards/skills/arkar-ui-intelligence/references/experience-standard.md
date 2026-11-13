@@ -141,6 +141,13 @@ seen and tested:
   closing (Escape asks "Discard your reason?" or keeps the draft per item)
   and survive a refresh (saved as they type); only an explicit cancel
   discards.
+- **A change of screen never shows an empty screen.** In a single-page
+  build, replacing the whole screen and then filling it gives a blank
+  frame, then a skeleton, then the content — three whole-screen changes
+  where the user asked for one. The screen on show stays until the next
+  has something to show (the motion kit's `changeScreen`; a framework
+  router's view transitions), and what is common to both — the bar, the
+  navigation, a header band — does not blink.
 - **Moving between pages is continuous too:** a multi-page product uses
   cross-document view transitions (`@view-transition { navigation: auto; }`
   with matching `view-transition-name`s, so the clicked row or building

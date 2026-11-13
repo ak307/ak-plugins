@@ -3,6 +3,8 @@
 //
 // Usage (from the project folder):
 //   node <path-to>/audit.cjs <url> [--sizes=1440x900,768x1024,375x812,320x640] [--json]
+// It also walks ten widths from 320 to 1920 px for sideways overflow and for controls that end
+// up under a fixed or sticky side panel — layouts break between the sizes people test at.
 //
 // Reports, at each size:
 // - accessibility violations (axe-core: WCAG 2.0/2.1/2.2 A and AA rules), by impact;
@@ -87,6 +89,70 @@ function smallTargets() {
   return small;
 }
 
+// Layouts break between the sizes people test at: a panel that sits beside the content at 1440 px
+// can lie on top of it at 1280. So the audit also walks these widths.
+const WIDTHS = [320, 375, 390, 768, 1024, 1200, 1280, 1366, 1440, 1920];
+
+// Controls that run underneath a fixed or sticky side panel. Content scrolling under a full-width
+// bar is by design; a row or button that reaches under a panel beside it is a layout collision.
+const coveredControls = () => {
+  const panels = [...document.querySelectorAll("body *")].filter((element) => {
+    const style = getComputedStyle(element);
+    const box = element.getBoundingClientRect();
+    return (style.position === "fixed" || style.position === "sticky") && box.width < innerWidth * 0.7
+      && box.width * box.height > innerWidth * innerHeight * 0.04 && style.visibility !== "hidden" && style.pointerEvents !== "none";
+  });
+  const covered = [];
+  if (!panels.length) return covered;
+  const controls = document.querySelectorAll("button, a[href], input, select, textarea, [role=button], [role=row], [role=option], [tabindex]");
+  for (const [index, control] of controls.entries()) {
+    const box = control.getBoundingClientRect();
+    if (box.width < 4 || box.height < 4 || box.bottom < 0 || box.top > innerHeight) continue;
+    // A collision: the control and a side panel overlap, and either the control reaches past the
+    // panel's edge (whichever is drawn on top, one hides part of the other) or the panel is what
+    // a press on the control's middle would hit.
+    const collides = panels.some((panel) => {
+      if (panel.contains(control) || control.contains(panel)) return false;
+      const side = panel.getBoundingClientRect();
+      const across = Math.min(box.right, side.right) - Math.max(box.left, side.left);
+      const down = Math.min(box.bottom, side.bottom) - Math.max(box.top, side.top);
+      if (across <= 8 || down <= 8) return false;
+      if (box.left < side.left - 8 || box.right > side.right + 8) return true;
+      const onTop = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+      return Boolean(onTop) && panel.contains(onTop);
+    });
+    if (collides) covered.push([index, (control.getAttribute("aria-label") || control.innerText || control.tagName).trim().replace(/\s+/g, " ").slice(0, 30)]);
+  }
+  return covered;
+};
+
+// Sideways overflow and covered controls at every width, looking down the page a screen at a time
+// (a collision is often below the first screen).
+async function sweepWidths(browser, url) {
+  const page = await browser.newPage({ viewport: { width: WIDTHS[0], height: 800 } });
+  const found = { overflow: [], covered: [] };
+  try {
+    await page.goto(url, { waitUntil: "load", timeout: 30000 });
+    await page.waitForTimeout(2500);
+    for (const width of WIDTHS) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.waitForTimeout(250);
+      if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)) found.overflow.push(width);
+      const height = await page.evaluate(() => document.documentElement.scrollHeight);
+      const under = new Map(); // each control once, however many scroll positions it is covered at
+      for (let top = 0; top < Math.min(height, 6400); top += 700) {
+        await page.evaluate((y) => window.scrollTo(0, y), top);
+        for (const [index, name] of await page.evaluate(`(${coveredControls.toString()})()`)) under.set(index, name);
+      }
+      await page.evaluate(() => window.scrollTo(0, 0));
+      if (under.size) found.covered.push({ width, count: under.size, examples: [...new Set(under.values())].slice(0, 2) });
+    }
+  } finally {
+    await page.close();
+  }
+  return found;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const url = args.find((arg) => !arg.startsWith("--"));
@@ -131,6 +197,7 @@ async function main() {
       report.sizes.push(result);
       await page.close();
     }
+    report.widths = await sweepWidths(browser, url);
   } finally {
     await browser.close();
   }
@@ -143,6 +210,10 @@ async function main() {
     console.log(`${size.size}: overflow ${size.overflow ? "YES" : "no"} · console errors ${size.consoleErrors.length} · failed requests ${size.failedRequests.length} · broken images ${size.brokenImages.length} · targets <24px ${size.smallTargets.length}` +
       (size.axe ? ` · axe violations ${size.axe.length} (serious/critical ${serious.length}${serious.length ? ": " + serious.map((v) => v.id).join(", ") : ""})` : " · axe not installed"));
   }
+  const { overflow, covered } = report.widths;
+  console.log(`widths ${WIDTHS[0]}–${WIDTHS[WIDTHS.length - 1]} px: sideways overflow ${overflow.length ? `YES at ${overflow.join(", ")} px` : "no"}`
+    + ` · controls under a fixed or sticky panel ${covered.length ? "YES — " + covered.map((at) => `${at.width} px: ${at.count} (${at.examples.join(", ")})`).join("; ") : "no"}`);
+  if (covered.length) console.log("  a panel beside the content must hold its own column (or move below it) at every width — fix the layout, don't hide the overlap");
   if (report.system) {
     const c = report.system.counts;
     console.log(`design system rendered: radii ${c.radius} · shadows ${c.shadow} · font sizes ${c.fontSize} · font families ${c.fontFamily} (${report.system.fonts.join(", ")}) · text colours ${c.textColour} · surfaces ${c.surface} · spacing values ${c.spacing}`);

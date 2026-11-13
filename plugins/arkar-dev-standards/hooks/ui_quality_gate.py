@@ -3,7 +3,8 @@
 Written rules alone get skipped now and then ("this is a small site", a skill
 that didn't load), and a skipped step is exactly where a session falls back to
 a plain, generic UI. The workflow is Understand → Decide → Build sheet →
-Implement → Verify → Independent review → Report, and this hook holds the
+Implement (with an early look review of two screens) → Verify →
+Independent review → Report, and this hook holds the
 two ends of it:
 
 - **Before writing (PreToolUse on Write/Edit):** a UI file is about to be
@@ -17,9 +18,10 @@ two ends of it:
      redesign) → all nine UI specialists must have been loaded.
   3. It created or rewrote DESIGN.md, or wrote a build sheet into it → the
      evidence must exist: a `## Build sheet` section in DESIGN.md, and
-     `premium-pass.md` with the Verify record (films, the experience walk
-     with its videos, the security check)
-     and the `## Independent review`.
+     `premium-pass.md` with the `## Early review` (two screens judged for
+     their look before the rest is built), the Verify record (films, the
+     experience walk with its videos, the security check) and the
+     `## Independent review`.
 
 When something is missing at the end it blocks the stop with a reason that
 tells Claude exactly what to finish — up to three times per session, then
@@ -242,6 +244,11 @@ def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> l
             problems.append("premium-pass.md has no security check — run arkar-security/scripts/security-check.cjs "
                             "on the changed pages (and --code on the source); fix findings in new code, and list "
                             "existing-code findings as 🟢 / 🟠 proposals for AK (Verify)")
+        if not re.search(r"early (look )?review", record, re.IGNORECASE):
+            problems.append("premium-pass.md has no `## Early review` — the first screen and the main inner screen "
+                            "are judged for their look by one fresh subagent before the rest is built "
+                            "(arkar-ui-visual-qa/references/early-review.md). If the rest is already built, do it "
+                            "now on those two screens and act on what it says")
         if not re.search(r"independent review|cold review|independent critique|cold read", record, re.IGNORECASE):
             problems.append("premium-pass.md has no `## Independent review` — one fresh subagent reviews the look "
                             "and the use for defects (arkar-ui-visual-qa/references/independent-review.md)")

@@ -190,6 +190,73 @@ export async function slideStep(outgoing, incoming, direction = 1) {
   outgoing.hidden = true;
 }
 
+// A change of screen — list to detail, one page of the app to another — never cuts to blank.
+// The screen on show stays until the next one has something to show (its content, or its
+// skeleton); then the two cross-fade, while everything outside `container` (the top bar, the
+// navigation) stays exactly where it is.
+//   const stage = await changeScreen(main, (stage) => mountEditor(stage, id));
+// `render(stage)` gets an empty element to build the new screen in. Put the first thing the user
+// should see into it straight away — the skeleton, then load the data — because the swap waits
+// for that first content (briefly), never for the data. Focus moves to the new screen's heading,
+// so keyboard and screen-reader users land in it; the old stage is removed with its listeners.
+const screensChanging = new WeakMap();
+
+export async function changeScreen(container, render, { scroll = true, focus = true } = {}) {
+  const t = timing();
+  const stage = document.createElement("div");
+  stage.dataset.screen = "";
+  const hadFocus = container.contains(document.activeElement);
+  render(stage);
+  if (!stage.hasChildNodes()) {
+    // Nothing to show yet: keep the current screen, but only for a moment — a press must not look ignored.
+    await new Promise((resolve) => {
+      const observer = new MutationObserver(() => { observer.disconnect(); resolve(); });
+      observer.observe(stage, { childList: true });
+      setTimeout(() => { observer.disconnect(); resolve(); }, t.base);
+    });
+  }
+  const swap = () => {
+    container.replaceChildren(stage);
+    if (scroll) scrollTo(0, 0);
+    if (!focus || !hadFocus) return;
+    const target = stage.querySelector("h1, h2") || stage;
+    if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+    target.focus({ preventScroll: true });
+  };
+  if (reduced()) {
+    swap();
+    return stage;
+  }
+  if (typeof document.startViewTransition !== "function") {
+    swap();
+    await finished(stage.animate([{ opacity: 0.4, transform: "translateY(8px)" }, { opacity: 1, transform: "none" }], { duration: t.base, easing: t.out }));
+    return stage;
+  }
+  // The browser holds a picture of the old screen while the new one is put in place, so there is
+  // no frame without a screen; only the container's area changes.
+  const changing = screensChanging.get(container) || { name: container.style.viewTransitionName, count: 0 };
+  changing.count += 1;
+  screensChanging.set(container, changing);
+  container.style.viewTransitionName = "screen";
+  const transition = document.startViewTransition(swap);
+  try {
+    await transition.ready;
+    const root = document.documentElement;
+    root.animate([{ opacity: 1 }, { opacity: 0 }], { duration: t.fast, easing: t.out, fill: "both", pseudoElement: "::view-transition-old(screen)" });
+    root.animate([{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "none" }],
+      { duration: t.base, easing: t.out, fill: "both", pseudoElement: "::view-transition-new(screen)" });
+    await transition.finished;
+  } catch (error) {
+    await transition.updateCallbackDone.catch(() => {}); // skipped (a newer change took over, or the tab is hidden): the swap still happens
+  }
+  changing.count -= 1;
+  if (changing.count === 0) { // the last change to finish puts the container back as it was
+    container.style.viewTransitionName = changing.name;
+    screensChanging.delete(container);
+  }
+  return stage;
+}
+
 // A brief highlight that settles — "this row is the one that changed".
 export function settle(el, { color = "var(--color-highlight, rgba(255, 214, 0, .28))" } = {}) {
   const t = timing();

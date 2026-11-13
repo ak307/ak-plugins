@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit fixture — a side panel that lies on the content below 1300 px</title>
+<style>
+  body { margin: 0; font: 16px/1.5 system-ui, sans-serif; }
+  main { padding: 24px; }
+  .row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; padding: 14px; border: 1px solid #ccd; border-radius: 10px; }
+  .panel { position: sticky; top: 16px; width: 320px; height: 420px; padding: 16px; color: #fff; background: #24384f; border-radius: 14px; }
+  /* Wide: the panel has its own column. */
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 352px; gap: 24px; align-items: start; }
+  /* The fault: between 700 and 1300 px the panel floats over the rows instead of keeping a column. */
+  @media (max-width: 1300px) { .layout { display: block; } .panel { position: fixed; right: 24px; top: 96px; } }
+  /* Narrow: it drops below the content, which is fine. */
+  @media (max-width: 700px) { .panel { position: static; width: auto; margin-top: 16px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Who's driving it</h1>
+  <div class="layout">
+    <div>
+      <div class="row"><span>Harbour Tower</span><button type="button">Over target</button></div>
+      <div class="row"><span>Meridian Plaza</span><button type="button">Over target</button></div>
+      <div class="row"><span>Northgate Depot</span><button type="button">Watch</button></div>
+    </div>
+    <aside class="panel"><h2>Needs action</h2><button type="button">Acknowledge</button></aside>
+  </div>
+</main>
+</body>
+</html>

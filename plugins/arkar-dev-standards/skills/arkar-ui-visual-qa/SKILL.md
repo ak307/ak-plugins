@@ -26,7 +26,7 @@ Premium pass
 - Build sheet: <where it is> → acceptance checks <passed n / n> · failed and fixed: <list>
 - Screens × sizes looked at: <…> → felt ordinary: <list or "nothing"> → fixed: <list>
 - Audit (scripts/audit.cjs, before → after): axe serious/critical <a→b>, console errors <a→b>,
-  overflow <sizes>, targets <24px <a→b>, rendered system: radii <n> · shadows <n> · font sizes <n> · spacing values <n>
+  overflow <sizes>, ten widths <clear, or where a panel covers controls>, targets <24px <a→b>, rendered system: radii <n> · shadows <n> · font sizes <n> · spacing values <n>
 - Interaction probe (scripts/interaction-probe.cjs, before → after):
   no hover <a→b>, no focus <a→b>, no transition <a→b>, under 24px <a→b>
 - Motion (filmstrips: load + <flows filmed>): <what moved well · what felt abrupt, slow, decorative or confusing → fixed> · reduced motion filmed: <yes/no>
@@ -138,10 +138,13 @@ or moment the sheet missed is added to the sheet and built.
    the eye misses — accessibility violations (axe-core, WCAG 2.2 AA),
    console errors, broken assets, overflow at 1440/768/375/320, small
    targets — and the design system as actually rendered (distinct radii,
-   shadows, font sizes, spacing values, colours). Fix every serious or
-   critical violation, console error, failed request (a missing file, a
-   blocked font CDN), fallback font and overflow — these are defects, not
-   notes. A wide spread of values means tokens aren't being used —
+   shadows, font sizes, spacing values, colours). It also walks ten widths
+   from 320 to 1920 px for sideways overflow and for controls that end up
+   under a fixed or sticky side panel: layouts break between the sizes
+   people test at (a panel beside the content at 1440 px can lie on top of
+   it at 1280). Fix every serious or critical violation, console error,
+   failed request (a missing file, a blocked font CDN), fallback font,
+   overflow and covered control — these are defects, not notes. A wide spread of values means tokens aren't being used —
    consolidate to about ≤ 6 radii, ≤ 12–14 font sizes and ≤ 5 shadows.
 2. **Interaction probe:** `scripts/interaction-probe.cjs` takes a full-page
    screenshot, flags **template structures** (equal-card rows, tiles over a

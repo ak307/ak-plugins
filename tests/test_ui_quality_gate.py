@@ -26,6 +26,7 @@ COMPLETE_RECORD = ("# Premium pass\n## Verify\n- Motion (filmstrips: load, open 
                    "- Interaction probe: no hover 3→0, no focus 1→0\n"
                    "- Experience walk (record.cjs): happy, fail+retry, keyboard, phone → retry kept input\n"
                    "- Security check (security-check.cjs): storage 1→0 · proposals: none\n"
+                   "## Early review\nFirst screen: top tier. Inner screen: good — made its first change.\n"
                    "## Independent review\nCritical 0 · major 2 (fixed) · minor 3\n")
 
 
@@ -411,3 +412,12 @@ def test_a_record_without_the_security_check_is_sent_back(tmp_path):
     record = COMPLETE_RECORD.replace("- Security check (security-check.cjs): storage 1→0 · proposals: none\n", "")
     events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, COMPLETE_DESIGN, record)
     assert "security check" in json.loads(run_gate(tmp_path, events))["reason"]
+
+
+def test_a_new_product_needs_the_early_review_of_two_screens(tmp_path):
+    record = COMPLETE_RECORD.replace("## Early review\nFirst screen: top tier. Inner screen: good — made its first change.\n", "")
+    assert "Early review" not in record
+    events = skills(*ALL_NINE) + [REVIEWER] + write_project(tmp_path, COMPLETE_DESIGN, record)
+    reason = run_gate(tmp_path, events)
+    assert "Early review" in reason and "early-review.md" in reason
+    assert "Independent review" not in reason.replace("Early review", "")  # nothing else is missing

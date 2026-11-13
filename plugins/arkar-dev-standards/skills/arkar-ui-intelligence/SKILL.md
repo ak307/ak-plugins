@@ -295,6 +295,12 @@ change runs through all seven in minutes.
      route every data change, overlay and step through it; frameworks use
      their layout animations (in testing, builds using the kit scored about
      1.5 points higher on motion than hand-made effects);
+   - **a change of screen never cuts to blank:** list to detail, page to
+     page, the screen on show stays until the next one has its content or
+     skeleton, then they cross-fade and the bar and navigation don't move —
+     plain web builds use the kit's `changeScreen(container, render)`,
+     never `replaceChildren` on the whole screen; frameworks use the
+     router's view transitions;
    - the test switches (`?latency`, `?fail`) and mock data run only in local
      or development builds, and are removed when the real API is wired in;
    - plain web builds with mock data copy `assets/experience-kit.js`:
@@ -313,6 +319,21 @@ change runs through all seven in minutes.
      or shared-axis transitions, implicit animations, `disableAnimations`;
    - business systems on Liquid Glass copy
      `arkar-ui-design-system/assets/liquid-glass.css`.
+   **Early look review — after two screens, before the rest (new
+   products, page sets and redesigns).** Build the first screen and the one
+   inner screen people will work in most (the table, the form step, the
+   detail) with real content. Then start one fresh subagent (Agent tool,
+   foreground) with the brief in
+   `arkar-ui-visual-qa/references/early-review.md`: it sees only their
+   screenshots at desktop and phone, gives each a verdict — top tier, good
+   or ordinary — says whether the inner screen carries the first screen's
+   idea or is a standard table or form under a designed first screen, and
+   names the three changes that would lift each most. **Act on it now,
+   while a change costs one screen:** recompose what it calls ordinary or a
+   standard pattern (sheet first), make the changes it asks for, then build
+   the rest to that level. Record `## Early review` in
+   `qa-screenshots/premium-pass.md`. This is the moment to change the
+   design; the review at the end is for defects.
 5. **Verify — against the sheet.** Load `arkar-ui-visual-qa` now (Skill
    tool) and run its premium pass: on local/test data, tick every
    acceptance check — every state seen at the target sizes, the audit and
@@ -361,9 +382,9 @@ change runs through all seven in minutes.
    describes and say so.
 7. **Report** — the final message (section 5).
 
-The build sheet, the `## Verify` table and the `## Independent review`
-section are the proof these steps happened; the UI quality gate checks for
-them. If time runs short, polish less — never drop a step.
+The build sheet, the `## Early review`, the `## Verify` table and the
+`## Independent review` section are the proof these steps happened; the UI
+quality gate checks for them. If time runs short, polish less — never drop a step.
 
 ## Business systems first
 

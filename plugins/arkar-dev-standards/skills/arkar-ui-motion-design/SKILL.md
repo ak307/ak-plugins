@@ -80,7 +80,10 @@ not finished. In particular:
   fast data, a notice when slow), `rollNumber`, `fly` (shared-element
   flight from source to destination), `openFrom`/`closeInto` (panels and
   dialogs from their trigger), `slideStep`, `settle` (the row that changed),
-  `pressable`. Its timings read the product's motion tokens. Frameworks use
+  `pressable`, and `changeScreen` for every change of screen (the old
+  screen stays until the new one has its content or skeleton, then they
+  cross-fade; never an empty screen in between, never the bar or
+  navigation redrawn). Its timings read the product's motion tokens. Frameworks use
   their layout animations (Motion `layout`/`layoutId`, `<TransitionGroup>`,
   Svelte `flip`, Flutter implicit/Hero animations) for the same ideas. A
   state change with no motion, where the kit makes it one line, is a defect.

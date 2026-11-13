@@ -1,0 +1,41 @@
+# Briefs for the core test (core_test.py): the same request built once with the released plugin
+# ("current") and once with a test copy where the draft design-intelligence core replaces the UI
+# skills ("core"). Written the way AK writes requests: short, with no design hints.
+#
+# fixture: an existing app to work in (none = a new product in an empty folder).
+# build / serve: commands that build the app, and the folder to serve afterwards.
+
+briefs:
+  - id: assets-table
+    kind: table-heavy screen, new product
+    prompt: >-
+      new product: an asset register for our facilities team — every piece of equipment across our buildings
+      (chillers, lifts, pumps, fire panels, generators and so on): where it is, its condition, warranty and next
+      service. the team needs to find, filter, compare and update assets, about 400 of them. web, plain
+      HTML/CSS/JS with mock data, opens at index.html.
+
+  - id: permit-form
+    kind: form-heavy screen, new product
+    prompt: >-
+      new product: a permit-to-work application for contractors coming to our sites — company and supervisor,
+      the workers, the type of work (hot work, working at height, confined space, electrical and so on) with
+      the safety measures each type needs, dates and times, documents to upload, and a declaration. they can
+      save and come back, and see what is still missing before submitting. web, plain HTML/CSS/JS with mock
+      data, opens at index.html.
+
+  - id: energy-dashboard
+    kind: dashboard, new product
+    prompt: >-
+      new product: an energy dashboard for a property manager — electricity and water use across 6 buildings
+      this month against target and last year, which building and which system is driving it, and the alerts
+      that need action. web, plain HTML/CSS/JS with mock data, opens at index.html.
+
+  - id: opsdesk-assign
+    kind: feature in an existing app
+    fixture: opsdesk-react
+    prompt: >-
+      add a way to assign a work order to a technician in Ops Desk: from the Work orders page, see who is free
+      and how loaded each technician is, assign or reassign, and the order shows who has it. mock the API like
+      the work orders. keep Ops Desk's look.
+    build: ["npm install --no-audit --no-fund", "npm run build"]
+    serve: dist

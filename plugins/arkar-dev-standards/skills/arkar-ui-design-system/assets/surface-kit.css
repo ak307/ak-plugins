@@ -750,8 +750,8 @@ th.ws-num { text-align: end; }
 .ws-button[data-state="error"] { animation: ws-nudge 360ms var(--ws-ease); } /* noticeable, not aggressive */
 
 /* Notices: toasts and background work share one stack, clear of the page's own controls. */
-/* Bottom right by default; set --ws-notice-inset (top right bottom left) where that corner holds the
-   product's main action. If a notice would still cover the control just used, the stack takes the other side. */
+/* Bottom right by default (set --ws-notice-inset: top right bottom left to move it). If a notice
+   would cover the control just used or a screen's main action, the stack takes the other side. */
 .ws-stack {
   position: fixed; inset: var(--ws-notice-inset, auto 20px max(20px, env(safe-area-inset-bottom)) auto); z-index: 2147483100;
   display: grid; justify-items: end; gap: 10px;

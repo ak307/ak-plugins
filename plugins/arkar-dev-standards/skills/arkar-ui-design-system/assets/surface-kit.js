@@ -1070,15 +1070,23 @@ function noticeStack() {
   return stack;
 }
 
-// A notice must not cover the control the user has just used: if it would, the stack takes the other side.
+// A notice must not cover the control the user has just used, nor a screen's main action: if it
+// would in its usual corner, the stack takes the other side (when that side is clear).
 function keepClear() {
   const used = document.activeElement;
+  const inTheWay = [...document.querySelectorAll('.ws-button[data-variant="primary"]')];
+  if (used && used !== document.body && !stack.contains(used)) inTheWay.push(used);
+  const covers = () => {
+    const mine = stack.getBoundingClientRect();
+    return inTheWay.some((control) => {
+      const theirs = control.getBoundingClientRect();
+      return theirs.width > 0 && mine.left < theirs.right && mine.right > theirs.left && mine.top < theirs.bottom && mine.bottom > theirs.top;
+    });
+  };
   stack.removeAttribute("data-side");
-  if (!used || used === document.body || stack.contains(used)) return;
-  const mine = stack.getBoundingClientRect();
-  const theirs = used.getBoundingClientRect();
-  const overlaps = mine.left < theirs.right && mine.right > theirs.left && mine.top < theirs.bottom && mine.bottom > theirs.top;
-  if (overlaps) stack.setAttribute("data-side", "other");
+  if (!covers()) return;
+  stack.setAttribute("data-side", "other");
+  if (covers()) stack.removeAttribute("data-side");
 }
 
 function arriveNotice(notice) {

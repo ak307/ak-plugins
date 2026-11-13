@@ -210,3 +210,23 @@ What the result says:
 - Not tested by this round: the feedback state model, the critical dialog and the configuration
   layer, which came after the frozen copy. They are tested as code, and unproven as design.
 
+## Diagnosis of the three builds AK chose (released plugin; read-only, 13 Nov 2026)
+
+| Defect | Confirmed how | Cause | Why the released checks let it through |
+|---|---|---|---|
+| Permit: going from the list to the form cuts to an empty page for about 0.2 s, then a skeleton, then the form (dark, light, dark) | Frames of the recording; the code replaces the whole screen with an empty container on every change of screen | The motion kit has helpers for lists, panels, steps, loading and numbers — none for changing screen. The guidance for it is in reference files the builds rarely open | Noticed, not fixed: the motion tool reported things popping in and vanishing, and the build's own reviewers scored transitions 5 and motion 6 out of 10. The review runs once and its scores are only a diagnostic |
+| Energy: table rows run under the "Needs action" panel at 1200 and 1280 px | Use check (11 controls overlapped) and the screenshot | A sticky panel laid over the content instead of holding its own column | The audit checks 1440, 768, 375 and 320 px only, and nothing checks for controls under a sticky panel |
+| All three "need refinement" | Each build's own record | By its own reviewers: permit 6.4, energy about 6.9 ("still short of the bar"), asset register about 8.0 after fixes | By design: one review, fix the critical and major defects, scores are a diagnostic, and design shortfalls become proposals ("design changes, not defects — proposed to AK rather than built") |
+| Asset register: one Tab stop with no visible focus (the buildings group) | Use check | A custom group given a Tab stop without a focus style | The interaction probe checks controls, not custom groups |
+
+Not confirmed today: the three trust-breaking bugs last round's testers reported (a save that
+lands after Discard, an alerts list that goes blank, a submitted permit that reverts to draft).
+Acknowledging every alert on the energy dashboard in the plain path ends in a proper empty state.
+No animation loops forever on any of the three once the page has settled.
+
+A fault in this test's own recorder: `core_flow.cjs` takes its screenshots during the video, and
+each one shows for two frames as a zoomed corner of the page. The released permit recording has
+the most screenshots, 61 of its 103 seconds standing still and 21 abrupt whole-screen changes; the
+revised one 9. Some of "looks stuck and a little dizzying" is the recorder, not the product. Fix
+the recorder (video in a pass of its own) before the next comparison.
+

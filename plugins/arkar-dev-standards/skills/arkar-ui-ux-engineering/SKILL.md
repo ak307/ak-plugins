@@ -53,6 +53,10 @@ behaviour right.
    checks a field when it is left, keeps a line for the message so nothing
    moves under the pointer, and says honestly what is saved; every action
    that commits survives a double press, a quick exit and a failure.
+   Loading, processing, success, failure, empty, retrying and cancelled
+   follow the one state model in
+   `arkar-ui-intelligence/references/experience-standard.md` — success
+   only after the server confirms it.
 4. **UX writing** — labels, buttons, empty states and errors in plain
    language that says what happened and what to do; the same word for the
    same thing everywhere.

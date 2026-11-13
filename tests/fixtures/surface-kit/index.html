@@ -47,7 +47,9 @@
   .icon-button { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; color: var(--ws-muted); background: none; cursor: pointer; transition: background-color 140ms; }
   .icon-button:hover, .icon-button[aria-expanded="true"] { color: var(--ws-text); background: var(--ws-fill-strong); }
   .icon-button:focus-visible { outline: 2px solid rgb(var(--ws-accent)); outline-offset: 2px; }
-  .saved { color: rgb(var(--ws-ok)); font-weight: 600; font-size: 0.875rem; min-height: 1.4em; }
+  .skeleton-row { display: grid; grid-template-columns: 24px 36px 1fr 90px 60px; align-items: center; gap: 16px; padding: 4px 0; }
+  .skeleton-row > span:nth-child(3) { width: 70%; }
+  #orders-region { min-height: 470px; }
   @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } .form { position: static; } .figures { margin-left: 0; } }
   @media (max-width: 640px) {
     .hide-narrow, .ws-tile { display: none; }
@@ -73,6 +75,7 @@
       <div><b>24</b><span>raised</span></div>
       <div><b>9</b><span>still open</span></div>
       <div><b>3</b><span>overdue</span></div>
+      <button class="ws-button" data-size="small" type="button" id="export">Export</button>
     </div>
   </section>
 
@@ -96,7 +99,15 @@
         </div>
       </div>
 
-      <div class="ws-table-wrap" style="--ws-table-height: 470px" tabindex="0" role="region" aria-label="Work orders table">
+      <div id="orders-region">
+      <div class="ws-group ws-skeletons" data-ws-when="loading" aria-hidden="true">
+        <div class="skeleton-row"><span class="ws-skeleton" data-shape="tile" style="width:24px;height:24px"></span><span class="ws-skeleton" data-shape="tile"></span><span class="ws-skeleton"></span><span class="ws-skeleton"></span><span class="ws-skeleton"></span></div>
+        <div class="skeleton-row"><span class="ws-skeleton" data-shape="tile" style="width:24px;height:24px"></span><span class="ws-skeleton" data-shape="tile"></span><span class="ws-skeleton"></span><span class="ws-skeleton"></span><span class="ws-skeleton"></span></div>
+        <div class="skeleton-row"><span class="ws-skeleton" data-shape="tile" style="width:24px;height:24px"></span><span class="ws-skeleton" data-shape="tile"></span><span class="ws-skeleton"></span><span class="ws-skeleton"></span><span class="ws-skeleton"></span></div>
+        <div class="skeleton-row"><span class="ws-skeleton" data-shape="tile" style="width:24px;height:24px"></span><span class="ws-skeleton" data-shape="tile"></span><span class="ws-skeleton"></span><span class="ws-skeleton"></span><span class="ws-skeleton"></span></div>
+        <div class="skeleton-row"><span class="ws-skeleton" data-shape="tile" style="width:24px;height:24px"></span><span class="ws-skeleton" data-shape="tile"></span><span class="ws-skeleton"></span><span class="ws-skeleton"></span><span class="ws-skeleton"></span></div>
+      </div>
+      <div class="ws-table-wrap" data-ws-when="success refreshing" style="--ws-table-height: 470px" tabindex="0" role="region" aria-label="Work orders table">
         <table class="ws-table" id="orders">
           <thead>
             <tr>
@@ -111,6 +122,7 @@
           </thead>
           <tbody></tbody>
         </table>
+      </div>
       </div>
       <div class="ws-bulk" id="bulk" hidden>
         <span id="bulk-count"></span>
@@ -162,7 +174,6 @@
       <label class="ws-choice"><input class="ws-switch" type="checkbox" role="switch" name="urgent" id="urgent"> Urgent: page the duty technician</label>
       <label class="ws-choice"><input class="ws-check" type="checkbox" name="photo" id="photo" checked> Ask for a photo when it is done</label>
       <button class="ws-button" data-variant="primary" type="submit" id="create">Create work order</button>
-      <p class="saved" id="saved" role="status"></p>
     </form>
   </div>
 </main>
@@ -195,7 +206,23 @@
 </dialog>
 
 <script type="module">
-  import { enhance, selection, menu } from "./surface-kit.js";
+  import { enhance, selection, menu, load, commit, toast, progress, setState } from "./surface-kit.js";
+
+  // A pretend server for this page: it answers after a moment and honours the usual development
+  // switches — ?latency=slow, ?fail=always, ?fail=1 (each request fails once, then works).
+  const switches = new URLSearchParams(location.search);
+  const failedOnce = new Set();
+  window.serverCalls = [];
+  function server(name, answer) {
+    window.serverCalls.push(name);
+    const wait = switches.get("latency") === "slow" ? 2400 : 180;
+    return new Promise((resolve, reject) => setTimeout(() => {
+      const fails = switches.get("fail") === "always" || (switches.get("fail") === "1" && !failedOnce.has(name));
+      failedOnce.add(name);
+      if (fails) reject(Object.assign(new Error("The server could not answer"), { status: 500 }));
+      else resolve(typeof answer === "function" ? answer() : answer);
+    }, wait));
+  }
 
   const tones = { Open: "info", "In progress": "warn", Done: "ok", Overdue: "bad" };
   const orders = [
@@ -242,8 +269,12 @@
     if (rows) rows.refresh();
   }
 
-  render();
   enhance();
+  // The table's data arrives through the kit: skeleton, refresh, error and retry come with it.
+  window.ordersRegion = load(document.getElementById("orders-region"), () => server("load orders", () => orders.slice()), {
+    render,
+    messages: { failed: "The work orders couldn't be loaded." },
+  });
   rows = selection(document.getElementById("orders"), {
     onChange(ids) {
       document.getElementById("bulk").hidden = ids.length === 0;
@@ -269,7 +300,39 @@
   });
   const assignDialog = document.getElementById("assign-dialog");
   document.getElementById("assign-cancel").addEventListener("click", () => assignDialog.close());
-  document.getElementById("assign-confirm").addEventListener("click", () => assignDialog.close());
+  document.getElementById("assign-confirm").addEventListener("click", async (event) => {
+    const result = await commit(event.currentTarget, () => server("assign order"), { busyLabel: "Assigning…", doneLabel: "Assigned" });
+    if (!result.ok) return; // the dialog stays open with the choice still made
+    const who = assignDialog.querySelector("input:checked").value;
+    setTimeout(() => {
+      assignDialog.close();
+      toast(`Assigned to ${who}`, { tone: "ok", action: { label: "Undo", run: () => toast("Assignment undone") } });
+    }, 600);
+  });
+
+  // Long work in the background: real progress, because the page knows how many orders there are.
+  const exportButton = document.getElementById("export");
+  exportButton.addEventListener("click", () => {
+    if (exportButton.dataset.state === "processing") return; // one export at a time: a second press does nothing
+    let stopped = false;
+    let written = 0;
+    const finished = () => {
+      exportButton.removeAttribute("aria-disabled");
+      setState(exportButton, "idle");
+    };
+    exportButton.setAttribute("aria-disabled", "true");
+    setState(exportButton, "processing");
+    const job = progress("Exporting work orders", { onCancel: () => { stopped = true; finished(); } });
+    const step = () => {
+      if (stopped) return;
+      written += 1;
+      job.update({ value: written / orders.length, status: `${written} of ${orders.length} orders` });
+      if (written < orders.length) return setTimeout(step, 260);
+      job.done("Export ready");
+      return finished();
+    };
+    setTimeout(step, 400);
+  });
 
   document.getElementById("search").addEventListener("input", (event) => { view.search = event.target.value; render(); });
   document.getElementById("building").addEventListener("change", (event) => { view.building = event.target.value; render(); });
@@ -294,18 +357,14 @@
   document.getElementById("new-order").addEventListener("click", () => document.getElementById("title").focus());
 
   const form = document.getElementById("order-form");
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const create = document.getElementById("create");
-    create.setAttribute("aria-busy", "true");
-    setTimeout(() => {
-      const data = new FormData(form);
-      orders.push({ id: `WO-${4836 + orders.length - 10}`, title: data.get("title"), trade: data.get("trade"), where: data.get("where"), spot: "To confirm", status: "Open", progress: 0, due: data.get("due") });
-      create.removeAttribute("aria-busy");
-      document.getElementById("saved").textContent = "Work order created.";
-      form.reset();
-      render();
-    }, 500);
+    const data = new FormData(form);
+    const result = await commit(document.getElementById("create"), () => server("create order"), { busyLabel: "Creating…", doneLabel: "Created" });
+    if (!result.ok) return; // nothing is cleared: the user retries with what they typed
+    orders.push({ id: `WO-${4836 + orders.length - 10}`, title: data.get("title"), trade: data.get("trade"), where: data.get("where"), spot: "To confirm", status: "Open", progress: 0, due: data.get("due") });
+    form.reset();
+    render();
   });
 </script>
 </body>

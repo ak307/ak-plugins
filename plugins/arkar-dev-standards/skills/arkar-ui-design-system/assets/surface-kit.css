@@ -16,7 +16,14 @@
      Fields          .ws-input .ws-textarea .ws-select .ws-date .ws-check .ws-radio .ws-switch
                      (in .ws-field with .ws-label .ws-hint .ws-error) — wells, lit on focus
      Rows            .ws-table · .ws-list-item · .ws-lead .ws-tile .ws-sub .ws-num .ws-status .ws-meter .ws-sort
-     States          .ws-empty · .ws-skeleton · [aria-busy] on a button · [aria-invalid] on a field
+     Feedback        one state model (data-state) shown the same way everywhere — surface-kit.js:
+                     .ws-region + .ws-skeleton   loading: solid, muted placeholders shaped like the content
+                     .ws-button[data-state]      working: it keeps its own material; "Saving…", then a tick
+                     .ws-toast                   success: glass with a tick · failure: a restrained tinted surface
+                     .ws-progress                background work: translucent glass, a real percentage or none
+                     .ws-problem · .ws-empty     a failure with its way out · nothing to show
+                     dialog.ws-dialog[data-critical]   critical errors only: solid, high contrast
+                     [aria-invalid] + .ws-error  a problem with a field, beside the field
      Text            full contrast, always
    Blur is deliberate: only on what floats, navigates or overlays. Depth is physical: hairline
    borders, a top highlight, layered shadows and layered translucency, not more blur. Glass
@@ -27,8 +34,9 @@
    Three layers, each answering to the next: MATERIAL (solid, glass, light, depth) · MOTION
    (the material responding: pressing, pouring, flowing, receding) · INTERACTION (feedback,
    hierarchy, usability, accessibility). Motion here always answers an action — a press, an
-   opening, a choice, a pointer crossing glass. Nothing loops, and nothing moves for its own sake;
-   with reduced motion, things change at once or fade.
+   opening, a choice, a pointer crossing glass — and nothing moves for its own sake. The only
+   things that loop are the indicators of work really in progress (a spinner, a skeleton's
+   shimmer), and they stop the moment it ends. With reduced motion, things change at once or fade.
 
    Theme it through the tokens below — set at least the accent, the three field colours, the
    canvas, the radii and the font from the product's DESIGN.md, on :root or on the element that
@@ -326,10 +334,11 @@ select.ws-select:not(.ws-native) {
 .ws-button[data-variant="danger"]:hover { background: rgb(var(--ws-bad) / 0.16); }
 .ws-button[data-size="small"] { min-height: 36px; padding: 0 14px; font-size: 0.875rem; }
 .ws-button:focus-visible, .ws-chip:focus-visible { outline: 2px solid rgb(var(--ws-accent)); outline-offset: 2px; }
-.ws-button:disabled, .ws-button[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; scale: 1; filter: none; }
+/* Unavailable is dimmed; at work is not — a working button keeps its full material (data-state). */
+.ws-button:disabled, .ws-button[aria-disabled="true"]:not([data-state]) { opacity: 0.45; cursor: not-allowed; scale: 1; filter: none; }
 /* Busy: the label gives way to a spinner without the button changing size, and a second press does nothing. */
-.ws-button[aria-busy="true"] { color: transparent; pointer-events: none; }
-.ws-button[aria-busy="true"]::after {
+.ws-button[aria-busy="true"]:not([data-state]) { color: transparent; pointer-events: none; }
+.ws-button[aria-busy="true"]:not([data-state])::after {
   content: ""; position: absolute; inset: 0; margin: auto; width: 18px; height: 18px; border-radius: 50%;
   border: 2px solid rgb(var(--ws-busy)); border-right-color: transparent;
   animation: ws-spin 0.7s linear infinite;
@@ -458,7 +467,7 @@ dialog.ws-dialog {
   transition: opacity 220ms var(--ws-ease), translate 300ms var(--ws-ease), scale 300ms var(--ws-ease),
     overlay 300ms allow-discrete, display 300ms allow-discrete;
 }
-dialog.ws-dialog[open] { opacity: 1; translate: 0 0; scale: 1; }
+dialog.ws-dialog[open] { opacity: 1; translate: none; scale: none; }
 @starting-style { dialog.ws-dialog[open] { opacity: 0; translate: 0 16px; scale: 0.96; } }
 dialog.ws-dialog::backdrop { opacity: 0; transition: opacity 260ms ease-out, overlay 260ms allow-discrete, display 260ms allow-discrete; }
 dialog.ws-dialog[open]::backdrop { opacity: 1; }
@@ -466,6 +475,14 @@ dialog.ws-dialog[open]::backdrop { opacity: 1; }
 .ws-dialog-body { display: grid; gap: 16px; padding: 24px 24px 8px; }
 .ws-dialog-title { margin: 0; font-size: 1.25rem; font-weight: 650; letter-spacing: -0.02em; }
 .ws-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 16px 24px 22px; }
+.ws-dialog-text { margin: 0; color: var(--ws-muted); line-height: 1.5; }
+/* A critical error: no glass at all — solid, high contrast, nothing behind it competing. */
+dialog.ws-dialog[data-critical] {
+  --ws-glass-tint: 1; -webkit-backdrop-filter: none; backdrop-filter: none;
+  background: rgb(var(--ws-surface)); max-width: min(440px, calc(100vw - 32px));
+}
+dialog.ws-dialog[data-critical] .ws-dialog-text { color: var(--ws-text); }
+dialog.ws-dialog[data-critical]::backdrop { background: rgb(var(--ws-shadow) / 0.5); }
 /* Inside the glass, what is read sits on solid ground. */
 dialog.ws-dialog .ws-group, dialog.ws-dialog .ws-list { background: rgb(var(--ws-surface) / 0.96); box-shadow: 0 0 0 1px rgb(var(--ws-ink) / 0.06); border-radius: var(--ws-radius); }
 
@@ -676,13 +693,136 @@ th.ws-num { text-align: end; }
 .ws-arrive { animation: ws-arrive 420ms var(--ws-ease) both; animation-delay: calc(var(--ws-order, 0) * 60ms); }
 @keyframes ws-arrive { from { opacity: 0; translate: 0 10px; } }
 
+/* ---------- feedback: one state model, shown the same way everywhere
+   data-state: idle · loading · refreshing · processing · success · error · empty · retrying ·
+   cancelled (set by surface-kit.js). The user is never left wondering what the app is doing. */
+
+.ws-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* A region shows the child written for its state — data-ws-when="loading", "success refreshing",
+   "empty", "error retrying" — and hides the others. */
+.ws-region { position: relative; min-width: 0; } /* min-width: a wide table inside scrolls in its own wrap instead of widening the page */
+.ws-region:not([data-state]) > [data-ws-when]:not([data-ws-when~="idle"]),
+.ws-region[data-state="idle"] > [data-ws-when]:not([data-ws-when~="idle"]),
+.ws-region[data-state="loading"] > [data-ws-when]:not([data-ws-when~="loading"]),
+.ws-region[data-state="refreshing"] > [data-ws-when]:not([data-ws-when~="refreshing"]),
+.ws-region[data-state="success"] > [data-ws-when]:not([data-ws-when~="success"]),
+.ws-region[data-state="empty"] > [data-ws-when]:not([data-ws-when~="empty"]),
+.ws-region[data-state="error"] > [data-ws-when]:not([data-ws-when~="error"]),
+.ws-region[data-state="retrying"] > [data-ws-when]:not([data-ws-when~="retrying"]),
+.ws-region[data-state="cancelled"] > [data-ws-when]:not([data-ws-when~="cancelled"]) { display: none; }
+/* For the first 300 ms the skeleton keeps its space but is not shown: no flicker on a fast answer, no jump on a slow one. */
+.ws-region[data-ws-quiet] > [data-ws-when~="loading"] { visibility: hidden; }
+/* Refreshing or retrying: what was loaded stays; a thin line along the top says work is going on. */
+.ws-region[data-state="refreshing"]:not([data-ws-quiet])::after, .ws-region[data-state="retrying"]::after {
+  content: ""; position: absolute; z-index: 4; left: 14px; right: 14px; top: 0; height: 2px; border-radius: 2px; pointer-events: none;
+  background: linear-gradient(90deg, rgb(var(--ws-accent) / 0), rgb(var(--ws-accent)), rgb(var(--ws-accent) / 0)) 0 0 / 40% 100% no-repeat;
+  animation: ws-travel 1.1s ease-in-out infinite;
+}
+
+/* Skeletons: solid, muted, shaped like what is coming. */
+.ws-skeletons { display: grid; gap: 14px; padding: 20px; }
+.ws-skeleton[data-shape="block"] { height: var(--ws-height); border-radius: var(--ws-radius); }
+.ws-skeleton[data-shape="tile"] { width: 36px; height: 36px; border-radius: 10px; }
+
+/* A failure, with its way out. */
+.ws-problem { display: grid; justify-items: center; gap: 12px; padding: 40px 24px; text-align: center; color: var(--ws-muted); }
+.ws-problem strong { font-size: 1.0625rem; font-weight: 600; color: var(--ws-text); }
+.ws-problem::before {
+  content: "!"; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
+  font-size: 1.25rem; font-weight: 700; color: rgb(var(--ws-bad)); background: rgb(var(--ws-bad) / 0.1);
+}
+.ws-region[data-state="retrying"] [data-ws-retry] { opacity: 0.6; pointer-events: none; }
+
+/* A button at work keeps its own material: only its label changes — a spinner and what it is
+   doing, then a tick once the server has answered. */
+.ws-button-label { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.ws-button[aria-disabled="true"] { cursor: default; }
+.ws-button[data-state="processing"]:active, .ws-button[data-state="success"]:active { scale: 1; filter: none; }
+.ws-spinner {
+  flex: none; width: 15px; height: 15px; border-radius: 50%;
+  border: 2px solid currentColor; border-right-color: transparent;
+  animation: ws-spin 0.7s linear infinite;
+}
+.ws-mark { flex: none; }
+.ws-mark path { stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: 1; animation: ws-draw 360ms var(--ws-ease) 60ms forwards; }
+.ws-button[data-state="success"] .ws-mark { animation: ws-pop 360ms var(--ws-spring); }
+.ws-button[data-state="error"] { animation: ws-nudge 360ms var(--ws-ease); } /* noticeable, not aggressive */
+
+/* Notices: toasts and background work share one stack, clear of the page's own controls. */
+/* Bottom right by default; set --ws-notice-inset (top right bottom left) where that corner holds the
+   product's main action. If a notice would still cover the control just used, the stack takes the other side. */
+.ws-stack {
+  position: fixed; inset: var(--ws-notice-inset, auto 20px max(20px, env(safe-area-inset-bottom)) auto); z-index: 2147483100;
+  display: grid; justify-items: end; gap: 10px;
+  width: min(380px, calc(100vw - 24px)); margin: 0; padding: 0; border: 0; overflow: visible;
+  color: inherit; background: none; pointer-events: none;
+}
+.ws-stack[popover]:not(:popover-open) { display: none; }
+.ws-stack[data-side="other"] { inset: auto auto max(20px, env(safe-area-inset-bottom)) 20px; justify-items: start; }
+@media (max-width: 640px) { .ws-stack { inset: auto 12px max(12px, env(safe-area-inset-bottom)) 12px; width: auto; justify-items: stretch; } }
+.ws-toast, .ws-progress {
+  box-sizing: border-box; pointer-events: auto; max-width: 100%;
+  color: var(--ws-text); font-size: 0.9375rem;
+  /* Glass: a soft glow under the pointer, light from the top edge, then the frosted tint. */
+  background: radial-gradient(260px circle at var(--ws-light-x, -400px) var(--ws-light-y, -400px), rgb(var(--ws-rim) / calc(0.26 * var(--ws-rim-strength) + 0.04)), transparent 72%),
+    linear-gradient(180deg, rgb(var(--ws-rim) / calc(0.34 * var(--ws-rim-strength))), rgb(var(--ws-rim) / 0) 140px),
+    rgb(var(--ws-surface) / var(--ws-frost));
+  -webkit-backdrop-filter: blur(var(--ws-blur)) saturate(1.8);
+  backdrop-filter: blur(var(--ws-blur)) saturate(1.8);
+  box-shadow: var(--ws-edge), var(--ws-float);
+}
+.ws-toast { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: 999px; font-weight: 550; }
+.ws-toast-text { flex: 1; padding: 6px 0; }
+.ws-toast .ws-mark, .ws-progress .ws-mark { color: rgb(var(--ws-ok)); }
+/* A failure is not glass: a restrained tinted surface, solid enough to read at once. */
+.ws-toast[data-tone="bad"], .ws-progress[data-state="error"] {
+  -webkit-backdrop-filter: none; backdrop-filter: none; border-radius: 18px;
+  background: linear-gradient(rgb(var(--ws-bad) / 0.07), rgb(var(--ws-bad) / 0.07)), rgb(var(--ws-surface));
+  box-shadow: inset 0 0 0 1px rgb(var(--ws-bad) / 0.22), var(--ws-float);
+}
+.ws-toast[data-tone="bad"]::before {
+  content: "!"; flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  font-size: 0.8125rem; font-weight: 800; color: rgb(var(--ws-surface)); background: rgb(var(--ws-bad));
+}
+.ws-toast-action, .ws-notice-close {
+  flex: none; min-height: 36px; border: 0; border-radius: 999px;
+  font: inherit; font-size: 0.875rem; font-weight: 600; color: rgb(var(--ws-accent)); background: none; cursor: pointer;
+  transition: background-color var(--ws-fast) var(--ws-ease), scale var(--ws-fast) var(--ws-ease);
+}
+.ws-toast-action { padding: 0 12px; }
+.ws-toast-action:hover { background: rgb(var(--ws-accent) / 0.1); }
+.ws-notice-close { display: grid; place-items: center; width: 36px; padding: 0; color: var(--ws-muted); }
+.ws-notice-close:hover { color: var(--ws-text); background: var(--ws-fill-strong); }
+.ws-toast-action:active, .ws-notice-close:active { scale: 0.94; }
+.ws-toast-action:focus-visible, .ws-notice-close:focus-visible { outline: 2px solid rgb(var(--ws-accent)); outline-offset: 1px; }
+
+.ws-progress { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px 10px; width: 100%; padding: 14px 12px 14px 18px; border-radius: 20px; }
+.ws-progress-title { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.ws-progress-status { grid-column: 1 / -1; font-size: 0.8125rem; color: var(--ws-muted); font-variant-numeric: tabular-nums; }
+.ws-progress-status:empty { display: none; }
+.ws-progress-bar { grid-column: 1 / -1; position: relative; height: 6px; overflow: hidden; border-radius: 999px; background: rgb(var(--ws-ink) / 0.1); }
+.ws-progress-bar::after {
+  content: ""; position: absolute; inset: 0; width: calc(var(--value, 0) * 100%); border-radius: inherit;
+  background: rgb(var(--ws-accent)); transition: width 260ms var(--ws-ease);
+}
+/* No real figure from the work: the bar shows that it is going on, and claims nothing more. */
+.ws-progress[data-indeterminate] .ws-progress-bar::after { width: 38%; animation: ws-slide 1.2s ease-in-out infinite; }
+.ws-progress .ws-toast-action, .ws-progress .ws-notice-close { grid-row: 1; grid-column: 2; }
+
+@keyframes ws-travel { from { background-position: -70% 0; } to { background-position: 170% 0; } }
+@keyframes ws-slide { from { translate: -110% 0; } to { translate: 280% 0; } }
+@keyframes ws-draw { to { stroke-dashoffset: 0; } }
+@keyframes ws-pop { 0% { scale: 0.6; } 60% { scale: 1.12; } 100% { scale: 1; } }
+@keyframes ws-nudge { 20% { translate: -4px 0; } 50% { translate: 3px 0; } 80% { translate: -1px 0; } }
+
 /* ---------- fallbacks */
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .ws-toolbar, .ws-bulk, .ws-popover, dialog.ws-dialog, .ws-table th { background: rgb(var(--ws-surface)); }
+  .ws-toolbar, .ws-bulk, .ws-popover, dialog.ws-dialog, .ws-toast, .ws-progress, .ws-table th { background: rgb(var(--ws-surface)); }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .ws-toolbar, .ws-bulk, .ws-popover, dialog.ws-dialog, .ws-group, .ws-table-wrap, .ws-table th {
+  .ws-toolbar, .ws-bulk, .ws-popover, dialog.ws-dialog, .ws-toast, .ws-progress, .ws-group, .ws-table-wrap, .ws-table th {
     background: rgb(var(--ws-surface)); -webkit-backdrop-filter: none; backdrop-filter: none;
   }
   .ws-canvas::before { display: none; }
@@ -701,6 +841,9 @@ th.ws-num { text-align: end; }
   .ws-bulk, dialog.ws-dialog, dialog.ws-dialog::backdrop { transition: opacity 120ms linear; translate: none; scale: none; }
   .ws-canvas::before { translate: none; transition: none; }
   .ws-table-wrap::before { transition: opacity var(--ws-fast) var(--ws-ease); }
-  .ws-button[aria-busy="true"]::after { animation: ws-pulse 1.4s ease-in-out infinite; border-right-color: rgb(var(--ws-busy)); }
+  .ws-button[aria-busy="true"]:not([data-state])::after, .ws-spinner { animation: ws-pulse 1.4s ease-in-out infinite; border-right-color: currentColor; }
+  .ws-mark path { animation: none; stroke-dashoffset: 0; }
+  .ws-button[data-state="error"] { animation: none; }
+  .ws-region::after, .ws-progress[data-indeterminate] .ws-progress-bar::after { animation: ws-pulse 1.4s ease-in-out infinite; }
 }
 @keyframes ws-pulse { 50% { opacity: 0.35; } }

@@ -17,6 +17,74 @@ These are expectations to design each product's own answers from — not
 fixed values. Timings are starting points; the product's motion language
 decides the exact feel.
 
+## The state model — loading, processing and feedback
+
+AK's core principle: **never leave users wondering what the application is
+doing.** They never wonder whether a press was received, whether the app is
+working, or whether something went wrong — in every state, not only when
+everything loads. One state model, shown the same way everywhere, instead
+of loading logic written again in each component:
+
+| State | Meaning | What the user sees |
+|---|---|---|
+| Idle | ready | — |
+| Loading | the first fetch: nothing to show yet | a skeleton shaped like the content, in its place |
+| Refreshing | fetching again | what was loaded stays; a quiet sign that work is going on |
+| Processing | doing what the user asked | the control itself: its label says what ("Saving…") |
+| Success | **confirmed by the server** | a tick where the user acted, or a short notice |
+| Error | it failed | what went wrong in plain words, what was kept, the way out |
+| Empty | it worked; nothing to show | an empty state that says what goes here and how to start |
+| Retrying | trying again after a failure | the same place, busy |
+| Cancelled | the user stopped it | the truth about what did and didn't happen |
+
+Rules that don't bend:
+
+- **Success is shown only after the server confirms it** — never because a
+  request was sent. A build that showed "submitted" for a permit that
+  wasn't is the bug this rule exists for.
+- **One press, one request.** A second press while it works does nothing —
+  and the server refuses a repeat as well (an idempotency key or a unique
+  constraint), because the button is not a guarantee.
+- **Optimistic only for small, reversible changes** (a toggle, a reorder,
+  marking as read): the change shows at once, is never announced as a
+  success, and rolls back with a message if it fails. Anything that
+  submits, sends, assigns, approves, pays or deletes waits for the server.
+- **A timeout is not a failure.** Nobody knows whether it went through:
+  check with the server before saying anything, and never offer a blind
+  retry that could do the thing twice.
+- **Timing:** under ~300 ms no indicator (its space is kept, so nothing
+  jumps); once shown it stays at least ~450 ms (no flicker); past ~3 s the
+  user is told what is happening; long work moves to the background with
+  progress.
+- **Never invent progress.** A percentage only when the work reports one;
+  otherwise an indicator that claims nothing more than "working".
+- **Indicators move only while work is really going on** (a spinner, a
+  skeleton's shimmer) and stop the moment it ends.
+- **Confirmations leave; errors stay.** A confirmation dismisses itself
+  (not while the pointer or keyboard is on it; longer with Undo); an error
+  stays until it is dealt with. One confirmation per action, nearest the
+  action — a button's tick is not repeated by a toast.
+- **Nothing the user typed is lost** by a failure, a timeout or a session
+  that expired. A failed refresh never removes what was on screen.
+- **Dialogs only for critical errors**; everything else is beside the
+  field, in the region that failed, or a notice. Ordinary loading never
+  covers the application with a full-screen overlay.
+
+Materials (the material map in
+`arkar-ui-design-system/references/materials-glass.md`): skeletons are
+solid and muted; a working button keeps its own material; background
+progress is translucent glass; a success notice is glass with a clear
+tick; a failure notice is a restrained tinted surface; a critical error
+dialog is solid and high-contrast.
+
+Web builds get all of this from `arkar-ui-design-system/assets/surface-kit.js`
+— `load(region, fetcher)` (skeleton, refresh, empty, error and retry,
+offline, latest request only), `commit(button, work)` (the working
+button), `toast`, `progress`, `errorDialog`, `setState` — rather than
+writing it per screen. Frameworks keep the same model and rules with their
+own stores and components (one `useOperation`-style hook or composable, one
+set of feedback components).
+
 ## 1. A press — from touch to result
 
 - **Instant acknowledgement (< 100 ms):** the control visibly responds the
@@ -41,8 +109,9 @@ decides the exact feel.
   content in place (same size, no layout jump); data arriving in pieces
   fills in without reflowing what's already there.
 - Refreshing keeps the old content visible until the new one replaces it.
-- Optimistic updates for safe, frequent actions (the change shows at once,
-  confirmed quietly, rolled back clearly if it fails).
+- Optimistic updates only for small, reversible actions (the change shows
+  at once, is never announced as a success, and rolls back clearly if it
+  fails) — see the state model above.
 
 ### Real data takes time
 
@@ -71,9 +140,10 @@ seen and tested:
 - **Refresh and filter:** keep the current content visible (dimmed slightly
   at most) until the new data replaces it in place; ignore out-of-date
   responses that arrive after a newer request.
-- **Actions:** optimistic where safe (show the change at once, confirm
-  quietly, roll back clearly on failure); otherwise busy state in the
-  control that was pressed.
+- **Actions:** optimistic only where small and reversible (show the
+  change at once, roll back clearly on failure); anything that commits
+  shows its busy state in the control that was pressed and its success
+  only after the server answers.
 
 ## 3. Success — confirmation people trust
 

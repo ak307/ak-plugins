@@ -304,8 +304,9 @@ change runs through all seven in minutes.
         up; menus and panels emerge from what opened them and recede into
         it; the chosen tab's indicator flows; a reflection moves only
         because the glass or the pointer did. Never animate because you
-        can — every motion answers an action, nothing loops, and reduced
-        motion is respected.
+        can — every motion answers an action, nothing loops except an
+        indicator of work really in progress, and reduced motion is
+        respected.
    - **Every row is answered.** A row that changes nothing says so and why
      ("Motion: none in this product — press feedback and busy state only").
    - **States of the real feature, not only of the mock.** List what the
@@ -345,9 +346,16 @@ change runs through all seven in minutes.
      `createStore`/`request` (variable latency, the standard `?latency=slow`
      and `?fail=1` switches on every request, the user's changes persisted
      across refresh), `view` (filters, search, selected item and steps in the
-     URL and history), `keepDraft`, `toast` (next to the action, one at a
-     time, with undo) and `roving`/`keepFocus` (keyboard); frameworks keep
-     the same behaviour with their router and stores;
+     URL and history), `keepDraft` and `roving`/`keepFocus` (keyboard);
+     frameworks keep the same behaviour with their router and stores;
+   - **loading, processing and feedback use one state model**
+     (`references/experience-standard.md`): web builds use
+     `surface-kit.js` — `load` for data arriving (skeleton, refresh, empty,
+     error and retry), `commit` for every button that saves, sends, assigns
+     or deletes ("Saving…", then a tick), `toast`, `progress`,
+     `errorDialog` — never loading logic written per screen. **Success is
+     shown only after the server confirms it; one press is one request; a
+     timeout is checked, not retried blindly; progress is never invented;**
    - Laravel Blade / Livewire: motion is written with Alpine — `x-transition`
      (or `wire:transition`) for every enter and exit, `x-collapse` for
      expanding — not the plain-web motion kit; `wire:loading` + `wire:target` for busy states,
@@ -455,7 +463,7 @@ Keep it short and factual:
 
 - `references/premium-standard.md` — AK's premium UI/UX standard: the most important rule.
 - `references/build-sheet.md` — the build sheet: every decision for a feature (direction, composition, components, states, interactions, motion, copy, responsive, accessibility, acceptance checks), written once before UI code.
-- `assets/experience-kit.js` — tested mechanics for the experience standard (mock server with latency/failure switches and persistence, URL view state, drafts, anchored toasts, roving focus).
+- `assets/experience-kit.js` — tested mechanics for the experience standard (mock server with latency/failure switches and persistence, URL view state, drafts, roving focus). What the user sees while waiting — loading, the working button, toasts, progress, error dialogs — is in `arkar-ui-design-system/assets/surface-kit.js`.
 - `references/experience-standard.md` — End-to-End Product Craftsmanship & Experience Excellence: every moment of the experience (press, wait, success, dialogs, errors, transitions, timing of information, feedback, phones, consistency) and how it's checked.
 - `references/resilience.md` — recovery routes when a tool, library or network fails, so quality never drops.
 - `references/apple-ux-principles.md` — ten Apple-level UX habits and who applies each.

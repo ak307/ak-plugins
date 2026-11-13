@@ -10,7 +10,15 @@
 //   <div class="ws-table-wrap">           → a highlight that glides from row to row; a header shadow
 //                                           once the rows scroll under it
 //   <div class="ws-segmented">            → a glass lens that slides, stretching, to the chosen chip
-// and it makes the material answer the user — motion that always follows an action, never loops:
+// Feedback — one state model for everything the user waits for, shown the same way everywhere:
+//   load(region, fetcher, { render })     data arriving: skeleton, refresh, empty, error and retry
+//   commit(button, work, { busyLabel })   save / send / confirm / delete: one press, one request,
+//                                         "Saving…", and "Saved" only once the server has answered
+//   toast(message, { tone, action })      a small confirmation, or an error that stays until dealt with
+//   progress(title, { onCancel })         long work in the background, with real progress or none
+//   errorDialog({ title, message })       critical errors only
+// and it makes the material answer the user — motion that always follows an action, never loops
+// (an indicator moves only while work is really going on):
 //   a press        the control gives way and lights up where it was touched
 //   an opening     lists, calendars and menus pour out of their button and recede into it
 //   a choice       the lens flows to the chosen chip; the row highlight glides to the row
@@ -46,7 +54,10 @@ const ICONS = {
   left: icon("M10 3.5L5.5 8l4.5 4.5"),
   right: icon("M6 3.5L10.5 8 6 12.5"),
   calendar: icon("M2.5 6.5h11M5 1.75v2.5M11 1.75v2.5M3.5 3h9a1 1 0 0 1 1 1v8.5a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"),
+  close: icon("M4 4l8 8M12 4l-8 8"),
 };
+// The tick that confirms something really happened; the stylesheet draws it in.
+const MARK = `<svg class="ws-mark" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" pathLength="1" ${stroke}/></svg>`;
 
 function announceChange(field) {
   field.dispatchEvent(new Event("input", { bubbles: true }));
@@ -767,6 +778,489 @@ export function formFeedback(form) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Feedback. The user never wonders whether a press was received, whether the app is working, or
+// whether it went wrong — and is never told something worked before the server has said so.
+//
+// One state model, as data-state on a region or a button:
+//   idle        ready
+//   loading     the first fetch: nothing to show yet
+//   refreshing  fetching again, with what was loaded still on screen
+//   processing  carrying out what the user asked for
+//   success     confirmed by the server
+//   error       it failed; the message says what to do
+//   empty       it worked and there is nothing to show
+//   retrying    trying again after a failure
+//   cancelled   stopped by the user
+// A "ws:state" event bubbles from the element on every change.
+
+export const STATES = ["idle", "loading", "refreshing", "processing", "success", "error", "empty", "retrying", "cancelled"];
+const SHOW_AFTER = 300; // under this an indicator would only flicker, so none is shown
+const SHOW_FOR = 450; // once shown, it stays long enough to be seen
+const EXPLAIN_AFTER = 3000; // past this the user is owed a word about what is happening
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export function setState(element, state, detail = {}) {
+  element.dataset.state = state;
+  const working = ["loading", "refreshing", "processing", "retrying"].includes(state);
+  if (working) element.setAttribute("aria-busy", "true"); else element.removeAttribute("aria-busy");
+  element.dispatchEvent(new CustomEvent("ws:state", { bubbles: true, detail: { state, ...detail } }));
+}
+
+let liveRegion = null;
+
+// Says a change of state to screen readers without moving focus.
+export function announce(message) {
+  if (!liveRegion) {
+    liveRegion = el("div", "ws-live");
+    liveRegion.setAttribute("role", "status");
+    document.body.append(liveRegion);
+  }
+  liveRegion.textContent = "";
+  requestAnimationFrame(() => { liveRegion.textContent = message; });
+}
+
+function withTimeout(promise, ms) {
+  if (!ms) return promise;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(Object.assign(new Error("No answer in time"), { name: "TimeoutError" })), ms);
+    promise.then((value) => { clearTimeout(timer); resolve(value); }, (error) => { clearTimeout(timer); reject(error); });
+  });
+}
+
+// What went wrong, in the terms that decide what the user can do next. Reject a request with an
+// Error carrying .status (the HTTP status) and, for a message meant for the user, .userMessage.
+export function problem(error) {
+  const status = error ? error.status : 0;
+  if (error && error.name === "AbortError") return { kind: "cancelled" };
+  if (navigator.onLine === false) return { kind: "offline" };
+  if (error && error.name === "TimeoutError") return { kind: "timeout" };
+  if (status === 401) return { kind: "signed-out" };
+  if (status === 403) return { kind: "denied" };
+  if (status === 400 || status === 409 || status === 422) return { kind: "invalid", detail: error.userMessage };
+  return { kind: "failed", detail: error ? error.userMessage : undefined };
+}
+
+// Default wording — replace it with the product's own through `messages`. It never claims more
+// than is known: a timeout does not say the work failed, because nobody knows yet.
+const LOAD_MESSAGES = {
+  failed: "This couldn't be loaded.",
+  offline: "You're offline. This will load when the connection is back.",
+  timeout: "This is taking too long to load.",
+  "signed-out": "You've been signed out. Sign in again to see this.",
+  denied: "You don't have permission to see this.",
+  invalid: "This couldn't be loaded.",
+  empty: "Nothing here yet.",
+};
+const COMMIT_MESSAGES = {
+  failed: "That didn't go through. Your details are still here.",
+  offline: "You're offline, so nothing was sent. Your details are still here.",
+  timeout: "We couldn't confirm that went through. Check before trying again.",
+  "signed-out": "You've been signed out. Sign in again — your details are still here.",
+  denied: "You don't have permission to do this.",
+  invalid: "Some details need fixing before this can go through.",
+};
+
+// --- data arriving
+
+// The blocks a region shows for the states its markup didn't provide.
+function defaultBlocks(region, messages) {
+  const has = (state) => region.querySelector(`:scope > [data-ws-when~="${state}"]`);
+  if (!has("loading")) {
+    const block = el("div", "ws-skeletons");
+    block.setAttribute("data-ws-when", "loading");
+    block.setAttribute("aria-hidden", "true");
+    for (const width of ["62%", "88%", "74%"]) block.append(Object.assign(el("span", "ws-skeleton"), { style: `width:${width}` }));
+    region.append(block);
+  }
+  if (!has("empty")) {
+    const block = el("div", "ws-empty");
+    block.setAttribute("data-ws-when", "empty");
+    block.append(el("strong", "", messages.empty || LOAD_MESSAGES.empty));
+    region.append(block);
+  }
+  if (!has("error")) {
+    const block = el("div", "ws-problem");
+    block.setAttribute("data-ws-when", "error retrying");
+    block.setAttribute("role", "alert");
+    const text = el("strong");
+    text.setAttribute("data-ws-message", "");
+    const retry = el("button", "ws-button", "Try again");
+    retry.type = "button";
+    retry.setAttribute("data-ws-retry", "");
+    block.append(text, retry);
+    region.append(block);
+  }
+}
+
+// Loads data into a region and shows every state on the way. The region shows the child written
+// for its state — <div data-ws-when="loading"> (a skeleton shaped like the real content),
+// "success refreshing" (the content), "empty", "error retrying" — and gets plain ones for any it lacks.
+//   • no indicator for the first 300 ms, but its space is kept, so nothing flickers and nothing jumps
+//   • a refresh keeps what was loaded on screen; if it fails, the old data stays and a notice says so
+//   • offline: it retries by itself when the connection returns
+//   • only the latest request counts; an older answer arriving late is dropped
+// `fetcher({ signal })` returns a promise of the data; `render(data)` puts it on the page.
+export function load(region, fetcher, { render, isEmpty = (data) => Array.isArray(data) && data.length === 0, timeout = 15000, messages = {} } = {}) {
+  region.classList.add("ws-region");
+  defaultBlocks(region, messages);
+  let latest = 0;
+  let controller = null;
+  let hasData = false;
+
+  function showProblem(found) {
+    const text = messages[found.kind] || found.detail || LOAD_MESSAGES[found.kind];
+    if (found.kind === "offline") addEventListener("online", () => attempt({ retrying: true }), { once: true });
+    if (hasData) {
+      // A failed refresh never takes away what the user is looking at.
+      setState(region, "success", { stale: true });
+      toast(text, { tone: "bad", action: { label: "Try again", run: () => attempt({ retrying: true }) } });
+      return;
+    }
+    const slot = region.querySelector(':scope > [data-ws-when~="error"] [data-ws-message]');
+    if (slot) slot.textContent = text;
+    setState(region, "error", found);
+  }
+
+  async function attempt({ retrying = false } = {}) {
+    latest += 1;
+    const mine = latest;
+    if (controller) controller.abort();
+    controller = new AbortController();
+    region.toggleAttribute("data-ws-quiet", !retrying);
+    setState(region, retrying ? "retrying" : hasData ? "refreshing" : "loading");
+    let shownAt = retrying ? Date.now() : 0;
+    const reveal = setTimeout(() => {
+      shownAt = Date.now();
+      region.removeAttribute("data-ws-quiet");
+    }, SHOW_AFTER);
+    let outcome;
+    try {
+      outcome = { data: await withTimeout(fetcher({ signal: controller.signal }), timeout) };
+    } catch (error) {
+      outcome = { error };
+    }
+    clearTimeout(reveal);
+    if (shownAt) await sleep(Math.max(0, SHOW_FOR - (Date.now() - shownAt)));
+    if (mine !== latest) return undefined; // a newer request has taken over
+    region.removeAttribute("data-ws-quiet");
+    if (outcome.error) return showProblem(problem(outcome.error));
+    hasData = !isEmpty(outcome.data);
+    if (render) render(outcome.data);
+    return setState(region, hasData ? "success" : "empty");
+  }
+
+  function cancel() {
+    latest += 1;
+    if (controller) controller.abort();
+    region.removeAttribute("data-ws-quiet");
+    setState(region, hasData ? "success" : "cancelled");
+  }
+
+  region.addEventListener("click", (event) => {
+    if (event.target.closest("[data-ws-retry]")) attempt({ retrying: true });
+  });
+  attempt();
+  return { reload: () => attempt(), cancel, state: () => region.dataset.state };
+}
+
+// --- something the user asked for
+
+function labelOf(button) {
+  let label = button.querySelector(":scope > .ws-button-label");
+  if (!label) {
+    label = el("span", "ws-button-label");
+    label.append(...button.childNodes);
+    button.append(label);
+  }
+  return label;
+}
+
+function showWorking(label, text) {
+  label.replaceChildren(el("span", "ws-spinner"), document.createTextNode(text));
+  announce(text);
+}
+
+// A button that saves, sends, confirms or deletes. Call it from the button's own handler:
+//   const result = await commit(button, ({ signal }) => api.save(data, { signal }), { busyLabel: "Saving…", doneLabel: "Saved" });
+//   if (result.ok) …
+// One press, one request: a second press while it works is ignored. It acknowledges at once, says
+// what it is doing ("Saving…", then "Still working…" after three seconds), waits for the real
+// answer, and only then shows the tick. On failure the button is ready again, nothing the user
+// typed is touched, and the message says what happened (onError to show it yourself — for field
+// errors, say). It keeps focus, and its width, throughout.
+// A timeout is not a failure — nobody knows whether it went through. Give `verify` (a function
+// that asks the server) and it checks before saying anything; without it the message says so and
+// offers no automatic retry, because repeating an unknown could do the thing twice.
+export async function commit(button, work, { busyLabel = "Saving…", doneLabel = "Saved", slowLabel = "Still working…", timeout = 20000, verify, onError, messages = {} } = {}) {
+  if (button.dataset.state === "processing") return { ok: false, ignored: true };
+  const label = labelOf(button);
+  const original = [...label.childNodes];
+  button.style.minWidth = `${Math.ceil(button.getBoundingClientRect().width)}px`;
+  button.setAttribute("aria-disabled", "true"); // not disabled: that would drop the keyboard's place
+  setState(button, "processing");
+  let shownAt = 0;
+  const reveal = setTimeout(() => {
+    shownAt = Date.now();
+    showWorking(label, busyLabel);
+  }, 250);
+  const explain = setTimeout(() => showWorking(label, slowLabel), EXPLAIN_AFTER);
+  const controller = new AbortController();
+  let outcome;
+  try {
+    outcome = { data: await withTimeout(work({ signal: controller.signal }), timeout) };
+  } catch (error) {
+    outcome = { error };
+  }
+  clearTimeout(reveal);
+  clearTimeout(explain);
+  if (outcome.error && problem(outcome.error).kind === "timeout" && verify) {
+    showWorking(label, "Checking…");
+    try {
+      if (await verify()) outcome = { data: undefined };
+    } catch (error) { /* still unknown: the timeout message stands */ }
+  }
+  if (shownAt) await sleep(Math.max(0, SHOW_FOR - (Date.now() - shownAt)));
+
+  const ready = () => {
+    label.replaceChildren(...original);
+    button.style.minWidth = "";
+    button.removeAttribute("aria-disabled");
+    setState(button, "idle");
+  };
+  if (!outcome.error) {
+    setState(button, "success");
+    label.innerHTML = MARK;
+    label.append(doneLabel);
+    announce(doneLabel);
+    setTimeout(ready, 1400);
+    return { ok: true, data: outcome.data };
+  }
+  const found = problem(outcome.error);
+  ready();
+  setState(button, "error", found);
+  setTimeout(() => { if (button.dataset.state === "error") setState(button, "idle"); }, 600);
+  const text = messages[found.kind] || found.detail || COMMIT_MESSAGES[found.kind];
+  const canRetry = found.kind === "failed" || found.kind === "offline";
+  if (onError) onError({ ...found, message: text, error: outcome.error });
+  else if (found.kind !== "cancelled") toast(text, { tone: "bad", action: canRetry ? { label: "Try again", run: () => button.click() } : undefined });
+  return { ok: false, error: outcome.error, problem: found };
+}
+
+// --- notices: toasts and background work, in one stack
+
+let stack = null;
+
+// The stack sits above everything, including an open dialog (it lives inside the dialog while one
+// is open, so it can still be pressed), and comes to the front each time something is added.
+function noticeStack() {
+  let host = document.body;
+  try { host = document.querySelector("dialog:modal") || document.body; } catch (error) { /* :modal not known to this browser */ }
+  if (!stack) {
+    stack = el("div", "ws-stack");
+    if (typeof stack.showPopover === "function") stack.setAttribute("popover", "manual");
+  }
+  if (stack.parentElement !== host) host.append(stack);
+  if (stack.hasAttribute("popover")) {
+    try {
+      if (stack.matches(":popover-open")) stack.hidePopover();
+      stack.showPopover();
+    } catch (error) { /* shown as an ordinary fixed element */ }
+  }
+  return stack;
+}
+
+// A notice must not cover the control the user has just used: if it would, the stack takes the other side.
+function keepClear() {
+  const used = document.activeElement;
+  stack.removeAttribute("data-side");
+  if (!used || used === document.body || stack.contains(used)) return;
+  const mine = stack.getBoundingClientRect();
+  const theirs = used.getBoundingClientRect();
+  const overlaps = mine.left < theirs.right && mine.right > theirs.left && mine.top < theirs.bottom && mine.bottom > theirs.top;
+  if (overlaps) stack.setAttribute("data-side", "other");
+}
+
+function arriveNotice(notice) {
+  keepClear();
+  const from = reduced() ? { opacity: 0 } : { opacity: 0, transform: "translateY(14px) scale(.96)" };
+  notice.animate([from, { opacity: 1, transform: "none" }], { duration: reduced() ? 100 : 280, easing: EASE });
+}
+
+async function leaveNotice(notice) {
+  if (!notice.isConnected) return;
+  const to = reduced() ? { opacity: 0 } : { opacity: 0, transform: "translateY(8px) scale(.97)" };
+  await notice.animate([{ opacity: 1, transform: "none" }, to], { duration: reduced() ? 100 : 180, easing: EASE }).finished.catch(() => {});
+  notice.remove();
+  if (stack && !stack.children.length && stack.hasAttribute("popover")) {
+    try { stack.hidePopover(); } catch (error) { /* already hidden */ }
+  }
+}
+
+function closeButton(onClose) {
+  const close = el("button", "ws-notice-close");
+  close.type = "button";
+  close.setAttribute("aria-label", "Dismiss");
+  close.innerHTML = ICONS.close;
+  close.addEventListener("click", onClose);
+  return close;
+}
+
+// A small notice. tone "ok" (with the tick) and "info" leave by themselves — but not while the
+// pointer or the keyboard is on them, and more slowly when they carry an action such as Undo.
+// tone "bad" stays until the user dismisses it or acts: an error that disappears is an error lost.
+// Use it when the result isn't already visible where the user acted; never to repeat what a
+// button's own tick has just said. action: { label, run }.
+export function toast(message, { tone = "info", action, duration } = {}) {
+  const notice = el("div", "ws-toast");
+  notice.dataset.tone = tone;
+  if (tone === "bad") notice.setAttribute("role", "alert");
+  if (tone === "ok") notice.insertAdjacentHTML("beforeend", MARK);
+  notice.append(el("span", "ws-toast-text", message));
+  let timer = 0;
+  const dismiss = () => {
+    clearTimeout(timer);
+    return leaveNotice(notice);
+  };
+  if (action) {
+    const button = el("button", "ws-toast-action", action.label);
+    button.type = "button";
+    button.addEventListener("click", () => {
+      action.run();
+      dismiss();
+    });
+    notice.append(button);
+  }
+  notice.append(closeButton(dismiss));
+  const host = noticeStack();
+  const shown = host.querySelectorAll(".ws-toast");
+  if (shown.length >= 3) shown[0].remove(); // at most three at once: the oldest gives way
+  host.append(notice);
+  arriveNotice(notice);
+  if (tone !== "bad") announce(message);
+  const life = duration ?? (tone === "bad" ? 0 : action ? 8000 : 4500);
+  const start = () => { if (life) timer = setTimeout(dismiss, life); };
+  const stop = () => clearTimeout(timer);
+  notice.addEventListener("pointerenter", stop);
+  notice.addEventListener("pointerleave", start);
+  notice.addEventListener("focusin", stop);
+  notice.addEventListener("focusout", start);
+  start();
+  return { dismiss, element: notice };
+}
+
+// Long work in the background — an upload, a report, a sync — while the user carries on.
+//   const job = progress("Exporting work orders", { onCancel: () => controller.abort() });
+//   job.update({ value: 0.4, status: "400 of 1,000 rows" });   job.done("Export ready");   job.fail("Export failed", { retry });
+// It shows a percentage only when update() is given a real `value` (0 to 1) from the work
+// itself; without one the bar simply shows that work is going on. Never invent a figure.
+export function progress(title, { onCancel } = {}) {
+  const card = el("div", "ws-progress");
+  card.setAttribute("role", "group");
+  card.setAttribute("aria-label", title);
+  card.setAttribute("data-indeterminate", "");
+  const heading = el("div", "ws-progress-title", title);
+  const status = el("div", "ws-progress-status");
+  const bar = el("div", "ws-progress-bar");
+  bar.setAttribute("role", "progressbar");
+  bar.setAttribute("aria-label", title);
+  card.append(heading, status, bar);
+  let timer = 0;
+  const close = () => {
+    clearTimeout(timer);
+    return leaveNotice(card);
+  };
+  if (onCancel) {
+    const cancel = el("button", "ws-toast-action", "Cancel");
+    cancel.type = "button";
+    cancel.addEventListener("click", () => {
+      onCancel();
+      finish("cancelled", `${title}: cancelled`);
+    });
+    card.append(cancel);
+  }
+  noticeStack().append(card);
+  arriveNotice(card);
+  announce(title);
+
+  function update({ value, status: text } = {}) {
+    if (typeof value === "number") {
+      const share = Math.min(1, Math.max(0, value));
+      card.removeAttribute("data-indeterminate");
+      bar.style.setProperty("--value", String(share));
+      bar.setAttribute("aria-valuemin", "0");
+      bar.setAttribute("aria-valuemax", "100");
+      bar.setAttribute("aria-valuenow", String(Math.round(share * 100)));
+    }
+    if (text !== undefined) status.textContent = text;
+  }
+
+  function finish(state, message, retry) {
+    card.dataset.state = state;
+    heading.textContent = "";
+    if (state === "success") heading.insertAdjacentHTML("beforeend", MARK);
+    heading.append(message);
+    status.textContent = "";
+    bar.remove();
+    for (const button of card.querySelectorAll(".ws-toast-action")) button.remove();
+    if (retry) {
+      const again = el("button", "ws-toast-action", "Try again");
+      again.type = "button";
+      again.addEventListener("click", () => {
+        close();
+        retry();
+      });
+      card.append(again);
+    }
+    card.append(closeButton(close));
+    if (state === "error") card.setAttribute("role", "alert"); else announce(message);
+    if (state !== "error") timer = setTimeout(close, 5000); // a failure stays until it is dealt with
+  }
+
+  return {
+    update,
+    done: (message = `${title}: done`) => finish("success", message),
+    fail: (message = `${title}: failed`, { retry } = {}) => finish("error", message, retry),
+    close,
+    element: card,
+  };
+}
+
+// A critical error that must be dealt with before anything else: a solid, high-contrast dialog.
+// Everything else is a message beside the field, in the region, or a toast. Resolves with the
+// chosen action's value, or "dismissed". actions: [{ label, value, primary }].
+export function errorDialog({ title, message, actions = [{ label: "OK", value: "ok", primary: true }] }) {
+  return new Promise((resolve) => {
+    const dialog = el("dialog", "ws-dialog");
+    dialog.setAttribute("data-critical", "");
+    dialog.setAttribute("role", "alertdialog");
+    const heading = el("h2", "ws-dialog-title", title);
+    heading.id = nextId("ws-title");
+    const text = el("p", "ws-dialog-text", message);
+    text.id = nextId("ws-text");
+    dialog.setAttribute("aria-labelledby", heading.id);
+    dialog.setAttribute("aria-describedby", text.id);
+    const body = el("div", "ws-dialog-body");
+    body.append(heading, text);
+    const row = el("div", "ws-dialog-actions");
+    for (const action of actions) {
+      const button = el("button", "ws-button", action.label);
+      button.type = "button";
+      if (action.primary) button.dataset.variant = "primary";
+      button.addEventListener("click", () => dialog.close(action.value));
+      row.append(button);
+    }
+    dialog.append(body, row);
+    dialog.addEventListener("close", () => {
+      resolve(dialog.returnValue || "dismissed");
+      setTimeout(() => dialog.remove(), 400);
+    });
+    document.body.append(dialog);
+    dialog.showModal();
+  });
+}
+
+// ---------------------------------------------------------------------------------------------
 // Liquid Glass behaviour: none of it changes what a control does, only how the glass answers.
 
 // Chips that choose one of several (.ws-segmented): a glass lens sits under the chosen chip and,
@@ -834,7 +1328,7 @@ export function adaptive(bar) {
   update();
 }
 
-const GLASS = ".ws-toolbar, .ws-bulk, .ws-popover, dialog.ws-dialog";
+const GLASS = ".ws-toolbar, .ws-bulk, .ws-popover, .ws-toast, .ws-progress, dialog.ws-dialog";
 let lightIsOn = false;
 
 // A soft reflection follows the pointer across glass (never across content), the atmosphere

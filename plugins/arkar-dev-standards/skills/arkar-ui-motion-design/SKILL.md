@@ -58,8 +58,9 @@ physical material that answers the user. On a Liquid Glass product:
    contextual controls change shape rather than switch appearance.
 
 **Non-negotiable: never animate because you can — animate because the
-interaction needs feedback.** Motion stays lightweight, nothing loops, and
-reduced-motion settings are respected. In web builds
+interaction needs feedback.** Motion stays lightweight, nothing loops
+except an indicator of work really in progress (which stops the moment the
+work does), and reduced-motion settings are respected. In web builds
 `arkar-ui-design-system/assets/surface-kit.js` does all five for the kit's
 controls; use it rather than hand-making effects.
 

@@ -8,9 +8,10 @@
 //   • view state in the URL (filters, search, selected item, step) with
 //     history, so refresh, Back/Forward and shared links land on the same view;
 //   • drafts that survive closing and refresh;
-//   • toasts placed next to the action, one at a time, with undo, announced;
 //   • roving focus for grids/charts/tile sets, and focus kept through re-renders.
-// It is mechanics only — the product's own design styles the toast etc.
+// It is mechanics only. What the user sees while waiting — skeletons, the working button, toasts,
+// progress, error dialogs — is arkar-ui-design-system/assets/surface-kit.js: wrap request() in its
+// load() and commit().
 // In React/Vue/Svelte, keep the same behaviour with the framework's router,
 // stores and components; the switches and persistence rules are identical.
 // Security (arkar-security frontend.md): the test switches work only on a
@@ -161,71 +162,6 @@ export function clearAppStorage() {
   }
 }
 export const hasDraft = (field) => Boolean(field.value && field.value.trim());
-
-// ---- Toasts ----------------------------------------------------------------
-
-// toast(message, {anchor, undo, tone, duration}) → one toast at a time
-// (a new one replaces the previous, so superseded messages never stack),
-// placed just above `anchor` (the control or area acted on) when given, kept
-// on screen and clear of it; otherwise in the product's consistent corner.
-// Pauses while hovered or focused; announced politely; Undo calls undo().
-let live;
-let current;
-
-export function toast(message, { anchor, undo, tone = "neutral", duration = 5000, className = "toast" } = {}) {
-  if (!live) {
-    live = document.createElement("div");
-    live.setAttribute("aria-live", "polite");
-    live.className = "sr-only";
-    live.style.cssText = "position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)";
-    document.body.append(live);
-  }
-  current?.dismiss(true);
-  const element = document.createElement("div");
-  element.className = className;
-  element.dataset.tone = tone;
-  element.setAttribute("role", tone === "error" ? "alert" : "status");
-  const text = document.createElement("span");
-  text.textContent = message;
-  element.append(text);
-  if (undo) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = "Undo";
-    button.addEventListener("click", () => { undo(); dismiss(); });
-    element.append(button);
-  }
-  element.style.position = "fixed";
-  element.style.zIndex = "1000";
-  document.body.append(element);
-  if (anchor) {
-    const a = anchor.getBoundingClientRect();
-    const b = element.getBoundingClientRect();
-    const left = Math.min(Math.max(12, a.left + a.width / 2 - b.width / 2), innerWidth - b.width - 12);
-    const above = a.top - b.height - 10;
-    element.style.left = `${left}px`;
-    element.style.top = `${above > 12 ? above : Math.min(a.bottom + 10, innerHeight - b.height - 12)}px`;
-  }
-  live.textContent = message;
-  element.animate([{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }], { duration: 200, easing: "cubic-bezier(.2,.8,.2,1)" });
-  let timer;
-  const start = () => { timer = setTimeout(dismiss, duration); };
-  const stop = () => clearTimeout(timer);
-  element.addEventListener("pointerenter", stop);
-  element.addEventListener("pointerleave", start);
-  element.addEventListener("focusin", stop);
-  element.addEventListener("focusout", start);
-  start();
-  function dismiss(instant = false) {
-    stop();
-    if (current === handle) current = null;
-    if (instant) { element.remove(); return; }
-    element.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: "ease-out" }).finished.then(() => element.remove());
-  }
-  const handle = { dismiss };
-  current = handle;
-  return handle;
-}
 
 // ---- Keyboard --------------------------------------------------------------
 

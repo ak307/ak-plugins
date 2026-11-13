@@ -128,8 +128,81 @@ def test_form_feedback_waits_until_a_field_is_left(seen):
 
 def test_a_good_submit_goes_through_and_the_controls_follow_the_reset(seen):
     assert seen["busy"] == "true"
-    assert seen["afterGoodSubmit"] == {"rows": 11, "saved": "Work order created.", "where": "Choose…", "due": "Choose a date"}
+    assert seen["afterGoodSubmit"] == {"rows": 11, "saved": "Created", "where": "Choose…", "due": "Choose a date"}  # the button's own tick
     assert set(seen["messagesAfterReset"].values()) == {""}
+
+
+def test_a_fast_answer_shows_no_indicator_and_a_slow_one_shows_it_long_enough(seen):
+    feedback = seen["feedback"]
+    assert feedback["fast"] == {"states": ["loading:quiet", "success"], "text": "1,2", "keptSpace": True}
+    assert feedback["slow"]["states"] == ["loading:quiet", "success"] and feedback["slow"]["visible"] == "visible"
+    assert feedback["slow"]["shownFor"] >= 430  # shown at 300 ms, kept for at least 450
+
+
+def test_loading_ends_in_the_right_state(seen):
+    feedback = seen["feedback"]
+    assert feedback["empty"] == "empty"
+    assert feedback["failed"] == {"state": "error", "message": "The list couldn't be loaded.", "alert": "alert"}
+    assert feedback["retried"] == {"whileRetrying": "retrying", "state": "success", "text": "9"}
+    assert feedback["latestOnly"] == "new"  # an older answer arriving late is dropped
+
+
+def test_a_failed_refresh_keeps_what_was_loaded(seen):
+    refresh = seen["feedback"]["refresh"]
+    assert refresh["whileRefreshing"] == {"state": "refreshing", "content": "block"}
+    assert refresh["state"] == "success" and refresh["text"] == "5,6"
+    assert len(refresh["notice"]) == 1 and "Try again" in refresh["notice"][0]
+
+
+def test_a_committing_button_sends_once_and_confirms_only_after_the_answer(seen):
+    commit = seen["feedback"]["commit"]
+    assert commit["requests"] == 1 and commit["ignored"] is True
+    assert commit["early"] == "Save changes"  # no flicker in the first moments
+    assert commit["working"] == {"label": "Saving…", "spinner": True, "disabled": "true", "busy": "true", "focused": True,
+                                 "sameWidth": True, "state": "processing"}
+    assert commit["ok"] is True and commit["data"] == "saved"
+    assert commit["confirmed"] == {"label": "Saved", "tick": True, "state": "success"}
+    assert commit["after"] == {"label": "Save changes", "state": "idle", "disabled": False}
+    assert seen["feedback"]["commitFast"] == {"early": "Save changes", "then": "Saved"}  # a quick answer goes straight to the tick
+
+
+def test_a_failed_commit_leaves_the_button_ready_and_says_what_happened(seen):
+    failed = seen["feedback"]["commitFailed"]
+    assert failed == {"ok": False, "kind": "failed", "label": "Save changes", "disabled": False,
+                      "notice": "That didn't go through. Your details are still here.", "retry": True, "role": "alert"}
+
+
+def test_a_timeout_is_not_called_a_failure_and_is_never_retried_blindly(seen):
+    timeout = seen["feedback"]["timeout"]
+    assert timeout["ok"] is False and timeout["kind"] == "timeout"
+    assert "couldn't confirm" in timeout["notice"] and timeout["retry"] is False
+    assert seen["feedback"]["timeoutVerified"] is True  # with a way to check, it checks before saying anything
+
+
+def test_notices_leave_or_stay_by_their_tone(seen):
+    assert seen["feedback"]["toasts"] == {"okGone": True, "badStays": True, "tick": True, "atMost": 3}
+
+
+def test_progress_never_shows_a_figure_it_was_not_given(seen):
+    progress = seen["feedback"]["progress"]
+    assert progress["unknownProgress"] == {"now": None, "indeterminate": True}
+    assert progress["known"] == {"now": "40", "indeterminate": False, "status": "4 of 10 pages"}
+    assert progress["done"] == {"state": "success", "tick": True, "text": "Report ready"}
+
+
+def test_a_critical_error_is_a_solid_dialog(seen):
+    critical = seen["feedback"]["critical"]
+    assert critical["role"] == "alertdialog" and critical["open"] is True and critical["blur"] == "none"
+    assert critical["solid"].startswith("rgb(") and critical["chosen"] == "recreate"
+
+
+def test_the_page_recovers_from_a_failed_load_and_commits_once_from_a_dialog(seen):
+    assert seen["pageFailed"] == {"message": "The work orders couldn't be loaded.", "rows": 0}
+    assert seen["pageRetried"]["state"] == "success" and seen["pageRetried"]["rows"] == 10
+    assert seen["pageRetried"]["calls"] == ["load orders", "load orders"]
+    assert seen["noticeInDialog"] == {"insideDialog": True, "reachable": True}
+    assert seen["assigned"]["calls"] == 1 and seen["assigned"]["dialogOpen"] is False
+    assert seen["assigned"]["notice"].startswith("Assigned to") and seen["assigned"]["action"] == "Undo"
 
 
 def test_lists_open_above_a_modal_dialog_and_escape_closes_only_the_list(seen):

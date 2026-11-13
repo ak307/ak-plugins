@@ -86,11 +86,17 @@ state your assumption and continue.
   half a line and build it superbly. Never invent an idea in order to have
   one.
 - **Innovation means a better experience, not a different look.**
+- **Plain is not premium.** A screen that is tidy, correct and forgettable
+  has missed the bar as surely as a cluttered one. Every main screen needs
+  a clear focal point and a composition someone would remember, and the
+  product's most important information deserves a visual form of its own —
+  drawn from what that information is — rather than text in boxes. If the
+  screen could be mistaken for a UI kit's demo page, it isn't designed yet.
 - **A new product's identity comes from its subject, its users and where it
   is used.** If your palette, typeface and layout would suit any other
   product just as well, you haven't chosen yet. Light or dark follows the
-  users' setting and workplace — dark is not the premium default — and you
-  can say why.
+  users' setting and workplace — neither is the default — and you can say
+  why.
 - **Hold the whole product together.** Each page has its own character; the
   language — material, type, spacing, motion, voice — is shared.
 - **Say it before you build it**: what the surface is for, what the eye
@@ -101,8 +107,9 @@ state your assumption and continue.
 
 - **Hierarchy first.** Size, weight, colour and space say what matters. If
   everything is emphasised, nothing is.
-- **Type does most of the work.** Few sizes, used with intent; numbers that
-  are compared line up.
+- **Type does most of the work.** Choose the typeface on purpose, for the
+  product's character — the system font is a choice only when you can say
+  why. Few sizes, used with intent; numbers that are compared line up.
 - **Space is structure.** It groups, separates and gives rhythm. Crowded
   and empty are both failures.
 - **Colour carries meaning** — state, emphasis, identity. Don't spend it on
@@ -137,18 +144,23 @@ product's data; these are questions, not layouts.
 
 ## Liquid Glass — AK's house material
 
-New products, and redesigns AK asks for, use Apple's Liquid Glass language
-without being told; existing products keep their own look. Apply the
-philosophy, not a stylesheet: glass exists to create **depth and
-hierarchy**, so it must feel native to the product, never decorative.
-**Products share the material — never a layout or a look.**
+AK loves Apple's Liquid Glass and wants it present throughout his products:
+new products, and redesigns he asks for, use it without being told;
+existing products keep their own look. Apply the philosophy, not a
+stylesheet: glass exists to create **depth and hierarchy**, so it must feel
+native to the product, never decorative. **Products share the material —
+never a layout or a look.**
 
-- **Glass is the layer that floats.** Navigation, controls and whatever
-  opens over the screen sit above the content and let it show through. If
-  everything is glass, nothing floats.
-- **Glass shows only what passes beneath it.** Let that be the product's
-  own content, or an atmosphere drawn from its identity — not a stock
-  backdrop added so the glass has something to blur.
+- **Glass is the layer that floats** — navigation, controls, and whatever
+  opens over the screen: every menu, popover, dialog, sheet and toast. They
+  sit above the content and let it show through. If everything is glass,
+  nothing floats.
+- **Glass must be felt.** If someone can't tell the floating layer is
+  glass, it isn't doing its job. Glass needs depth to float in: give the
+  product an atmosphere drawn from its own identity — its colours, its
+  subject, its light — let content travel beneath the glass, and let the
+  glass catch light at its edges. A flat page with one translucent bar is
+  not Liquid Glass; neither is a stock gradient pasted behind everything.
 - **Glass answers the user.** What is being acted on may take on glass for
   that moment, and release it afterwards.
 - **The content layer belongs to the same world.** Where people read and

@@ -290,3 +290,37 @@ kit's `.lg-bar` class, and they share the same faults:
 The glass kit gives the bar its rounded glass and says nothing about what is above or behind a
 bar that floats.
 
+
+## Round 6 — navigation and the header (branch `ui-top-tier`, 14 Nov 2026)
+
+AK wrote the requirements (the bar is part of each product, not a decorative component inherited
+from a kit; a clear content boundary; glass that adapts; no wasted height or second band; chosen
+per product; responsive; calm motion; audited). Agreed with four additions and three softenings:
+
+- added: what stays on screen is earned (the context, the step, the screen's action — not the
+  logo or the account); the header is a state of the page, one band at a time; navigation, page
+  header and utilities are decided separately, with the pattern following the number of
+  destinations; focus and jump targets count as part of the scroll edge;
+- softened: every theme the product ships (not always light and dark); two material states
+  switched at a threshold (not a continuous change); one glass layer per stack.
+
+What changed:
+
+| Part | Change |
+|---|---|
+| Audit (`audit.cjs`) | Judges the header on the scrolled page at 1280×800 and 390×844: pinned height and bands against a budget (64 px; 15% of a phone's height), content above or beside the bar, the page readable through it, a bar whose tone fights the page, focus under a pinned bar, safe areas. `--scheme=dark\|light` runs it per theme. Reads a bar's material from a `::before` / `::after` layer too. |
+| Glass kit (`liquid-glass.css`) | `.lg-bar` is no longer offered as the page's top bar. New: `.lg-scroll-edge` (attached; plain page at rest, frosted to 0.78 once content is under it) and `.lg-cap` (around a floating bar: the page's colour down to the bar, then a fade). |
+| Experience kit (`experience-kit.js`) | `scrollEdge(bar, { title, scroller })`: marks the bar while content is under it, keeps `scroll-padding-top` at the bar's height, marks when the title has scrolled out and copies it into the bar. |
+| Skills | The standard in `arkar-ui-ux-engineering/references/navigation-and-header.md`; a Navigation part in the build sheet; a scroll-edge rule in the build step; scrolled screenshots and a question about what stays pinned for the early and final reviewers; the audit's header findings are defects in Verify. |
+
+The audit run on the four builds of round 5, unchanged:
+
+| Build | Pinned at the top | Content above or beside the bar | Readable through | Other |
+|---|---|---|---|---|
+| Permit, released | 76 px — over | yes | no | — |
+| Permit, patched | over, 2 bands | yes | — | a dark bar over a light page (phone) |
+| Energy, released | 76 px — over | yes | no | — |
+| Energy, patched | over | yes | likely (tint 0.42, blur 24 px) | — |
+
+On the kit's own test pages (attached and floating, light and dark, desktop and phone): one band
+of 52–64 px, nothing above, beside or readable through it, no control takes focus under it.

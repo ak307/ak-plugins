@@ -66,9 +66,11 @@ for *this* job. These are principles to compose from, not a layout to copy
 
 AK consistently prefers Apple's Liquid Glass. He rated a glass operations
 map "premium" and asked for glass on a solid-surfaced system he otherwise
-called "mostly premium". So, unless the product's brand or context argues
-against it (record why in DESIGN.md), his business systems use Liquid
-Glass (`arkar-ui-design-system/references/materials-glass.md`):
+called "mostly premium", and when a build went without glass he asked for
+it as the default. So, unless the product's brand or context argues
+against it (record why in `DESIGN.md` — leaving it out is never the
+default), his business systems use Liquid Glass
+(`arkar-ui-design-system/references/materials-glass.md`):
 
 - glass for the whole floating layer: the sidebar, toolbars and filter
   bars, tab bars, bulk-action bars, detail sheets and side panels,

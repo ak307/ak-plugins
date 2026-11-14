@@ -27,7 +27,8 @@ Premium pass
 - Screens × sizes looked at: <…> → felt ordinary: <list or "nothing"> → fixed: <list>
 - Audit (scripts/audit.cjs, before → after): axe serious/critical <a→b>, console errors <a→b>,
   overflow <sizes>, ten widths <clear, or where a panel covers controls>,
-  header when scrolled <clear in each theme, or what it reported → fixed>, targets <24px <a→b>, rendered system: radii <n> · shadows <n> · font sizes <n> · spacing values <n>
+  header when scrolled <clear in each theme, or what it reported → fixed>,
+  material <glass on: the surfaces, or the recorded reason for none>, targets <24px <a→b>, rendered system: radii <n> · shadows <n> · font sizes <n> · spacing values <n>
 - Interaction probe (scripts/interaction-probe.cjs, before → after):
   no hover <a→b>, no focus <a→b>, no transition <a→b>, under 24px <a→b>
 - Motion (filmstrips: load + <flows filmed>): <what moved well · what felt abrupt, slow, decorative or confusing → fixed> · reduced motion filmed: <yes/no>
@@ -153,7 +154,12 @@ or moment the sheet missed is added to the sheet and built.
    CDN), fallback font, overflow, covered control and header finding —
    these are defects, not notes; a header that is over the budget or has a
    second band is a defect unless the band is earned
-   (`arkar-ui-ux-engineering/references/navigation-and-header.md` §9). A wide spread of values means tokens aren't being used —
+   (`arkar-ui-ux-engineering/references/navigation-and-header.md` §9).
+   Its **material** line names the surfaces whose styles are glass. On a
+   new product or redesign, "no glass anywhere", or glass on fewer
+   surfaces than the build sheet's Material line names (one bar is not the
+   floating layer), is a defect too, unless `DESIGN.md` gives the reason:
+   Liquid Glass is the default material. A wide spread of values means tokens aren't being used —
    consolidate to about ≤ 6 radii, ≤ 12–14 font sizes and ≤ 5 shadows.
 2. **Interaction probe:** `scripts/interaction-probe.cjs` takes a full-page
    screenshot, flags **template structures** (equal-card rows, tiles over a

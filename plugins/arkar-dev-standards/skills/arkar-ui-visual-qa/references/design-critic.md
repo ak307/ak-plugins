@@ -72,7 +72,12 @@ and redesigns.
 >    product and earn its place (the context, the step, the screen's
 >    action), or is it a generic bar with a logo and an account? Anything
 >    showing above, beside or through it, a second band under it, or a bar
->    whose tone fights the page, is a defect.
+>    whose tone fights the page, is a defect. And the material: for a new
+>    product or redesign, the layer that floats (what stays at the top once
+>    scrolled, bars and panels over the content, sheets, dialogs, toasts)
+>    should visibly be glass, with the working content solid — solid
+>    throughout, or one glass bar on an otherwise solid product, is a
+>    finding; so is frosted glass everywhere.
 >
 > 5. Motion (the filmstrips — slowed down, times are real): does each
 >    change explain itself (where things came from and went), feel natural

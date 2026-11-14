@@ -44,7 +44,12 @@ changes, and not for a feature that must match an existing product's look.
 >    context, the step, the screen's action), or is it a generic bar holding
 >    a logo and an account? Is anything showing above, beside or through
 >    it? Is it one band? Is it in the page's own tone?
-> 5. **The three changes that would lift it most**, most valuable first.
+> 5. **Material** — is the layer that floats (what stays at the top once
+>    the page has scrolled, bars and panels over the content, sheets)
+>    visibly glass — translucent, lit at its edge, with something behind it
+>    worth seeing through — while what people read and work in stays solid?
+>    Or is the product solid throughout, or frosted everywhere?
+> 6. **The three changes that would lift it most**, most valuable first.
 >    Each must be concrete enough to build (what, and where), and use what
 >    the product already has — its content, colours and type. No new
 >    features.
@@ -64,6 +69,10 @@ changes, and not for a feature that must match an existing product's look.
   screen — and send the new screenshots to one more fresh reviewer.
 - A screen called **good**: make its first change at least, and every
   "looks wrong" item.
+- **Solid throughout**, when the build sheet's Material line has no reason
+  for going without glass: the default material is missing. Bring Liquid
+  Glass to the floating layer now, before the rest is built on solid
+  surfaces. **Frosted everywhere:** the working content goes back to solid.
 - Then build the remaining screens to the level these two now set: the
   same ideas, contrast and care on every inner surface.
 - Record `## Early review` in `qa-screenshots/premium-pass.md`: the verdict

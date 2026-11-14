@@ -57,10 +57,11 @@ sake.
 4. **Components** (`references/component-guidelines.md`): reusable, with
    consistent variants and every interaction state; library components
    restyled through tokens.
-5. **Materials** (`references/materials-glass.md`): solid surfaces and,
-   where the direction calls for it, Liquid Glass for the floating control
-   layer (bars, sheets, menus, palette) — with legibility guards and
-   reduced-transparency fallbacks. Content surfaces stay solid. The page's
+5. **Materials** (`references/materials-glass.md`): Liquid Glass — the
+   default for new products and redesigns — for the floating control
+   layer (bars, sheets, menus, palette), with legibility guards and
+   reduced-transparency fallbacks, and solid surfaces for content. A
+   product that goes without glass says why in `DESIGN.md`. The page's
    header is a scroll edge — plain page at rest, frosted once content is
    under it — not a floating bar; the kit is a material, never a layout.
 6. **Themes** (`references/theming.md`): light/dark and how themes switch,

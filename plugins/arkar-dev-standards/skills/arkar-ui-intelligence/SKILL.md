@@ -64,6 +64,18 @@ review.
 - **CBM red `#AE1A28`** is a primary colour only when AK asks for CBM
   branding. Where an existing product already uses it, keep it in Mode A;
   in Mode B, keeping it is a decision for AK.
+- **Liquid Glass is the default material** for every new product and
+  redesign (Modes B and C), business systems first of all. Glass is the
+  floating layer — navigation, whatever stays at the top once content is
+  under it, floating panels, sheets and dialogs, menus, toasts and the
+  controls on them — over a background with something to refract; what
+  people read and work in (tables, forms, long text) stays solid. It is a
+  material, not a layout or a look: each product composes it in its own
+  way (`arkar-ui-design-system/references/materials-glass.md`, kit
+  `arkar-ui-design-system/assets/liquid-glass.css`). Going without it is a
+  decision with its reason in `DESIGN.md` (the brand, a Figma design, the
+  device) — never an omission. An existing product (Mode A) keeps its own
+  material; bringing glass into it is a 🟠 proposal.
 - **`DESIGN.md`** at the project root records the product's identity, tokens,
   motion language and decisions; read it first, keep it current.
 - **Never claim** a visual check, test, score or compliance you didn't
@@ -180,7 +192,9 @@ change runs through all seven in minutes.
      the experience standard within it) and the redesign goes in the reply
      as a 🟠 proposal — never a new identity started on one screen.
    - **New product or redesign (B, C):** art direction chooses one direction
-     and records it in `DESIGN.md` with its reasons. For each main screen,
+     and records it in `DESIGN.md` with its reasons — and the material:
+     Liquid Glass for the floating layer by default (section 1), with the
+     surfaces that carry it and what lies beneath them. For each main screen,
      think through the obvious layout and two different ideas in a sentence
      each (`arkar-ui-art-direction/references/visual-ambition.md` §4), then
      choose one — a screen that looks like every other screen of its kind is
@@ -332,11 +346,13 @@ change runs through all seven in minutes.
      `#[Url]` for filters and the selected item, and the motion kit's `flip`
      only where Alpine can't (reordering lists); Flutter: theme tokens, Hero
      or shared-axis transitions, implicit animations, `disableAnimations`;
-   - business systems on Liquid Glass copy
-     `arkar-ui-design-system/assets/liquid-glass.css` — a material, not a
-     layout: its `.lg-bar` is for bars floating over a canvas, and the
-     page's header uses `.lg-scroll-edge` (or `.lg-cap` around a bar that
-     floats).
+   - new products and redesigns copy
+     `arkar-ui-design-system/assets/liquid-glass.css` (the default material,
+     section 1) and use it for the floating layer — a material, not a
+     layout: its `.lg-bar` is for bars floating over a canvas, the page's
+     header uses `.lg-scroll-edge` (or `.lg-cap` around a bar that floats),
+     sheets and dialogs `.lg-sheet`, the controls on glass `.lg-control`
+     and `.lg-segmented`.
    **Early look review — after two screens, before the rest (new
    products, page sets and redesigns).** Build the first screen and the one
    inner screen people will work in most (the table, the form step, the

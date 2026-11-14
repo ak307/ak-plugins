@@ -352,10 +352,21 @@ phone the bar holds the section strip and Previous / Next sit at the bottom.
 The early reviewer, given scrolled screenshots, called the phone's pinned bar "a generic truncated
 title" beside the section strip; the build merged the two before going on.
 
-Not good: the new build uses no Liquid Glass at all — it did not copy the glass kit, and its
-`DESIGN.md` does not say why. The two earlier permit builds both used it (top bar, segmented
-controls, sheets, toasts). The session read only the first 60 lines of
+Not good: the new build is solid almost throughout. It did not copy the glass kit, its only glass
+is one hand-made frosted bar (the phone's Previous / Next bar), and its `DESIGN.md` does not say
+why. The two earlier permit builds both used the kit (top bar, segmented controls, sheets,
+toasts). The session read only the first 60 lines of
 `arkar-ui-art-direction/references/business-systems.md`; the section that makes Liquid Glass the
-default for business systems starts at line 65, and no always-read skill text states it. One
+default for business systems starts at line 65, and no always-read skill text stated it. One
 build, so this may be chance, but with the top bar no longer the obvious glass surface the default
 is easier to miss.
+
+### Liquid Glass stated as the default (AK, 14 Nov: "yes, i want Glass as default")
+
+| Part | Change |
+|---|---|
+| Orchestrator, fixed rules (read on every UI task) | Liquid Glass is the default material for every new product and redesign: the floating layer is glass, the working content solid, over a background with something to refract. Going without it needs its reason in `DESIGN.md`. An existing product keeps its own material; glass there is a proposal. |
+| Build sheet, `DESIGN.md` template | A Material line: which surfaces are glass, which are solid, what lies beneath — or the reason for none. |
+| Art direction, design system, glass references | The default stated where the direction is chosen; "glassmorphism" (frosted cards everywhere) told apart from it. |
+| Audit | A `material` line: the selectors whose styles use glass (a backdrop blur), or "no glass anywhere". On the round 4 permit build: `.lg-bar, .lg-panel, .lg-sheet, .lg-control, .lg-pill, .lg-segmented, .toast`. On the round 6 rebuild: `.bottom-bar`. |
+| Early and final reviewers | Asked whether the floating layer is visibly glass and the content solid — or the product is solid throughout, or frosted everywhere. |

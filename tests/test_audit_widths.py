@@ -114,3 +114,14 @@ def test_a_solid_dark_bar_over_a_light_page_is_named(audit):
     text = audit("header-floating.html?tint=0.96").stdout
     assert "the page readable through the bar no" in text and "a dark bar over a light page" in text
 
+
+# ---- the material
+
+
+def test_the_report_names_the_surfaces_that_are_glass_or_says_there_are_none(audit):
+    plain = audit("overlap.html")
+    assert "material: no glass anywhere in the styles" in plain.stdout and "DESIGN.md" in plain.stdout
+    assert json.loads(audit("overlap.html", "--json").stdout.strip().splitlines()[-1])["material"] == {"glass": False, "on": []}
+    # A page whose bar is frosted glass: the bar is named, to be set against the build sheet's Material line.
+    assert "material: glass (a backdrop blur) on .bar" in audit("header-attached.html").stdout
+    assert json.loads(audit("header-attached.html", "--json").stdout.strip().splitlines()[-1])["material"] == {"glass": True, "on": [".bar"]}

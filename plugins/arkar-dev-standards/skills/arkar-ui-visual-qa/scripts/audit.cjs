@@ -9,6 +9,8 @@
 // And it judges the header on the scrolled page, at desktop and phone size: how much stays pinned
 // and in how many bands, content showing above a floating bar or readable through it, a bar whose
 // tone fights the page under it, focus landing under a pinned bar, and safe areas (in code only).
+// It lists the selectors whose styles use glass (a backdrop blur), or says there are none, because
+// Liquid Glass is the default material.
 //
 // Reports, at each size:
 // - accessibility violations (axe-core: WCAG 2.0/2.1/2.2 A and AA rules), by impact;
@@ -327,18 +329,32 @@ async function checkFocus(browser, url) {
   return { stops, hidden: [...hidden] };
 }
 
-// Notches and home indicators: this browser can't show them, so only the code can be checked.
-async function checkSafeAreas(browser, url) {
+// Two things only the code can show. Notches and home indicators: this browser has none, so the
+// styles are read for safe-area handling. And the material: whether any style uses glass at all
+// (a backdrop blur) — most glass is on sheets, menus and a header's scrolled state, which a page
+// at rest doesn't show.
+async function checkStyles(browser, url) {
   const page = await browser.newPage(open({ width: 390, height: 844 }));
   try {
     await page.goto(url, { waitUntil: "load", timeout: 30000 });
     return await page.evaluate(() => {
       const viewport = document.querySelector('meta[name="viewport"]');
-      let rules = "";
+      let text = "";
+      const glass = new Set();
+      const walk = (rules) => {
+        for (const rule of rules) {
+          if (rule.cssRules && rule.cssRules.length) walk(rule.cssRules); // @media, @supports, @layer
+          if (!rule.style) continue;
+          text += rule.cssText;
+          const blur = rule.style.getPropertyValue("backdrop-filter") || rule.style.getPropertyValue("-webkit-backdrop-filter");
+          if (blur && blur !== "none") for (const selector of rule.selectorText.split(",")) glass.add(selector.trim());
+        }
+      };
       for (const sheet of document.styleSheets) {
-        try { for (const rule of sheet.cssRules) rules += rule.cssText; } catch (error) { /* another origin's sheet */ }
+        try { walk(sheet.cssRules); } catch (error) { /* another origin's sheet */ }
       }
-      return { cover: Boolean(viewport && /viewport-fit\s*=\s*cover/.test(viewport.content)), insets: /env\(\s*safe-area-inset/.test(rules) };
+      return { safeAreas: { cover: Boolean(viewport && /viewport-fit\s*=\s*cover/.test(viewport.content)), insets: /env\(\s*safe-area-inset/.test(text) },
+        material: { glass: glass.size > 0, on: [...glass] } };
     });
   } finally {
     await page.close();
@@ -420,10 +436,11 @@ async function main() {
     }
     // The remaining checks each use a page of their own, so they run side by side.
     const helper = await browser.newPage();
-    const [widths, desktop, phone, focus, safeAreas] = await Promise.all([sweepWidths(browser, url), checkHeader(browser, helper, url, [1280, 800]),
-      checkHeader(browser, helper, url, [390, 844]), checkFocus(browser, url), checkSafeAreas(browser, url)]);
+    const [widths, desktop, phone, focus, styles] = await Promise.all([sweepWidths(browser, url), checkHeader(browser, helper, url, [1280, 800]),
+      checkHeader(browser, helper, url, [390, 844]), checkFocus(browser, url), checkStyles(browser, url)]);
     report.widths = widths;
-    report.header = { desktop, phone, focus, safeAreas };
+    report.header = { desktop, phone, focus, safeAreas: styles.safeAreas };
+    report.material = styles.material;
     await helper.close();
   } finally {
     await browser.close();
@@ -450,6 +467,12 @@ async function main() {
   if (pinnedOnPhone && !(header.safeAreas.cover && header.safeAreas.insets)) {
     console.log("safe areas: bars are pinned on a phone but the code has no viewport-fit=cover with env(safe-area-inset-*) — a notch or home indicator would cover them (checked in code only)");
   }
+  const glassOn = report.material.on;
+  console.log(glassOn.length
+    ? `material: glass (a backdrop blur) on ${glassOn.slice(0, 8).join(", ")}${glassOn.length > 8 ? ` and ${glassOn.length - 8} more` : ""}`
+      + " — these should be the surfaces the build sheet's Material line names"
+    : "material: no glass anywhere in the styles (no backdrop blur) — Liquid Glass is the default for a new product or redesign: "
+      + "use it for the floating layer, or give the reason in DESIGN.md. An existing product keeps its own material.");
   if (report.system) {
     const c = report.system.counts;
     console.log(`design system rendered: radii ${c.radius} · shadows ${c.shadow} · font sizes ${c.fontSize} · font families ${c.fontFamily} (${report.system.fonts.join(", ")}) · text colours ${c.textColour} · surfaces ${c.surface} · spacing values ${c.spacing}`);

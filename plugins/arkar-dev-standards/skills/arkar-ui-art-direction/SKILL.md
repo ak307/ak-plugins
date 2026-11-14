@@ -53,7 +53,7 @@ constraints. Note existing brand assets that must be kept
    `references/business-systems.md` (what premium means for software staff
    use all day).
 3. **Make it this product's own.** Within the direction, decide the palette,
-   type, layout idea, shape language and one signature idea for the product
+   type, material, layout idea, shape language and one signature idea for the product
    (shown on the screens where it helps — data-heavy screens may have none)
    from the product's own content, users and domain. Two products in
    the same direction should still be recognisably different. For the
@@ -68,6 +68,14 @@ constraints. Note existing brand assets that must be kept
    the obvious layout named and kept or rejected with why, two different
    ideas weighed in a sentence each, one chosen with its hero moment —
    never built as variations to compare.
+   **The material is Liquid Glass by default**, in every direction: the
+   floating layer is glass, the working content solid, and the background
+   gives the glass something to refract (a colour field, the product's own
+   canvas, imagery) — composed for this product, so two glass products
+   still look nothing alike
+   (`arkar-ui-design-system/references/materials-glass.md`). A direction
+   that truly argues against it (a brand, a Figma design, a device that
+   can't blur) goes without, and `DESIGN.md` says why.
 4. **Aim to impress** — read `references/visual-ambition.md`: every main
    screen passes the three-second "wow" test, has a hero moment, colour with
    conviction, contrast range and depth; none of the boring signals. Enterprise,
@@ -101,8 +109,9 @@ constraints. Note existing brand assets that must be kept
 These ban *lazy defaults*, not craft. Crafted depth, light, gradients and
 translucency done with intent (`references/premium-craft.md`) are welcome;
 the stock versions are not. Apple's Liquid Glass, used as a material for
-floating controls with its rules (`arkar-ui-design-system/references/materials-glass.md`),
-is craft; frosted cards everywhere is stock. Never use automatically: purple gradients · glassmorphism · glowing borders ·
+the floating layer with its rules (`arkar-ui-design-system/references/materials-glass.md`),
+is craft and the default; frosted cards everywhere ("glassmorphism") is
+stock. Never use automatically: purple gradients · glassmorphism · glowing borders ·
 excessive rounded cards · oversized typography · decorative background
 shapes · excessive shadows · repetitive dashboard cards · unnecessary
 gradients · generic AI-generated layouts · decorative animation without

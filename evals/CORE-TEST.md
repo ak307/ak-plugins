@@ -264,5 +264,29 @@ and both are shown as they stood.
   branch.
 
 Blind comparison (AK's two chosen builds against the patched ones, random A/B, both sides filmed
-with the fixed recorder) is published; AK will recognise the two he chose. Verdict: pending.
+with the fixed recorder), judged by AK on 14 Nov 2026:
+
+| Brief | Looks better | Feels better to use | Would ship |
+|---|---|---|---|
+| Permit to work | Released | Released | Released |
+| Energy dashboard | Patched | Patched | Patched |
+
+One each. Every build is a new design, the patched builds were unfinished, and there are two
+briefs: this does not show that the patched plugin makes better-looking products, nor worse. What
+the round does show is in the table of checks above.
+
+AK also found the top bar "not right and strange" in all four builds. All four give it the glass
+kit's `.lg-bar` class, and they share the same faults:
+
+- a dark rounded bar set in from the window's edges, so that once the page scrolls, content shows
+  in the gap above it, sliced by its edge;
+- text behind the glass readable through it (a heading under the bar's own text);
+- a dark slab over a light page once the dark first screen has scrolled away, and a box inside a
+  box while it is still over the dark one;
+- about 90 px of every screen for a logo and an account name — and in the patched permit form a
+  second header band under it;
+- the same bar in four different products.
+
+The glass kit gives the bar its rounded glass and says nothing about what is above or behind a
+bar that floats.
 

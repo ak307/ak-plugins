@@ -71,7 +71,23 @@ structure changed.
 
 - Meets AK's premium standard (`arkar-ui-intelligence/references/premium-standard.md`): nothing basic, generic or unfinished — working is not enough.
 
-- One obvious primary action per screen; secondary actions look secondary.
+- **One primary action per view.** One filled, high-contrast button is what
+  the screen is for; secondary actions look secondary. An action repeated
+  on every row or card (Resolve, Edit, Open) is quiet — outline, text or
+  icon, stronger on hover or focus: five filled buttons in a column are
+  five primaries.
+- **Say it once.** A status, count or warning appears where the user acts
+  on it, plus at most one summary. The same fact in the rail, a strip, a
+  side panel, a tag and the header (one permit form said "needed" in five
+  places on a screen) makes the product anxious and the signal colour
+  meaningless. Before adding an indicator, find where it is already shown.
+- **An empty start is an invitation.** A new, empty form or record opens
+  calm: what to do first, and progress as it fills — never a wall of
+  warnings about everything not yet typed. "Needed" becomes a warning when
+  the user tries to move on or submit.
+- **Navigation never outweighs the content it serves.** The eye lands on
+  the work (the field, the row, the chart) before the rail, the stepper or
+  the bar; a dark or saturated rail beside a light form inverts that.
 - Every action gets feedback within ~100 ms; long operations show progress
   honestly.
 - Every state is designed; no dead ends — each state offers a way forward or

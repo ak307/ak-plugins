@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit fixture — glass over a flat page, one word said five times, a filled button on every card</title>
+<style>
+  body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #17212b; background: #f4f5f7; }
+  main { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; padding: 24px; }
+  /* Glass over the flat page: a blur with nothing behind it to show. */
+  .rail { align-self: start; padding: 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.6);
+    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  .rail button { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; min-height: 44px;
+    padding: 6px 8px; border: 0; background: none; font: inherit; color: inherit; text-align: left; }
+  .badge { padding: 2px 8px; border-radius: 999px; background: #fde9b8; font-size: 12px; white-space: nowrap; }
+  /* Glass over a band with a real range of tone: it has something to show. */
+  .band { position: relative; height: 200px; border-radius: 16px; background: linear-gradient(120deg, #0b1220, #1f4fd1 45%, #ffd6a5); }
+  .float { position: absolute; left: 24px; top: 24px; width: 260px; padding: 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.5);
+    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+  .card { padding: 14px; border: 1px solid #d5dbe2; border-radius: 12px; background: #fff; }
+  .card p { margin: 0 0 10px; }
+  .card button { min-height: 36px; padding: 6px 14px; border-radius: 8px; font: inherit; }
+  .quiet { background: #fff; color: #17212b; border: 1px solid #aab4c3; }
+  .primary { background: #0b1220; color: #fff; border: 1px solid #0b1220; }
+  @media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } .cards { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+<main>
+  <nav class="rail" aria-label="Sections">
+    <button type="button">Company <span class="badge">5 needed</span></button>
+    <button type="button">Workers <span class="badge">1 needed</span></button>
+    <button type="button">Work <span class="badge">3 needed</span></button>
+    <button type="button">Dates <span class="badge">4 needed</span></button>
+    <button type="button">Documents <span class="badge">2 needed</span></button>
+  </nav>
+  <section aria-label="Alerts">
+    <div class="band"><div class="float"><strong>Over a band</strong></div></div>
+    <div class="cards">
+      <div class="card"><p>Chiller 2 running overnight</p><button class="quiet" type="button">Assign</button> <button class="primary" type="button">Resolve</button></div>
+      <div class="card"><p>Water keeps flowing all night</p><button class="quiet" type="button">Assign</button> <button class="primary" type="button">Resolve</button></div>
+      <div class="card"><p>Imaging suite left on</p><button class="quiet" type="button">Assign</button> <button class="primary" type="button">Resolve</button></div>
+      <div class="card"><p>Car park lights on in daylight</p><button class="quiet" type="button">Assign</button> <button class="primary" type="button">Resolve</button></div>
+      <div class="card"><p>Cooling tower bleed above normal</p><button class="quiet" type="button">Assign</button> <button class="primary" type="button">Resolve</button></div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

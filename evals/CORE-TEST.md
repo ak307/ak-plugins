@@ -521,3 +521,22 @@ What they got wrong, and no skill text or check covers:
 
 Basis: screenshots at desktop and phone size and slowed filmstrips of the main transitions
 (`film.cjs`), not the full recordings.
+
+### Three rule sets after the verdict (AK, 14 Nov: "go ahead with the plan")
+
+| Rule | Where | Check |
+|---|---|---|
+| **A still shows which surfaces are glass.** Glass needs something under it with a real range of tone or colour (imagery, a visible field, a dark or coloured band the floating layer overlaps), or a tint of its own; white frost on a pale page is a plain panel. A light theme has to answer this. | Glass reference (rule 3), orchestrator's fixed rule, build sheet and `DESIGN.md` Material line, both review briefs | The audit hides each glass surface for a moment and measures the spread of tone behind it; under 9 (of 255) is reported as "flat behind" |
+| **Restraint.** One filled primary action per view, row actions quiet; a status or count said once where it is acted on, plus at most one summary; a new empty record opens calm; navigation never outweighs the content it serves. | UX engineering criteria, orchestrator's build step, both review briefs | The audit counts status labels repeated in the first view (four or more), filled buttons in view (more than two), and the same filled button three or more times down the page |
+| **A local action shows its result at once.** Creating a draft or opening something already loaded appears immediately and saves behind it; a spinner in the button is for work whose result can't be shown until it is done. | Experience standard (a press) | Judged from the filmstrips |
+
+The two checks on the round 7 builds, before any rebuild:
+
+| Build | Glass | Restraint |
+|---|---|---|
+| Permit form (new) | section rail and "still needed" panel: flat behind (3.0 and 4.8) | "needed" ×4 in the first view of a half-filled draft |
+| Energy dashboard (new) | alerts rail's head: flat behind (1.8) | "Resolve" ×5 down the page |
+| Energy dashboard (chosen) | alerts panel on a desktop: 115.7 behind — not flat | nothing |
+| Permit form (chosen) | segmented control: flat behind (1.3) | nothing |
+
+The chosen builds are also reported for tints past 0.85 (0.86 to 0.96); they predate that rule.

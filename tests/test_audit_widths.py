@@ -131,8 +131,11 @@ def test_the_report_names_the_surfaces_that_are_glass_or_says_there_are_none(aud
     attached = audit("header-attached.html").stdout
     assert "material: glass on this screen — desktop: header.bar (tint 0.8) · phone: header.bar (tint 0.8)" in attached
     assert "solid to the eye" not in attached  # 0.8 is under the ceiling of 0.85
-    bar = [{"name": "header.bar", "tint": 0.8}]
-    assert material(audit, "header-attached.html") == {"glass": True, "on": [".bar"], "onScreen": {"desktop": bar, "phone": bar}}
+    found = material(audit, "header-attached.html")
+    assert found["glass"] is True and found["on"] == [".bar"]
+    for size in ("desktop", "phone"):
+        (bar,) = found["onScreen"][size]
+        assert (bar["name"], bar["tint"]) == ("header.bar", 0.8) and bar["behind"] > 9  # the page's text is under it: something to show
     # The floating fixture's bar made almost solid (?tint=0.96): still a backdrop blur, and named as solid to the eye.
     assert "header.bar: tinted past 0.85, solid to the eye — keep it glass" in audit("header-floating.html?tint=0.96").stdout
 
@@ -142,3 +145,31 @@ def test_glass_that_is_only_in_the_styles_is_not_reported_as_glass_on_the_screen
     assert material(audit, "kit-unused.html") == {"glass": True, "on": [".glass-bar", ".glass-sheet"], "onScreen": {"desktop": [], "phone": []}}
     text = audit("kit-unused.html").stdout
     assert "material: nothing on this screen is glass — the styles define glass for .glass-bar, .glass-sheet, but no surface here uses it" in text
+
+
+def test_glass_over_a_flat_background_is_reported_and_glass_over_a_band_is_not(audit):
+    # Glass is seen through what it refracts: the rail floats over the flat page, the small panel over a band of colour.
+    surfaces = {surface["name"]: surface for surface in material(audit, "restraint.html")["onScreen"]["desktop"]}
+    assert surfaces["nav.rail"]["behind"] < 9 <= surfaces["div.float"]["behind"]
+    text = audit("restraint.html").stdout
+    assert "nav.rail (tint 0.6, flat behind)" in text and "div.float (tint 0.5)" in text
+    assert "  nav.rail: nothing behind it to show (a flat background), so it reads as a plain panel" in text
+
+
+# ---- restraint
+
+
+def test_a_word_said_five_times_and_a_filled_button_on_every_card_are_counted(audit):
+    report = json.loads(audit("restraint.html", "--json").stdout.strip().splitlines()[-1])["restraint"]
+    assert report["labels"] == [{"text": "needed", "count": 5}]  # "5 needed" … "2 needed": the same word five times
+    assert report["filled"] == [{"text": "Resolve", "count": 5}] and report["filledInView"] == 5  # "Assign" is quiet, so not counted
+    text = audit("restraint.html").stdout
+    assert 'status labels repeated in the first view — "needed" ×5' in text
+    assert "filled buttons in the first view 5 — more than one primary action" in text
+    assert 'the same filled button down the page — "Resolve" ×5 — an action repeated on every row or card stays quiet' in text
+
+
+def test_a_calm_page_has_nothing_to_report_under_restraint(audit):
+    text = audit("header-attached.html").stdout
+    assert "restraint (1280x800): no status label repeated four times or more in the first view · filled buttons in the first view 0" in text
+    assert "down the page" not in text

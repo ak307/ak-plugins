@@ -75,7 +75,11 @@ review.
   `arkar-ui-design-system/assets/liquid-glass.css`). It stays visibly
   glass — a tint of about 0.85 or less: when text on it is hard to read,
   the fix is more blur, a dim layer under a sheet or stronger text, never
-  a surface tinted until it is solid. Going without it is a
+  a surface tinted until it is solid. And it has something to show: a
+  still must make plain which surfaces are glass, so say what the glass
+  sits over (imagery, a visible field, the product's dark or coloured
+  band) or tint it — white frost on a pale page is not glass. Going
+  without it is a
   decision with its reason in `DESIGN.md` (the brand, a Figma design, the
   device) — never an omission. An existing product (Mode A) keeps its own
   material; bringing glass into it is a 🟠 proposal.
@@ -327,6 +331,9 @@ change runs through all seven in minutes.
      plain web builds use the kit's `changeScreen(container, render)`,
      never `replaceChildren` on the whole screen; frameworks use the
      router's view transitions;
+   - **restraint:** one filled primary action per view (row actions stay
+     quiet), each status or count said once where it is acted on, and a
+     new empty record opens calm (`arkar-ui-ux-engineering` criteria);
    - **whatever stays at the top is a scroll edge:** nothing shows above
      or beside it, nothing behind it can be read (frosted glass once
      content is under it, in the tone of that content — never a dark bar

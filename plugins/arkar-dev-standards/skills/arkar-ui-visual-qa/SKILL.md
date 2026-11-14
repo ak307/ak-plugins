@@ -162,7 +162,15 @@ or moment the sheet missed is added to the sheet and built.
    glass" on a screen where something floats, or glass on fewer surfaces
    than the build sheet's Material line names (one bar is not the floating
    layer), is a defect too, unless `DESIGN.md` gives the reason: Liquid
-   Glass is the default material. A wide spread of values means tokens aren't being used —
+   Glass is the default material. So is glass "tinted past 0.85" (solid to
+   the eye) and glass that is "flat behind" — the audit hides each glass
+   surface for a moment and measures what lies under it: over a flat
+   background the glass has nothing to show and reads as a plain panel.
+   Its **restraint** line counts status labels repeated in the first view
+   and filled buttons (in view, and the same one down the page). A status
+   said in several places, more than one primary action in view, or a
+   filled action on every row or card is a defect unless the Verify table
+   says why it earns its place. A wide spread of values means tokens aren't being used —
    consolidate to about ≤ 6 radii, ≤ 12–14 font sizes and ≤ 5 shadows.
 2. **Interaction probe:** `scripts/interaction-probe.cjs` takes a full-page
    screenshot, flags **template structures** (equal-card rows, tiles over a

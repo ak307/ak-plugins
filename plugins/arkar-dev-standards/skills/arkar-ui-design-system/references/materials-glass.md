@@ -54,14 +54,28 @@ never a reason for products to resemble iOS or each other.
    stronger text colour or weight, or glass in the tone of what passes
    under it — never a tint raised until the glass is gone. A surface that
    has to be solid is solid by decision, and the Material line says so.
-3. **Respect the system:** `prefers-reduced-transparency: reduce` and
+3. **A still shows which surfaces are glass.** Glass is seen through what
+   it refracts, so it needs something under it with a real range of tone or
+   colour: imagery, a map or plan, the product's field at a visible
+   strength, or a dark or coloured band of the page that the floating layer
+   overlaps. White frost over a pale, flat page is a plain panel with a
+   blur nobody can see — two light-theme builds followed every other rule
+   here and AK still called their glass timid. In a light theme, choose
+   one: a canvas with contrast under the floating layer; tinted glass (a
+   coloured or dark tint of about 0.45–0.7, so the canvas still shows
+   through); or a floating layer that overlaps the product's darker hero.
+   The theme is chosen for the product, not for the glass — but a light
+   theme has to answer this. Test: in a still, can you point to the glass
+   without being told? The audit measures what lies behind each glass
+   surface and reports glass over a flat background.
+4. **Respect the system:** `prefers-reduced-transparency: reduce` and
    `prefers-contrast: more` → solid tinted surface; no
    `backdrop-filter` support → solid fallback (`@supports`).
-4. **Shape and light, not only blur:** concentric radii that follow the
+5. **Shape and light, not only blur:** concentric radii that follow the
    container, a specular edge (a 1px inner highlight, brighter at the top),
    a soft shadow that separates it from content, and a tint that adapts to
    light/dark. Blur alone reads as 2015 "glassmorphism".
-5. **The page's header is a scroll edge, not a floating bar.** At rest it
+6. **The page's header is a scroll edge, not a floating bar.** At rest it
    is part of the page; once content is under it, it frosts — a tint from
    0.7 to about 0.85 with blur, so nothing behind it can be read — in the
    tone of the content under it in each theme (no dark bar over a light
@@ -70,11 +84,11 @@ never a reason for products to resemble iOS or each other.
    the gap. Use `.lg-scroll-edge`, or `.lg-cap` around a bar that floats,
    with `scrollEdge()` from the experience kit
    (`arkar-ui-ux-engineering/references/navigation-and-header.md`).
-6. **Motion makes it liquid:** controls morph between states (a tab bar
+7. **Motion makes it liquid:** controls morph between states (a tab bar
    shrinks on scroll, a button expands into its menu, a sheet rises from the
    control that opened it) with well-damped springs; under reduced motion
    these become fades.
-7. **Performance budget:** a few glass surfaces per screen, blur radius
+8. **Performance budget:** a few glass surfaces per screen, blur radius
    moderate, no animated blur radius; check scrolling stays smooth on a
    phone-sized viewport.
 

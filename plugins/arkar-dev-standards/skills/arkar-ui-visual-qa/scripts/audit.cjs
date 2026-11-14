@@ -173,6 +173,9 @@ const AROUND_MOVES = 0.01; // share of the pixels around the bar that change as 
 const THROUGH_MOVES = 0.01; // and of the pixels of the bar itself
 const FROSTED = 0.7; // the tint a glass bar needs once content is under it, so that nothing behind it can be read
 const GLASS_CEILING = 0.85; // past this a tint hides what is behind it: glass in the code, solid to the eye
+const FLAT_BEHIND = 9; // the spread of tone (0–255) behind a glass surface below which there is nothing for the glass to show
+const FILLED_BUTTONS = 2; // more filled buttons than this in one view and none of them is the primary action
+const FILLED_REPEATS = 3; // the same filled button this many times on a page is a row action dressed as the primary
 
 // Everything pinned to the top or bottom edge right now: fixed, or sticky and stuck.
 const pinnedBands = () => {
@@ -221,6 +224,10 @@ const glassOnScreen = () => {
   const name = (element) => element.tagName.toLowerCase() + (element.id ? `#${element.id}` : element.classList.length ? `.${element.classList[0]}` : "");
   const surfaces = [];
   const found = new Map();
+  const within = (box) => {
+    const left = Math.max(0, Math.round(box.left)), top = Math.max(0, Math.round(box.top));
+    return { x: left, y: top, width: Math.min(innerWidth, Math.round(box.right)) - left, height: Math.min(innerHeight, Math.round(box.bottom)) - top };
+  };
   for (const element of document.querySelectorAll("body *")) {
     const box = element.getBoundingClientRect();
     if (box.width < 24 || box.height < 16 || box.bottom <= 0 || box.top >= innerHeight || box.right <= 0 || box.left >= innerWidth) continue;
@@ -233,11 +240,78 @@ const glassOnScreen = () => {
       const colour = (look.backgroundColor.match(/[\d.]+/g) || []).map(Number);
       const alpha = colour.length === 4 ? colour[3] : colour.length === 3 ? 1 : 0;
       surfaces.push(element);
-      if (!found.has(name(element))) found.set(name(element), alpha < 0.05 && look.backgroundImage !== "none" ? null : Math.round(alpha * 100) / 100);
+      if (!found.has(name(element))) {
+        element.setAttribute("data-audit-glass", String(found.size));
+        found.set(name(element), { tint: alpha < 0.05 && look.backgroundImage !== "none" ? null : Math.round(alpha * 100) / 100,
+          mark: String(found.size), box: within(box) });
+      }
       break;
     }
   }
-  return [...found].map(([surface, tint]) => ({ name: surface, tint }));
+  return [...found].map(([surface, facts]) => ({ name: surface, ...facts }));
+};
+
+// Restraint: status labels (badges, chips, counts on controls) that repeat in the first view, and the filled
+// buttons — how many are in view at once, and whether one of them repeats down the page (an action on every
+// row or card).
+// "5 needed" and "19 needed" are the same word said twice; a label that is mostly figures is data, not a label.
+const repetitionInView = () => {
+  const inView = (element) => {
+    const box = element.getBoundingClientRect();
+    const look = getComputedStyle(element);
+    return box.width > 4 && box.height > 4 && box.bottom > 0 && box.top < innerHeight && box.right > 0 && box.left < innerWidth
+      && look.visibility !== "hidden" && Number(look.opacity) > 0.05;
+  };
+  const rgba = (colour) => { const parts = (colour.match(/[\d.]+/g) || []).map(Number); return parts.length >= 3 ? [parts[0], parts[1], parts[2], parts.length > 3 ? parts[3] : 1] : [0, 0, 0, 0]; };
+  const control = "button, a[href], [role=button], [role=tab], [role=link], summary";
+  const badge = (element) => {
+    const look = getComputedStyle(element);
+    const box = element.getBoundingClientRect();
+    return box.height < 40 && box.width < 260 && (rgba(look.backgroundColor)[3] > 0.1 || parseFloat(look.borderTopWidth) > 0);
+  };
+  const labels = new Map();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = node.nodeValue.trim().replace(/\s+/g, " ");
+    const parent = node.parentElement;
+    if (text.length < 3 || text.length > 28 || text.split(" ").length > 4 || !parent || parent.closest("svg, script, style, [aria-hidden='true']")) continue;
+    if ((text.match(/\d/g) || []).length / text.length >= 0.3) continue;
+    const key = text.toLowerCase().replace(/[\d.,:%+−–—-]+/g, " ").replace(/\s+/g, " ").trim();
+    if (key.length < 3 || !inView(parent)) continue;
+    // A status, not an action: a badge, chip or stamp — or a count inside a control ("5 needed" on a step, "19 needed" on a pill).
+    const status = [parent, parent.parentElement].some((element) => element && !element.matches(control) && badge(element))
+      || (parent.closest(control) && /\d/.test(text));
+    if (!status) continue;
+    labels.set(key, (labels.get(key) || 0) + 1);
+  }
+  // A filled button: an opaque (or gradient) fill that stands well apart from the surface it sits on.
+  const behind = (element) => {
+    for (let node = element.parentElement; node; node = node.parentElement) {
+      const colour = rgba(getComputedStyle(node).backgroundColor);
+      if (colour[3] >= 0.5) return colour;
+    }
+    return [255, 255, 255, 1];
+  };
+  const filled = new Map();
+  let filledInView = 0;
+  const shown = (element) => {
+    const box = element.getBoundingClientRect();
+    const look = getComputedStyle(element);
+    return box.width > 4 && box.height > 4 && look.visibility !== "hidden" && Number(look.opacity) > 0.05;
+  };
+  for (const element of document.querySelectorAll("button, a[href], [role=button]")) {
+    if (!shown(element) || element.closest("[role=tablist], [aria-hidden='true']") || element.getAttribute("role") === "tab") continue;
+    const look = getComputedStyle(element);
+    const fill = rgba(look.backgroundColor);
+    const ground = behind(element);
+    const apart = Math.hypot(fill[0] - ground[0], fill[1] - ground[1], fill[2] - ground[2]);
+    if (!((fill[3] >= 0.9 && apart >= 90) || /gradient/.test(look.backgroundImage))) continue;
+    const label = (element.innerText || element.getAttribute("aria-label") || "").trim().replace(/\s+/g, " ").slice(0, 28) || "(no label)";
+    filled.set(label, (filled.get(label) || 0) + 1);
+    if (inView(element)) filledInView += 1;
+  }
+  const top = (map, least) => [...map].filter(([, count]) => count >= least).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([text, count]) => ({ text, count }));
+  return { labels: top(labels, 4), filled: top(filled, 1), filledInView };
 };
 
 // Whether the focused control is underneath a pinned band (WCAG 2.2: focus not obscured).
@@ -292,6 +366,58 @@ async function compare(helper, first, second, bar) {
   }, [first.toString("base64"), second.toString("base64"), bar]);
 }
 
+// How much there is to see in a screenshot: the spread (standard deviation, 0–255) of its strongest colour channel.
+async function spread(helper, shot) {
+  return helper.evaluate(async (data) => {
+    const image = new Image();
+    image.src = `data:image/png;base64,${data}`;
+    await image.decode();
+    const canvas = Object.assign(document.createElement("canvas"), { width: image.width, height: image.height });
+    const context = canvas.getContext("2d");
+    context.drawImage(image, 0, 0);
+    const pixels = context.getImageData(0, 0, image.width, image.height).data;
+    const sums = [0, 0, 0], squares = [0, 0, 0];
+    for (let index = 0; index < pixels.length; index += 4) {
+      for (let channel = 0; channel < 3; channel += 1) { sums[channel] += pixels[index + channel]; squares[channel] += pixels[index + channel] ** 2; }
+    }
+    const count = pixels.length / 4;
+    return Math.round(Math.max(...sums.map((sum, channel) => Math.sqrt(Math.max(0, squares[channel] / count - (sum / count) ** 2)))) * 10) / 10;
+  }, shot.toString("base64"));
+}
+
+// What lies behind each glass surface: the surface is hidden for a moment and the page under it measured.
+// Glass over a flat background has nothing to show, and reads as a plain panel.
+async function measureBeneath(page, helper, surfaces) {
+  await page.addStyleTag({ content: "[data-audit-hide] { visibility: hidden !important; transition: none !important; }" });
+  for (const surface of surfaces) {
+    const { mark, box } = surface;
+    delete surface.mark;
+    delete surface.box;
+    surface.behind = null;
+    if (Number(mark) >= 8 || box.width < 24 || box.height < 16) continue;
+    const selector = `[data-audit-glass="${mark}"]`;
+    await page.evaluate((target) => document.querySelector(target).setAttribute("data-audit-hide", ""), selector);
+    await page.waitForTimeout(60);
+    const shot = await page.screenshot({ clip: box });
+    await page.evaluate((target) => document.querySelector(target).removeAttribute("data-audit-hide"), selector);
+    surface.behind = await spread(helper, shot);
+  }
+  await page.waitForTimeout(60);
+  return surfaces;
+}
+
+// At desktop size, at rest: what repeats in the first view, and the filled buttons in view and down the page.
+async function checkRestraint(browser, url) {
+  const page = await browser.newPage(open({ width: 1280, height: 800 }));
+  try {
+    await page.goto(url, { waitUntil: "load", timeout: 30000 });
+    await page.waitForTimeout(2500);
+    return await page.evaluate(repetitionInView);
+  } finally {
+    await page.close();
+  }
+}
+
 async function checkHeader(browser, helper, url, [width, height]) {
   const page = await browser.newPage(open({ width, height }));
   const found = { size: `${width}x${height}`, scrolls: false };
@@ -300,7 +426,7 @@ async function checkHeader(browser, helper, url, [width, height]) {
     await page.waitForTimeout(2500);
     const room = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
     if (room < 120) {
-      found.glass = await page.evaluate(glassOnScreen);
+      found.glass = await measureBeneath(page, helper, await page.evaluate(glassOnScreen));
       return found;
     }
     found.scrolls = true;
@@ -310,7 +436,8 @@ async function checkHeader(browser, helper, url, [width, height]) {
       await page.waitForTimeout(450); // a bar may change material once content is under it
     };
     await settle(far);
-    found.glass = await page.evaluate(glassOnScreen); // on the scrolled page: a header's glass only shows once content is under it
+    // On the scrolled page: a header's glass only shows once content is under it.
+    found.glass = await measureBeneath(page, helper, await page.evaluate(glassOnScreen));
     const bands = await page.evaluate(pinnedBands);
     const top = bands.filter((band) => band.edge === "top").sort((a, b) => a.top - b.top);
     const bottom = bands.filter((band) => band.edge === "bottom");
@@ -420,7 +547,10 @@ function describeHeader(found, phone) {
 // toasts are glass that this screen doesn't show.
 function describeMaterial({ on, onScreen }) {
   const list = (names) => `${names.slice(0, 8).join(", ")}${names.length > 8 ? ` and ${names.length - 8} more` : ""}`;
-  const seen = (surfaces) => (surfaces.length ? list(surfaces.map((surface) => surface.name + (surface.tint === null ? "" : ` (tint ${surface.tint})`))) : "none");
+  const flat = (surface) => surface.behind !== null && surface.behind !== undefined && surface.behind < FLAT_BEHIND;
+  const seen = (surfaces) => (surfaces.length ? list(surfaces.map((surface) => surface.name
+    + (surface.tint === null ? "" : ` (tint ${surface.tint}${flat(surface) ? ", flat behind" : ""})`))) : "none");
+  const plain = [...new Set([...onScreen.desktop, ...onScreen.phone].filter(flat).map((surface) => surface.name))];
   const solid = [...new Set([...onScreen.desktop, ...onScreen.phone].filter((surface) => surface.tint !== null && surface.tint > GLASS_CEILING).map((surface) => surface.name))];
   if (!on.length) {
     return "material: no glass anywhere in the styles (no backdrop blur) — Liquid Glass is the default for a new product or redesign: "
@@ -431,10 +561,28 @@ function describeMaterial({ on, onScreen }) {
     return `material: nothing on this screen is glass — ${defined}, but no surface here uses it. Right if nothing floats on this screen; `
       + "if a bar, panel or rail does, it should be glass (or DESIGN.md says why not).";
   }
-  return `material: glass on this screen — desktop: ${seen(onScreen.desktop)} · phone: ${seen(onScreen.phone)}`
-    + (solid.length ? ` — ${list(solid)}: tinted past ${GLASS_CEILING}, solid to the eye — keep it glass (more blur, a dim layer under a sheet, stronger text) `
-      + "or name it solid in DESIGN.md" : "")
-    + ` — these should be the surfaces the build sheet's Material line names (${defined}: sheets, menus and other states are not on screen now)`;
+  const lines = [`material: glass on this screen — desktop: ${seen(onScreen.desktop)} · phone: ${seen(onScreen.phone)}`];
+  if (solid.length) {
+    lines.push(`  ${list(solid)}: tinted past ${GLASS_CEILING}, solid to the eye — keep it glass (more blur, a dim layer under a sheet, stronger text) or name it solid in DESIGN.md`);
+  }
+  if (plain.length) {
+    lines.push(`  ${list(plain)}: nothing behind it to show (a flat background), so it reads as a plain panel — give the glass a canvas `
+      + "(imagery, a visible field, a dark or coloured band) or tint it");
+  }
+  lines.push(`  these should be the surfaces the build sheet's Material line names (${defined}: sheets, menus and other states are not on screen now)`);
+  return lines.join("\n");
+}
+
+// What repeats. The audit counts; whether each one earns its place is judged by eye.
+function describeRestraint({ labels, filled, filledInView }) {
+  const named = (items) => items.map((item) => `"${item.text}" ×${item.count}`).join(", ");
+  const repeated = filled.filter((item) => item.count >= FILLED_REPEATS);
+  const parts = [labels.length
+    ? `status labels repeated in the first view — ${named(labels)} — a status or count is said once, where it is acted on, plus at most one summary`
+    : "no status label repeated four times or more in the first view"];
+  parts.push(`filled buttons in the first view ${filledInView}` + (filledInView > FILLED_BUTTONS ? " — more than one primary action" : ""));
+  if (repeated.length) parts.push(`the same filled button down the page — ${named(repeated)} — an action repeated on every row or card stays quiet`);
+  return `restraint (1280x800): ${parts.join(" · ")}`;
 }
 
 async function main() {
@@ -492,9 +640,10 @@ async function main() {
     }
     // The remaining checks each use a page of their own, so they run side by side.
     const helper = await browser.newPage();
-    const [widths, desktop, phone, focus, styles] = await Promise.all([sweepWidths(browser, url), checkHeader(browser, helper, url, [1280, 800]),
-      checkHeader(browser, helper, url, [390, 844]), checkFocus(browser, url), checkStyles(browser, url)]);
+    const [widths, desktop, phone, focus, styles, restraint] = await Promise.all([sweepWidths(browser, url), checkHeader(browser, helper, url, [1280, 800]),
+      checkHeader(browser, helper, url, [390, 844]), checkFocus(browser, url), checkStyles(browser, url), checkRestraint(browser, url)]);
     report.widths = widths;
+    report.restraint = restraint;
     const { glass: desktopGlass = [], ...desktopHeader } = desktop;
     const { glass: phoneGlass = [], ...phoneHeader } = phone;
     report.header = { desktop: desktopHeader, phone: phoneHeader, focus, safeAreas: styles.safeAreas };
@@ -526,6 +675,7 @@ async function main() {
     console.log("safe areas: bars are pinned on a phone but the code has no viewport-fit=cover with env(safe-area-inset-*) — a notch or home indicator would cover them (checked in code only)");
   }
   console.log(describeMaterial(report.material));
+  console.log(describeRestraint(report.restraint));
   if (report.system) {
     const c = report.system.counts;
     console.log(`design system rendered: radii ${c.radius} · shadows ${c.shadow} · font sizes ${c.fontSize} · font families ${c.fontFamily} (${report.system.fonts.join(", ")}) · text colours ${c.textColour} · surfaces ${c.surface} · spacing values ${c.spacing}`);

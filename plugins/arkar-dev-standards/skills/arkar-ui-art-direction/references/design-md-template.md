@@ -26,7 +26,9 @@ Primary job: <the one thing the main screen makes effortless>
 Tone: <three adjectives>
 Themes: <light | dark | both — and why>
 Material: <Liquid Glass (the default) — which surfaces are glass, which stay
-solid, what lies beneath the glass; or the reason this product goes without>
+solid, and what lies beneath the glass that makes it read as glass in a still
+(imagery, a visible field, a dark or coloured band; or the glass is tinted);
+or the reason this product goes without>
 Languages: <e.g. English only; or English + Burmese (needs tall-script line height)>
 
 ## Colour

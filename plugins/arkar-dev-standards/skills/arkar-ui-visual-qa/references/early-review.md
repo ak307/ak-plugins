@@ -51,11 +51,18 @@ changes, and not for a feature that must match an existing product's look.
 >    the page has scrolled, bars and panels over the content, sheets)
 >    visibly glass — translucent, lit at its edge, with something behind it
 >    worth seeing through — while what people read and work in stays solid?
+>    Can you point to the glass in each screenshot without being told —
+>    or is it white frost on a pale page that reads as a plain panel?
 >    Or is the product solid throughout, frosted everywhere, or "glass"
 >    tinted so far that it looks solid? If text on a glass surface is hard
 >    to read, say so — and say whether more blur, a dimmer page behind it or
 >    stronger text would fix it, not a more solid surface.
-> 6. **The three changes that would lift it most**, most valuable first.
+> 6. **Restraint** — is the same status, count or warning shown in more
+>    than one place on a screen? Is there more than one filled primary
+>    button in view? Does a new, empty record open as an invitation or as a
+>    list of what is missing? Is the navigation visually heavier than the
+>    content it serves?
+> 7. **The three changes that would lift it most**, most valuable first.
 >    Each must be concrete enough to build (what, and where), and use what
 >    the product already has — its content, colours and type. No new
 >    features.

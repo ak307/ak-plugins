@@ -26,6 +26,11 @@ decides the exact feel.
   (label → spinner or progress inside it, width held so nothing shifts), or
   the thing it acts on changes in place. Never a click that "does nothing"
   for half a second, and never a full-page reload for a small action.
+- **A local action shows its result at once.** Creating a draft, adding a
+  row, opening something already loaded, switching a view: the new thing
+  appears immediately and saves behind it. A spinner in the button is for
+  work whose result can't be shown until it is done (a submit, a payment,
+  a server check) — never a second of "Starting…" before an empty form.
 - **Guard against double action:** while working, the control is busy (not
   just disabled-looking) and can't fire twice.
 - **Destructive actions** are visibly different, ask for confirmation in

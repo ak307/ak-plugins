@@ -79,8 +79,12 @@ and redesigns.
 >    scrolled, bars and panels over the content, sheets, dialogs, toasts)
 >    should visibly be glass, with the working content solid — solid
 >    throughout, or one glass bar on an otherwise solid product, is a
->    finding; so is frosted glass everywhere, and so is glass tinted until
->    it looks solid. Where text on glass is hard to read, name the fix that
+>    finding; so is frosted glass everywhere, glass tinted until it looks
+>    solid, and glass you cannot tell from a plain panel (white frost on a
+>    pale page). Restraint: the same status, count or warning in several
+>    places on one screen, more than one filled primary button in view, a
+>    new empty record that opens as a wall of warnings, or navigation
+>    heavier than the content, are findings. Where text on glass is hard to read, name the fix that
 >    keeps it glass (more blur, a dimmer page behind a sheet, stronger
 >    text), not a more solid surface.
 >

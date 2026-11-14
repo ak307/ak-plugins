@@ -4,13 +4,25 @@
    .lg-field (or a real canvas — map, skyline, schedule, imagery) behind it.
 
    Surfaces:
-     .lg-bar      sidebar, top bar, tab bar, toolbar, filter bar
+     .lg-bar      a bar that floats over a canvas: sidebar, tab bar, toolbar, filter bar
+                  (not the page's header — that is a scroll edge, below)
      .lg-panel    floating content panel over a canvas (stronger tint for reading)
      .lg-sheet    detail sheet / side panel / dialog surface
      .lg-control  buttons, chips, inputs sitting on glass
      .lg-pill     small badges, counts, toasts
      .lg-segmented + .lg-segment  tab/segment control with a sliding indicator
                   (set --lg-index and --lg-count on the container)
+   Scroll edge — whatever stays at the top while the page scrolls. It is a
+   state of the page, not a ready-made bar: design its content per product.
+     .lg-scroll-edge  attached to the window's edge, full width. Part of the page
+                  at rest; frosted once content is under it ([data-over]),
+                  thick enough that nothing behind it can be read.
+     .lg-cap      around a bar that floats inside the page's margins: the
+                  page's own colour from the window's edge down to the bar,
+                  then a short fade, so content never shows above or beside
+                  the bar. Add .lg-field too when the page is a .lg-field.
+   scrollEdge() in the experience kit sets data-over, keeps focus and jump
+   targets below the bar, and marks when the page title has scrolled out.
    Theme: data-theme="dark" on any ancestor (or :root) switches the tint.
    Fallbacks: no backdrop-filter, prefers-reduced-transparency or
    prefers-contrast: more → solid tinted surfaces with the same shape. */
@@ -19,6 +31,7 @@
   --lg-tint: 255 255 255;          /* RGB of the glass tint */
   --lg-tint-alpha: 0.42;           /* bars and sheets */
   --lg-panel-alpha: 0.62;          /* panels people read in */
+  --lg-frost-alpha: 0.78;           /* a pinned header with content under it: 0.7 or more */
   --lg-blur: 22px;
   --lg-saturate: 1.8;
   --lg-edge: 255 255 255;          /* RGB of the rim light */
@@ -27,6 +40,9 @@
   --lg-radius: 22px;
   --lg-radius-control: 999px;
   --lg-solid: #f3f5f8;             /* fallback surface */
+  --lg-page: #eef2f7;              /* the page's own colour, for .lg-cap */
+  --lg-cap-gap: 10px;              /* between the window's edge and a floating bar */
+  --lg-cap-fade: 18px;             /* how far content fades out below it */
   --lg-field-a: #8fb8ff;           /* .lg-field colours */
   --lg-field-b: #b6f0d8;
   --lg-field-c: #ffd6a5;
@@ -37,10 +53,12 @@
   --lg-tint: 22 28 40;
   --lg-tint-alpha: 0.46;
   --lg-panel-alpha: 0.66;
+  --lg-frost-alpha: 0.8;
   --lg-edge: 255 255 255;
   --lg-shadow: 0 0 0;
   --lg-text: #f4f7fb;
   --lg-solid: #161c28;
+  --lg-page: #070b14;
   --lg-field-a: #1f4fd1;
   --lg-field-b: #0e8f73;
   --lg-field-c: #7a3db8;
@@ -49,8 +67,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --lg-tint: 22 28 40; --lg-tint-alpha: 0.46; --lg-panel-alpha: 0.66; --lg-shadow: 0 0 0;
-    --lg-text: #f4f7fb; --lg-solid: #161c28; --lg-field-a: #1f4fd1; --lg-field-b: #0e8f73;
+    --lg-tint: 22 28 40; --lg-tint-alpha: 0.46; --lg-panel-alpha: 0.66; --lg-frost-alpha: 0.8; --lg-shadow: 0 0 0;
+    --lg-text: #f4f7fb; --lg-solid: #161c28; --lg-page: #070b14; --lg-field-a: #1f4fd1; --lg-field-b: #0e8f73;
     --lg-field-c: #7a3db8; --lg-field-base: #070b14;
   }
 }
@@ -139,9 +157,57 @@
 }
 .lg-segment[aria-selected="true"] { font-weight: 600; }
 
+/* The scroll edge. The material sits on a layer of its own so that the two
+   states cross-fade (no animated blur) and the header is plain page at rest.
+   Put the header's own padding on an element inside. */
+.lg-scroll-edge, .lg-cap {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  color: var(--lg-text);
+}
+.lg-scroll-edge { padding-top: env(safe-area-inset-top, 0px); }
+.lg-scroll-edge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: rgb(var(--lg-tint) / var(--lg-frost-alpha));
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate));
+  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate));
+  border-bottom: 1px solid rgb(var(--lg-shadow) / 0.10);
+  box-shadow: inset 0 1px 0 rgb(var(--lg-edge) / 0.35);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.lg-scroll-edge[data-over]::before { opacity: 1; }
+
+.lg-cap {
+  padding: calc(env(safe-area-inset-top, 0px) + var(--lg-cap-gap))
+    max(var(--lg-cap-gap), env(safe-area-inset-right, 0px)) 0
+    max(var(--lg-cap-gap), env(safe-area-inset-left, 0px));
+}
+.lg-cap:not(.lg-field) { background: var(--lg-page); }
+.lg-cap::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: var(--lg-cap-fade);
+  pointer-events: none;
+  background: inherit;
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+  mask-image: linear-gradient(to bottom, #000, transparent);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.lg-cap[data-over]::after { opacity: 1; }
+
 /* Fallbacks: same shape, solid surface. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .lg-bar, .lg-panel, .lg-sheet, .lg-control, .lg-pill, .lg-segmented { background: var(--lg-solid); }
+  .lg-bar, .lg-panel, .lg-sheet, .lg-control, .lg-pill, .lg-segmented, .lg-scroll-edge::before { background: var(--lg-solid); }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .lg-bar, .lg-panel, .lg-sheet, .lg-control, .lg-pill, .lg-segmented {
@@ -150,7 +216,8 @@
     backdrop-filter: none;
   }
   .lg-bar::before, .lg-panel::before, .lg-sheet::before, .lg-control::before, .lg-segmented::before { display: none; }
+  .lg-scroll-edge::before { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .lg-segmented::after, .lg-control { transition: none; }
+  .lg-segmented::after, .lg-control, .lg-scroll-edge::before, .lg-cap::after { transition: none; }
 }

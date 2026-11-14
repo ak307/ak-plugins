@@ -1,0 +1,19 @@
+/* The product's side of the fixture: layout and its own look. The pinned behaviour comes from the kits. */
+html.inner, html.inner body { height: 100%; overflow: hidden; }
+html.inner #scroller { height: 100%; overflow: auto; }
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: var(--lg-text); }
+.row { display: flex; align-items: center; gap: 16px; height: 52px; padding: 0 24px; }
+.row button { flex: none; margin-left: auto; border: 0; padding: 8px 14px; font: inherit; color: inherit; white-space: nowrap; }
+.mark { font-weight: 600; }
+/* The page's title appears in the bar only once the title itself has scrolled out. */
+.context { min-width: 0; opacity: 0; transition: opacity 160ms ease; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+[data-context] .context { opacity: 1; }
+main { padding: 8px 24px 160px; }
+h1 { font-size: 2.6rem; line-height: 1.15; margin: 24px 0; }
+h2 { font-size: 2rem; margin: 40px 0 12px; }
+p { max-width: 70ch; }
+a { display: inline-block; margin: 6px 0; color: inherit; }
+@media (max-width: 480px) {
+  .row { padding: 0 14px; gap: 10px; }
+  .mark { display: none; }
+}

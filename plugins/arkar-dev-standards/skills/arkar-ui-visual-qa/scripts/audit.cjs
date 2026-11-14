@@ -180,22 +180,28 @@ const pinnedBands = () => {
     const stuck = style.position === "fixed" || (Number.isFinite(top) && Math.abs(box.top - top) <= 1.5)
       || (Number.isFinite(bottom) && Math.abs(innerHeight - box.bottom - bottom) <= 1.5);
     if (!stuck || bands.some((band) => band.element.contains(element))) continue;
-    // The band may be a see-through wrapper around a bar that is set in from its edges: find what is painted.
-    const painted = (node) => {
-      const look = getComputedStyle(node);
-      const alpha = (look.backgroundColor.match(/[\d.]+/g) || []).map(Number)[3];
-      return (look.backgroundImage !== "none" || (alpha === undefined ? look.backgroundColor !== "rgba(0, 0, 0, 0)" : alpha > 0.05)
-        || (look.backdropFilter && look.backdropFilter !== "none")) && node.getBoundingClientRect().width >= box.width * 0.5;
+    // What an element paints behind its content — on itself or on a ::before / ::after layer, where bars
+    // often keep their material: its tint (1 = solid, null = an image or gradient) and its blur.
+    const material = (node) => {
+      for (const layer of [null, "::before", "::after"]) {
+        const look = getComputedStyle(node, layer);
+        if (layer && (look.content === "none" || look.content === "normal" || look.display === "none" || Number(look.opacity) < 0.05)) continue;
+        const colour = (look.backgroundColor.match(/[\d.]+/g) || []).map(Number);
+        const alpha = colour.length === 4 ? colour[3] : colour.length === 3 ? 1 : 0;
+        const blur = /blur\(([\d.]+)px\)/.exec(look.backdropFilter || "");
+        if (alpha > 0.05) return { tint: alpha, blur: blur ? Number(blur[1]) : 0 };
+        if (look.backgroundImage !== "none") return { tint: null, blur: blur ? Number(blur[1]) : 0 };
+        if (blur) return { tint: alpha, blur: Number(blur[1]) };
+      }
+      return null;
     };
+    // The band may be a see-through wrapper around a bar that is set in from its edges: find what is painted.
+    const painted = (node) => material(node) && node.getBoundingClientRect().width >= box.width * 0.5;
     const bar = painted(element) ? element : [...element.querySelectorAll("*")].find(painted) || element;
     const inner = bar.getBoundingClientRect();
-    const look = getComputedStyle(bar);
-    const colour = (look.backgroundColor.match(/[\d.]+/g) || []).map(Number);
-    const blur = /blur\(([\d.]+)px\)/.exec(look.backdropFilter || "");
     bands.push({ element, name: name(element), top: Math.round(box.top), bottom: Math.round(box.bottom), edge: box.top < innerHeight / 2 ? "top" : "bottom",
       bar: { left: Math.round(inner.left), top: Math.round(inner.top), right: Math.round(inner.right), bottom: Math.round(inner.bottom),
-        // How much of the page a glass bar lets through: its tint (1 = solid) and its blur.
-        tint: colour.length === 4 ? colour[3] : colour.length === 3 ? 1 : null, blur: blur ? Number(blur[1]) : 0 } });
+        ...(material(bar) || { tint: 0, blur: 0 }) } });
   }
   return bands.map(({ element, ...band }) => band);
 };

@@ -9,7 +9,10 @@
 //     history, so refresh, Back/Forward and shared links land on the same view;
 //   • drafts that survive closing and refresh;
 //   • toasts placed next to the action, one at a time, with undo, announced;
-//   • roving focus for grids/charts/tile sets, and focus kept through re-renders.
+//   • roving focus for grids/charts/tile sets, and focus kept through re-renders;
+//   • a scroll edge for whatever stays at the top: its material changes once content
+//     is under it, focus and jump targets never land beneath it, and one compact bar
+//     takes over the page's context when the title scrolls out.
 // It is mechanics only — the product's own design styles the toast etc.
 // In React/Vue/Svelte, keep the same behaviour with the framework's router,
 // stores and components; the switches and persistence rules are identical.
@@ -270,4 +273,61 @@ export async function keepFocus(render) {
   await render();
   const target = (key && document.querySelector(`[data-key="${CSS.escape(key)}"]`)) || (id && document.getElementById(id));
   if (target && target !== document.activeElement) target.focus({ preventScroll: true });
+}
+
+// ---- The scroll edge -------------------------------------------------------
+
+// scrollEdge(bar, { title, scroller, gap }) → keeps whatever stays at the top honest while the
+// page scrolls. `bar` is the pinned element (position: sticky or fixed).
+//   • bar[data-over] while content is under it, so its material changes in one step: plain page
+//     at rest, frosted over content. The look of each state is the product's CSS (the glass
+//     kit's .lg-scroll-edge and .lg-cap already have both).
+//   • Focus and jump targets land below the bar: the scroller's scroll-padding-top follows the
+//     bar's height, which is also published as --pinned-top for anything that sticks under it.
+//   • With `title` (the page's heading, or a selector for it, looked up again after every change
+//     of screen): bar[data-context] once the heading has scrolled out under the bar, and its text
+//     copied into the bar's [data-context-title] element — one compact bar carries the context,
+//     in place of a second band. Show that element only under [data-context].
+// `scroller` is the element that scrolls when it isn't the window. Returns a function that stops it.
+export function scrollEdge(bar, { title, scroller, gap = 12 } = {}) {
+  const box = scroller || document.documentElement;
+  const slot = bar.querySelector("[data-context-title]");
+  if (slot) slot.setAttribute("aria-hidden", "true"); // the heading itself stays in the page for screen readers
+  let frame = 0;
+
+  const measure = () => {
+    frame = 0;
+    const pinnedAt = parseFloat(getComputedStyle(bar).top) || 0;
+    const rect = bar.getBoundingClientRect();
+    const edge = Math.round(pinnedAt + rect.height); // the bar's lower edge once it is pinned
+    box.style.scrollPaddingTop = `${edge + gap}px`;
+    box.style.setProperty("--pinned-top", `${edge}px`);
+    const scrolled = scroller ? scroller.scrollTop : window.scrollY;
+    const from = scroller ? scroller.getBoundingClientRect().top : 0;
+    bar.toggleAttribute("data-over", scrolled > 4 && rect.top - from <= pinnedAt + 1);
+
+    const heading = typeof title === "string" ? document.querySelector(title) : title;
+    let gone = false;
+    if (heading && heading.isConnected) {
+      // A little slack on the way back, so a bar that changes height with its context can't flicker.
+      const slack = bar.hasAttribute("data-context") ? 8 : 0;
+      gone = heading.getBoundingClientRect().bottom < rect.bottom + slack;
+      if (gone && slot && slot.textContent !== heading.textContent) slot.textContent = heading.textContent;
+    }
+    bar.toggleAttribute("data-context", gone);
+  };
+  const queue = () => { if (!frame) frame = requestAnimationFrame(measure); };
+
+  const target = scroller || window;
+  target.addEventListener("scroll", queue, { passive: true });
+  window.addEventListener("resize", queue);
+  const resized = new ResizeObserver(queue);
+  resized.observe(bar);
+  measure();
+  return () => {
+    target.removeEventListener("scroll", queue);
+    window.removeEventListener("resize", queue);
+    resized.disconnect();
+    cancelAnimationFrame(frame);
+  };
 }

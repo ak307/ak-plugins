@@ -488,3 +488,36 @@ For the blind page the chosen builds (round 4, released plugin) and the new buil
 through the same journeys with `evals/core_flow.cjs` — screenshots at twice the pixel density with
 glass rendered correctly — and shown as A and B in a random order per brief. The key stays outside
 the repository until AK has judged them.
+
+### Round 7 verdict (14 Nov 2026)
+
+Key: in both briefs A was the new build (`ui-top-tier` at `6c26aa9`) and B the build AK chose in
+round 4. This was not an independent blind verdict: AK asked for my opinion first, I gave it by
+the page's letters, and he answered "I agree with you".
+
+| Question | Permit form | Energy dashboard |
+|---|---|---|
+| Looks better | B, narrowly | B, narrowly |
+| Feels better to use | A | A |
+| Top bar and navigation | A | A |
+| Use of glass | B | B |
+| Would ship | A, after cutting the repetition | A, after cutting the repetition |
+
+What the new builds got right: the top bar (one quiet band, in the page's tone, nothing around or
+through it) and products organised around their real job ("what is still missing"; cost over target
+and dollars a day at stake).
+
+What they got wrong, and no skill text or check covers:
+
+- **Glass is correct but timid.** Both new builds chose a light theme, and white glass on a light
+  page is nearly invisible. The chosen builds read as glass because they are dark with a rich field
+  behind. The rule says "over a background with something to refract" and nothing enforces it.
+- **No restraint.** The permit form says "needed" in five places on one screen and opens a new
+  application as a wall of amber; the energy dashboard has a black "Resolve" on each of five alert
+  cards. Nothing in the skills says "say it once" or "one primary action per view".
+- **A wait for a local action.** "New permit application" shows a spinner for about a second before
+  anything changes.
+- **Navigation heavier than the content it serves** (the permit form's dark section rail).
+
+Basis: screenshots at desktop and phone size and slowed filmstrips of the main transitions
+(`film.cjs`), not the full recordings.

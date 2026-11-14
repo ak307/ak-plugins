@@ -30,7 +30,8 @@ const { chromium } = require("playwright");
   const state = (page) => page.evaluate(() => {
     const bar = document.getElementById("bar");
     const slot = bar.querySelector("[data-context-title]");
-    return { over: bar.hasAttribute("data-over"), context: bar.hasAttribute("data-context"), slot: slot.textContent, slotHidden: slot.getAttribute("aria-hidden"),
+    return { over: bar.hasAttribute("data-over"), context: bar.hasAttribute("data-context"),
+      slot: slot.textContent, slotHidden: slot.getAttribute("aria-hidden"),
       frost: Number(getComputedStyle(bar, "::before").opacity), fade: Number(getComputedStyle(bar, "::after").opacity),
       padding: getComputedStyle(window.scroller).scrollPaddingTop, pinned: window.scroller.style.getPropertyValue("--pinned-top"),
       height: Math.round(bar.getBoundingClientRect().height) };
@@ -67,7 +68,8 @@ const { chromium } = require("playwright");
     found.scrolled = await state(page);
     await page.evaluate(() => { location.hash = "#section-6"; });
     await page.waitForTimeout(350);
-    found.jump = await page.evaluate(() => Math.round(document.getElementById("section-6").getBoundingClientRect().top - document.getElementById("bar").getBoundingClientRect().bottom));
+    found.jump = await page.evaluate(() => Math.round(
+      document.getElementById("section-6").getBoundingClientRect().top - document.getElementById("bar").getBoundingClientRect().bottom));
     found.focus = await focusUnderTheBar(page);
     await scrollTo(page, 0);
     found.back = await state(page);

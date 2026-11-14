@@ -313,14 +313,16 @@ What changed:
 | Experience kit (`experience-kit.js`) | `scrollEdge(bar, { title, scroller })`: marks the bar while content is under it, keeps `scroll-padding-top` at the bar's height, marks when the title has scrolled out and copies it into the bar. |
 | Skills | The standard in `arkar-ui-ux-engineering/references/navigation-and-header.md`; a Navigation part in the build sheet; a scroll-edge rule in the build step; scrolled screenshots and a question about what stays pinned for the early and final reviewers; the audit's header findings are defects in Verify. |
 
-The audit run on the four builds of round 5, unchanged:
+The audit run on the first screen of the four builds of round 5, unchanged:
 
-| Build | Pinned at the top | Content above or beside the bar | Readable through | Other |
-|---|---|---|---|---|
-| Permit, released | 76 px — over | yes | no | — |
-| Permit, patched | over, 2 bands | yes | — | a dark bar over a light page (phone) |
-| Energy, released | 76 px — over | yes | no | — |
-| Energy, patched | over | yes | likely (tint 0.42, blur 24 px) | — |
+| Build | Desktop, scrolled | Phone, scrolled |
+|---|---|---|
+| Permit, released | 76 px pinned — over the budget; content showing above or beside the bar | 64 px; content above or beside the bar; a dark bar over a light page; no safe-area handling |
+| Permit, patched | the first screen does not scroll at this size | 64 px; a dark bar over a light page |
+| Energy, released | 76 px — over; content above or beside the bar | 76 px; no safe-area handling |
+| Energy, patched | 76 px — over; content above or beside the bar; the page likely readable through it (tint 0.42, blur 24 px) | 70 px; content above or beside the bar; likely readable through it; no safe-area handling |
+
+No control takes focus under a pinned bar in any of the four.
 
 On the kit's own test pages (attached and floating, light and dark, desktop and phone): one band
 of 52–64 px, nothing above, beside or readable through it, no control takes focus under it.

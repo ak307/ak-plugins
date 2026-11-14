@@ -54,11 +54,13 @@ node "<skill folder>/scripts/screenshot.cjs" http://localhost:8000/claims qa-scr
   are never committed; **look at each PNG** — the script only finds
   machine-detectable problems.
 - Glass is judged at the normal pixel density (`deviceScaleFactor: 1`, what
-  these scripts use). At 2, headless Chromium blurred only part of each
-  glass surface in testing, so text looked readable through glass that was
-  fine. In your own Playwright scripts keep it at 1 for any screen with
-  glass; if glass looks unblurred in a screenshot, retake it at 1 before
-  calling it a defect.
+  these scripts use). At any other density, headless Chromium's default
+  compositor blurred only part of each glass surface in testing, so text
+  looked readable through glass that was fine. In your own Playwright
+  scripts keep it at 1 for any screen with glass — or, for sharper stills,
+  launch with `chromium.launch({ args: ["--use-angle=swiftshader"] })`,
+  which blurred correctly at 2 and 3. If glass looks unblurred in a
+  screenshot, retake it one of these ways before calling it a defect.
 - Pages behind login: a short Playwright script that logs in with local test
   credentials, then visits each size.
 

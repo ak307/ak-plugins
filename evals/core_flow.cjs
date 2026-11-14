@@ -62,11 +62,14 @@ async function moveTo(page, selector) {
   const videoFolder = fs.mkdtempSync(path.join(require("os").tmpdir(), "core-flow-"));
   const viewport = phone ? { width: 390, height: 844 } : { width: 1280, height: 800 };
   const { server, base } = await serve(root);
-  const browser = await chromium.launch();
-  // Two passes over the same steps, each in a fresh browser profile. The video is recorded in a
-  // pass of its own: a screenshot taken while recording shows up in the video as two frames of a
-  // zoomed corner of the page, which reads as the product flickering.
+  // Two passes over the same steps, each in a fresh browser. The video is recorded in a pass of
+  // its own: a screenshot taken while recording shows up in the video as two frames of a zoomed
+  // corner of the page, which reads as the product flickering.
+  // The screenshots are taken at twice the pixel density, and for that the browser must composite
+  // with SwiftShader: headless Chromium's default compositor blurs only part of a glass surface at
+  // any density but 1, so text looks readable through glass that is fine.
   async function walk({ record }) {
+    const browser = await chromium.launch(record ? {} : { args: ["--use-angle=swiftshader"] });
     const context = await browser.newContext(record
       ? { viewport, deviceScaleFactor: 1, recordVideo: { dir: videoFolder, size: viewport } }
       : { viewport, deviceScaleFactor: 2 });
@@ -96,12 +99,12 @@ async function moveTo(page, selector) {
     await page.waitForTimeout(800);
     const video = record ? page.video() : null;
     await context.close();
+    await browser.close();
     return { failed, video };
   }
   const { failed, video } = await walk({ record: true });
   const shots = await walk({ record: false });
   for (const line of shots.failed) if (!failed.includes(line)) failed.push(`(screenshots) ${line}`);
-  await browser.close();
   server.close();
   const webm = await video.path();
   const mp4 = path.join(out, `${label}-flow${phone ? "-phone" : ""}.mp4`);

@@ -50,6 +50,11 @@ ALL_NINE = ("arkar-ui-intelligence", "arkar-ui-discovery", "arkar-ui-art-directi
             "arkar-ui-accessibility", "arkar-ui-implementation", "arkar-ui-visual-qa")
 
 
+# What every UI change needs, and what a new screen or component needs (the orchestrator's minimum sets).
+SMALL_CHANGE = ("arkar-ui-intelligence", "arkar-ui-ux-engineering", "arkar-ui-implementation", "arkar-ui-visual-qa")
+NEW_SCREEN = SMALL_CHANGE + ("arkar-ui-motion-design", "arkar-ui-responsive-design", "arkar-ui-accessibility")
+
+
 def skills(*names: str) -> list:
     return [tool_use("Skill", skill=f"arkar-dev-standards:{name}") for name in names]
 
@@ -85,10 +90,36 @@ def test_ui_edit_without_orchestrator_is_blocked(tmp_path):
     assert "arkar-ui-visual-qa" in output["reason"]
 
 
-def test_small_change_with_both_skills_passes(tmp_path):
-    events = skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + [
-        tool_use("Edit", file_path=str(tmp_path / "src" / "Button.tsx"))]
+def test_small_change_with_its_four_skills_passes(tmp_path):
+    events = skills(*SMALL_CHANGE) + [tool_use("Edit", file_path=str(tmp_path / "src" / "Button.tsx"))]
     assert run_gate(tmp_path, events) == ""
+
+
+def test_a_ui_change_without_its_specialists_is_sent_back(tmp_path):
+    # Seen in planning probes: when the UI is only part of a coding task (a button on a page, a filter on a
+    # list) the orchestrator loaded but its specialists did so only about half the time.
+    events = skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + [
+        tool_use("Edit", file_path=str(tmp_path / "resources" / "views" / "complaints" / "show.blade.php"))]
+    reason = json.loads(run_gate(tmp_path, events))["reason"]
+    assert "UI was changed" in reason and "`arkar-ui-ux-engineering`, `arkar-ui-implementation`" in reason
+    assert "arkar-ui-motion-design" not in reason  # an edit to an existing screen: the small set only
+
+
+def test_a_new_screen_needs_motion_responsive_and_accessibility_too(tmp_path):
+    events = skills(*SMALL_CHANGE) + [tool_use("Write", file_path=str(tmp_path / "src" / "pages" / "Assign.tsx"))]
+    reason = json.loads(run_gate(tmp_path, events))["reason"]
+    assert "a new screen or component was written" in reason
+    assert "`arkar-ui-motion-design`, `arkar-ui-responsive-design`, `arkar-ui-accessibility`" in reason
+    assert run_gate(tmp_path, skills(*NEW_SCREEN) + events[-1:]) == ""
+
+
+@pytest.mark.parametrize(("path", "is_ui"), [("app/Livewire/WorkOrders.php", True), ("app/Http/Livewire/Orders/Table.php", True),
+                                             ("app/Filament/Resources/OrderResource.php", True), ("app/Models/Order.php", False),
+                                             ("app/Http/Controllers/OrderController.php", False)])
+def test_ui_written_in_php_counts_as_ui(tmp_path, path, is_ui):
+    # A Livewire component's class and Filament's forms and tables hold no HTML, but they are the UI.
+    output = run_gate(tmp_path, [tool_use("Edit", file_path=str(tmp_path / path), old_string="a", new_string="public $status = '';")])
+    assert bool(output) is is_ui
 
 
 def test_redesign_missing_evidence_is_blocked(tmp_path):
@@ -187,7 +218,7 @@ def test_redesign_without_all_specialists_is_blocked(tmp_path):
 
 def test_small_edit_to_existing_design_doc_needs_no_redesign_evidence(tmp_path):
     (tmp_path / "DESIGN.md").write_text("# Design\n")
-    events = skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + [
+    events = skills(*SMALL_CHANGE) + [
         tool_use("Edit", file_path=str(tmp_path / "styles.css")),
         tool_use("Edit", file_path=str(tmp_path / "DESIGN.md"))]
     assert run_gate(tmp_path, events) == ""
@@ -216,7 +247,7 @@ def test_files_written_through_the_shell_count(tmp_path):
 
 
 def test_shell_logs_and_appends_are_not_rewrites(tmp_path):
-    events = skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + [
+    events = skills(*SMALL_CHANGE) + [
         tool_use("Bash", command="node probe.cjs http://127.0.0.1:8000/ > probe.log 2>&1"),
         tool_use("Bash", command="echo '.x{}' | tee -a styles.css")]
     assert run_gate(tmp_path, events) == ""
@@ -256,7 +287,7 @@ def test_build_sheet_added_to_an_existing_design_doc_needs_verify_and_review(tmp
     # New screens in an existing product: the sheet goes into DESIGN.md by an edit, not a rewrite.
     (tmp_path / "DESIGN.md").write_text("# Design\n## Build sheet — two-factor sign-in\n"
                                         "Component plan: reuse Field, Button\nStates: ...\n")
-    events = skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + [
+    events = skills(*NEW_SCREEN) + [
         tool_use("Edit", file_path=str(tmp_path / "DESIGN.md"), old_string="x",
                  new_string="## Build sheet — two-factor sign-in\nStates: ..."),
         tool_use("Write", file_path=str(tmp_path / "resources" / "views" / "auth" / "mfa.blade.php"))]
@@ -279,9 +310,8 @@ def test_old_record_wording_still_counts_as_a_review(tmp_path):
 
 def test_reading_the_skill_file_counts_as_loading_it(tmp_path):
     # The documented fallback when the Skill tool fails.
-    events = [tool_use("Read", file_path="/home/ak/.claude/plugins/x/skills/arkar-ui-intelligence/SKILL.md"),
-              tool_use("Read", file_path="/home/ak/.claude/plugins/x/skills/arkar-ui-visual-qa/SKILL.md"),
-              tool_use("Edit", file_path=str(tmp_path / "src" / "Button.tsx"))]
+    events = [tool_use("Read", file_path=f"/home/ak/.claude/plugins/x/skills/{name}/SKILL.md") for name in SMALL_CHANGE]
+    events.append(tool_use("Edit", file_path=str(tmp_path / "src" / "Button.tsx")))
     assert run_gate(tmp_path, events) == ""
 
 
@@ -307,10 +337,42 @@ def test_ui_write_before_the_orchestrator_is_held(tmp_path):
     assert "Build sheet" in decision["permissionDecisionReason"]
 
 
-def test_ui_write_after_the_orchestrator_goes_ahead(tmp_path):
-    history = skills("arkar-ui-intelligence")
+def test_ui_write_after_its_skills_goes_ahead(tmp_path):
+    history = skills("arkar-ui-intelligence", "arkar-ui-ux-engineering", "arkar-ui-implementation")
     assert run_before_write(tmp_path, history, "Edit", file_path=str(tmp_path / "src" / "Login.tsx"),
                             old_string="a", new_string="b") is None
+
+
+def test_a_ui_edit_with_only_the_orchestrator_is_held_for_its_specialists(tmp_path):
+    # The coding session where the UI is incidental: the orchestrator loaded, the specialists didn't.
+    decision = run_before_write(tmp_path, skills("arkar-ui-intelligence"), "Edit",
+                                file_path=str(tmp_path / "resources" / "views" / "complaints" / "show.blade.php"),
+                                old_string="a", new_string="<button>Draft reply</button>")
+    reason = decision["permissionDecisionReason"]
+    assert decision["permissionDecision"] == "deny"
+    assert "`arkar-ui-ux-engineering`, `arkar-ui-implementation` (every UI change needs them)" in reason
+    assert "arkar-ui-motion-design" not in reason and "before `arkar-ui-intelligence` was loaded" not in reason
+
+
+def test_a_new_ui_file_is_held_for_the_larger_set_and_an_existing_one_is_not(tmp_path):
+    history = skills("arkar-ui-intelligence", "arkar-ui-ux-engineering", "arkar-ui-implementation")
+    page = tmp_path / "src" / "pages" / "Assign.tsx"
+    decision = run_before_write(tmp_path, history, "Write", file_path=str(page), content="export default function Assign() {}")
+    reason = decision["permissionDecisionReason"]
+    assert "`arkar-ui-motion-design`, `arkar-ui-responsive-design`, `arkar-ui-accessibility` (a new screen or component needs them)" in reason
+    page.parent.mkdir(parents=True)
+    page.write_text("export default function Assign() {}")  # the file is there now: rewriting it is not a new screen
+    assert run_before_write(tmp_path, history, "Write", file_path=str(page), content="export default function Assign() {}") is None
+
+
+def test_the_first_hold_names_everything_to_load_at_once(tmp_path):
+    decision = run_before_write(tmp_path, [], "Write", file_path=str(tmp_path / "app" / "Livewire" / "WorkOrders.php"),
+                                content="<?php class WorkOrders extends Component {}")
+    reason = decision["permissionDecisionReason"]
+    assert "before `arkar-ui-intelligence` was loaded" in reason and "in the same message" in reason
+    for name in ("arkar-ui-ux-engineering", "arkar-ui-implementation", "arkar-ui-motion-design", "arkar-ui-responsive-design",
+                 "arkar-ui-accessibility"):
+        assert name in reason
 
 
 def test_markup_written_into_code_is_held_too(tmp_path):
@@ -329,12 +391,12 @@ def test_scratch_pages_outside_the_project_are_not_held(tmp_path):
     assert run_before_write(tmp_path, [], "Write", file_path=str(outside), content="<main></main>") is None
 
 
-def test_hold_is_asked_twice_at_most_then_lets_work_go_on(tmp_path):
+def test_hold_is_asked_three_times_at_most_then_lets_work_go_on(tmp_path):
     import uuid
     session = f"test-{uuid.uuid4()}"
     decisions = [run_before_write(tmp_path, [], "Write", session=session, file_path=str(tmp_path / "index.html"),
-                                  content="<main></main>") for _ in range(4)]
-    assert [bool(decision) for decision in decisions] == [True, True, False, False]
+                                  content="<main></main>") for _ in range(5)]
+    assert [bool(decision) for decision in decisions] == [True, True, True, False, False]
 
 
 def test_before_write_check_is_wired_in_hooks_json():
@@ -389,8 +451,7 @@ def test_test_fixtures_are_not_product_ui(tmp_path):
     assert run_gate(tmp_path, events) == ""
     assert run_before_write(tmp_path, [], "Write", file_path=str(fixture / "index.html"), content="<main/>") is None
     # A real UI edit in the same session doesn't turn the fixture's DESIGN.md into a redesign.
-    events += skills("arkar-ui-intelligence", "arkar-ui-visual-qa") + [
-        tool_use("Edit", file_path=str(tmp_path / "src" / "Button.tsx"))]
+    events += skills(*SMALL_CHANGE) + [tool_use("Edit", file_path=str(tmp_path / "src" / "Button.tsx"))]
     assert run_gate(tmp_path, events) == ""
 
 

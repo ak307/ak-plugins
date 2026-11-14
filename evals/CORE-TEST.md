@@ -582,3 +582,33 @@ Not good, or not known:
   scroll positions the audit compares, and those pixels were counted as the page showing through.
   The audit now notes when a bar changes its own content and judges by its tint instead. A test
   covers it. (`evals/core_test.py` also crashed printing the summary of a cut-off run; fixed.)
+
+## The UI skills in an ordinary coding session (AK, 14 Nov: "make sure that UI skills required are loaded automatically")
+
+What already made them load: the always-on rules (load `arkar-ui-intelligence` first), each skill's
+description, the gate that holds the first UI write until the orchestrator is loaded, and the end
+gate (orchestrator and visual QA). Evidence from earlier runs, whose prompts never name a skill:
+
+| Kind of request | Runs | What loaded by itself |
+|---|---|---|
+| A UI feature in an existing app, built for real (`opsdesk-assign`, round 4) | 2 | the orchestrator and the full feature set |
+| UI features, planning probes (Livewire, Flutter, sign-in screens) | 31 | the orchestrator and six specialists, every run |
+| **The UI is only part of a coding request**, planning probes ("add a Draft reply button", a status filter, a reassign action) | 20 | the orchestrator every run; its specialists in only 6 of 20 |
+
+The last row was the gap: the orchestrator's own minimum set (ux-engineering and implementation for
+any UI change) was left to chance. Now the gate enforces it:
+
+- **Before the first UI write** it holds the write until the orchestrator, ux-engineering and
+  implementation are loaded; a new UI file (a new screen or component) also needs motion,
+  responsive and accessibility. One message names everything to load. Asked three times at most.
+- **Before finishing** it checks the same sets, with visual QA.
+- A Livewire component's class and Filament's forms and tables (`app/Livewire/`, `app/Filament/`)
+  now count as UI; they hold no HTML, so the gate did not see them.
+
+One real session with the release candidate (`workorders-filter`: "add a status filter … to the work
+orders table, kept in the URL", on the work-orders fixture; no skill named): 5.2 minutes, $1.66.
+It loaded the orchestrator, the change workflow, ux-engineering, implementation, accessibility,
+responsive and motion in its first 15 seconds, visual QA before the edit, and security after it; the
+gate never had to hold a write. The filter matches the app's other filters and works from the URL;
+six existing-code findings came back as labelled proposals, none applied. One run: it shows the
+skills load, not that they always will — the gate is what makes that certain.

@@ -178,6 +178,12 @@ changes what users see — even a one-line style change — before you report
 back.** Its honesty rules and quality gates are part of finishing; doing
 the checks without it isn't enough.
 
+Load the set in one message, before the first UI file is written — also
+when the UI is only part of a coding task (a button on a page, a filter on
+a list). The UI gate holds that first write until the minimum is loaded:
+every UI change needs ux-engineering and implementation; a new screen or
+component also needs motion, responsive and accessibility.
+
 Beyond the minimum, don't load specialists "just in case".
 
 ## 4. Work through it — Understand → Decide → Build sheet → Implement → Verify → Independent review → Report

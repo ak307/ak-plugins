@@ -118,6 +118,7 @@ def summarise(stream: str) -> dict:
     """Time, turns, tokens, skills and tool use from a session's event stream."""
     summary = {"skills": [], "tools": {}, "images_looked_at": 0, "subagents": 0, "final": "", "ending": "no result event",
                "gate_blocks": stream.count("the UI work isn't finished yet"),
+               "gate_holds": stream.count("arkar UI quality gate: this writes UI"),
                "guard_hits": stream.count("arkar production guard:")}
     for line in stream.splitlines():
         try:

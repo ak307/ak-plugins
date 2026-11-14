@@ -39,3 +39,11 @@ briefs:
       the work orders. keep Ops Desk's look.
     build: ["npm install --no-audit --no-fund", "npm run build"]
     serve: dist
+
+  # A coding request where the UI is only part of it: checks that the UI skills load by themselves.
+  - id: workorders-filter
+    kind: small change in an existing app, UI incidental to a coding request
+    fixture: work-orders
+    prompt: >-
+      add a status filter (New / Assigned / In progress / Waiting on parts) to the work orders table, kept in
+      the URL so a refresh or a shared link keeps it.

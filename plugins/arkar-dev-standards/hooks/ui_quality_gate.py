@@ -8,12 +8,17 @@ Independent review → Report, and this hook holds the
 two ends of it:
 
 - **Before writing (PreToolUse on Write/Edit):** a UI file is about to be
-  written but `arkar-ui-intelligence` hasn't been loaded → the write is held
-  and Claude is told to load it first, so the decisions and the build sheet
-  come before the code, not after it. Asked at most twice per session.
+  written but the skills that change needs haven't been loaded → the write is
+  held and Claude is told which to load first, so the decisions and the build
+  sheet come before the code, not after it. Every UI change needs
+  `arkar-ui-intelligence`, `arkar-ui-ux-engineering` and
+  `arkar-ui-implementation`; a new UI file (a new screen or component) also
+  needs motion, responsive and accessibility. This is what makes the UI
+  skills load by themselves in an ordinary coding session, where the UI is
+  only part of the request. Asked at most three times per session.
 - **Before finishing (Stop):**
-  1. UI files were changed → `arkar-ui-intelligence` and
-     `arkar-ui-visual-qa` must have been loaded.
+  1. UI files were changed → the same skills and `arkar-ui-visual-qa` must
+     have been loaded.
   2. The session created or rewrote `DESIGN.md` (a new product, page set or
      redesign) → all nine UI specialists must have been loaded.
   3. It created or rewrote DESIGN.md, or wrote a build sheet into it → the
@@ -41,7 +46,9 @@ from pathlib import Path
 
 UI_FILE = re.compile(
     r"\.(html?|css|scss|sass|less|jsx|tsx|vue|svelte|astro|dart|blade\.php|twig|erb|hbs)$"
-    r"|/(components?|views?|pages?|screens?|widgets?|templates?|layouts?)/.*\.(js|ts|php|py|kt|swift)$",
+    r"|/(components?|views?|pages?|screens?|widgets?|templates?|layouts?)/.*\.(js|ts|php|py|kt|swift)$"
+    # UI written in PHP: a Livewire component's class (its state and behaviour) and Filament's forms, tables and pages.
+    r"|/(livewire|filament)/.*\.php$",
     re.IGNORECASE,
 )
 MARKUP = re.compile(r"<(form|input|button|label|table|select|textarea|nav|header|main|section)\b[^>]*>", re.IGNORECASE)
@@ -54,6 +61,10 @@ VISUAL_QA = "arkar-ui-visual-qa"
 ALL_SPECIALISTS = ("arkar-ui-discovery", "arkar-ui-art-direction", "arkar-ui-ux-engineering",
                    "arkar-ui-design-system", "arkar-ui-motion-design", "arkar-ui-responsive-design",
                    "arkar-ui-accessibility", "arkar-ui-implementation", VISUAL_QA)
+# The orchestrator's smallest sets: what every UI change needs beside the orchestrator, and what a new
+# screen or component adds. (Visual QA comes at the end; DESIGN.md written whole needs all nine.)
+ANY_UI_CHANGE = ("arkar-ui-ux-engineering", "arkar-ui-implementation")
+NEW_SCREEN = ("arkar-ui-motion-design", "arkar-ui-responsive-design", "arkar-ui-accessibility")
 
 
 # Files written through the shell: `cat > f`, `tee f`, `> f`, Python `open("f", "w")` /
@@ -263,7 +274,7 @@ def missing_evidence(cwd: Path, edited: list[str], used_agent: bool = True) -> l
 
 
 MAX_BLOCKS = 3
-MAX_HOLDS = 2
+MAX_HOLDS = 3
 
 
 def blocks_so_far(session_id: str, add: bool = False, kind: str = "gate") -> int:
@@ -312,6 +323,13 @@ def decide(event: dict) -> str | None:
     # to an existing one (a token, a note) is ordinary work and needs only the two checks above.
     design_rewritten = any(Path(path).name == "DESIGN.md" and not SKIP_PATH.search(relative(path, cwd))
                            for path in written)
+    # A UI file written whole is a new screen or component (or one rewritten): the larger set.
+    new_screen = any(is_project_ui(path, cwd) for path in written)
+    needed = [name for name in ANY_UI_CHANGE + (NEW_SCREEN if new_screen else ()) if not loaded(skills, name)]
+    if needed and not design_rewritten:
+        problems.append(("a new screen or component was written" if new_screen else "UI was changed") +
+                        ", and the specialists that needs weren't loaded: " + ", ".join(f"`{name}`" for name in needed) +
+                        ". Load each with the Skill tool and check the work against it (its quality criteria), fixing what falls short")
     if design_rewritten:
         not_loaded = [name for name in ALL_SPECIALISTS if name != VISUAL_QA and not loaded(skills, name)]
         if not_loaded:
@@ -340,11 +358,12 @@ def written_text(tool_input: dict) -> str:
 
 
 def decide_before_write(event: dict) -> str | None:
-    """The reason to hold a UI write until the orchestrator is loaded, or None to let it go ahead."""
+    """The reason to hold a UI write until the skills it needs are loaded, or None to let it go ahead."""
     tool_input = event.get("tool_input") or {}
     file_path = str(tool_input.get("file_path") or tool_input.get("notebook_path") or "")
     if not file_path:
         return None
+    plain_path = file_path
     if not UI_FILE.search(file_path) and MARKUP.search(written_text(tool_input)):
         file_path += "#markup"
     cwd = Path(event.get("cwd") or ".")
@@ -354,19 +373,31 @@ def decide_before_write(event: dict) -> str | None:
     if not transcript_path or not Path(transcript_path).exists():
         return None
     skills = read_session(transcript_path)[0]
-    if loaded(skills, ORCHESTRATOR):
+    # A Write to a path that isn't there yet is a new screen or component: it needs the larger set.
+    target = Path(plain_path) if Path(plain_path).is_absolute() else cwd / plain_path
+    new_screen = event.get("tool_name") == "Write" and not target.exists()
+    specialists = [name for name in ANY_UI_CHANGE + (NEW_SCREEN if new_screen else ()) if not loaded(skills, name)]
+    if loaded(skills, ORCHESTRATOR) and not specialists:
         return None
     session_id = str(event.get("session_id") or "")
-    # Ask twice at most: if the skill truly can't load, the work must still be able to go on.
+    # Ask a few times at most: if a skill truly can't load, the work must still be able to go on.
     if session_id and blocks_so_far(session_id, kind="hold") >= MAX_HOLDS:
         return None
     if session_id:
         blocks_so_far(session_id, add=True, kind="hold")
-    return (f"arkar UI quality gate: this writes UI ({Path(file_path.replace('#markup', '')).name}) before "
-            f"`{ORCHESTRATOR}` was loaded. Load it now with the Skill tool and follow its workflow — Understand → "
-            "Decide → Build sheet → Implement → Verify → Independent review → Report: classify the task, load the "
-            "specialists it names, write the build sheet (a few lines in your reply for a small change), then make "
-            "this change. If the skill can't load, read its SKILL.md file instead.")
+    name = Path(plain_path).name
+    named = ", ".join(f"`{skill}`" for skill in specialists)
+    why = "a new screen or component needs them" if new_screen else "every UI change needs them"
+    if not loaded(skills, ORCHESTRATOR):
+        return (f"arkar UI quality gate: this writes UI ({name}) before `{ORCHESTRATOR}` was loaded. Load it now with "
+                "the Skill tool" + (f" — and with it, in the same message, {named} ({why})" if specialists else "") +
+                " — and follow its workflow — Understand → Decide → Build sheet → Implement → Verify → Independent "
+                "review → Report: classify the task, load any other specialists it names, write the build sheet (a "
+                "few lines in your reply for a small change), then make this change. If a skill can't load, read its "
+                "SKILL.md file instead.")
+    return (f"arkar UI quality gate: this writes UI ({name}) but the specialists this change needs aren't loaded: "
+            f"{named} ({why}). Load them now with the Skill tool, in one message, apply what they require to this "
+            "change (their quality criteria), then make it. If a skill can't load, read its SKILL.md file instead.")
 
 
 def main() -> None:

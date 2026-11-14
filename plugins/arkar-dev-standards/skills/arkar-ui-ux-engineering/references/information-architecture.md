@@ -21,13 +21,18 @@
 
 ## Navigation patterns
 
+Count the destinations first; the pattern follows. The full standard —
+what may stay pinned, the header as a state of the page, the scroll edge,
+material and size — is in `navigation-and-header.md`.
+
 | Situation | Pattern |
 |---|---|
-| Few top-level areas, used constantly | persistent top bar or sidebar |
-| Many areas, desktop-heavy admin | collapsible sidebar with groups |
-| Mobile web | top bar with a menu, or a bottom bar for 3–5 primary destinations |
+| One destination (a single-purpose tool, a flow) | no navigation: the page's context and a way back or out |
+| 2–5 parallel areas | tabs or a segmented control in the header |
+| 6 or more areas, or grouped ones | a side rail with groups, collapsible |
+| Mobile web | a bottom bar for the top 3–5 destinations (and "More"); the top keeps only the context |
 | Native mobile | the platform's tab bar / navigation bar conventions (see `arkar-ui-responsive-design`) |
-| Multi-step task | a stepper with clear progress, back without data loss |
+| Multi-step task | a stepper with clear progress, back without data loss; other navigation steps back |
 | Within one record | tabs for parallel facets, sections for a long single view |
 
 ## Search and filters

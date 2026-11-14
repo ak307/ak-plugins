@@ -17,8 +17,11 @@
   roving `tabindex`.
 - Visible focus on everything (`:focus-visible`), never removed with
   `outline: none` without a replacement; ≥ 3:1 contrast.
-- Focus not obscured: sticky headers/footers use `scroll-padding` so the
-  focused element stays visible.
+- Focus not obscured: whatever is pinned to an edge sets `scroll-padding`
+  to its own height, so a control reached with Tab — or a heading reached
+  by its link — never sits under it (`scrollEdge()` in the experience kit
+  keeps this in step with the bar; the audit tabs through the page and
+  reports any control that takes focus under a pinned bar).
 
 ## Common widgets
 

@@ -172,9 +172,10 @@ def test_reduced_motion_switches_the_material_at_once(walked):
     assert walked["reducedMotion"] == ["0s", "0s"]
 
 
-@pytest.mark.parametrize("page", ["attached.html", "floating.html?theme=dark"])
-def test_the_audit_finds_nothing_wrong_with_the_scrolled_header(site, page):
-    result = subprocess.run(["node", str(AUDIT), f"http://127.0.0.1:{site}/{page}", "--json"], capture_output=True, text=True, timeout=240)
+@pytest.mark.parametrize(("page", "scheme"), [("attached.html", "light"), ("floating.html", "dark")])
+def test_the_audit_finds_nothing_wrong_with_the_scrolled_header_in_either_theme(site, page, scheme):
+    result = subprocess.run(["node", str(AUDIT), f"http://127.0.0.1:{site}/{page}", f"--scheme={scheme}", "--json"],
+                            capture_output=True, text=True, timeout=240)
     assert result.returncode == 0, result.stderr[-1500:]
     report = json.loads(result.stdout.strip().splitlines()[-1])
     header = report["header"]
@@ -183,7 +184,8 @@ def test_the_audit_finds_nothing_wrong_with_the_scrolled_header(site, page):
         assert len(seen["top"]["bands"]) == 1 and seen["top"]["height"] <= 64
         assert seen["around"] <= 0.01 and seen["through"] <= 0.01  # nothing above or beside the bar, nothing readable through it
         assert seen["tint"] >= 0.7
-        assert abs(seen["barLight"] - seen["pageLight"]) < 0.3  # the bar is in the page's own tone, in either theme
+        # The bar is in the page's own tone: light on the light page, dark on the dark one.
+        assert (seen["pageLight"] > 0.65) is (scheme == "light") and abs(seen["barLight"] - seen["pageLight"]) < 0.3
     assert header["phone"]["share"] <= 0.15
     assert header["focus"]["hidden"] == []
     assert header["safeAreas"] == {"cover": True, "insets": True}

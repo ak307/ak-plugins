@@ -214,6 +214,15 @@ change runs through all seven in minutes.
    - **No speculative library:** plan what the screens need; extract a
      pattern into a component when it genuinely repeats during
      implementation, rather than designing every possible component up front.
+   - **Navigation** — designed from this product's structure, never a
+     ready-made bar (`arkar-ui-ux-engineering/references/navigation-and-header.md`):
+     the destinations, counted → the pattern (one: none · 2–5: tabs · 6+ or
+     grouped: a side rail · phones: a bottom bar) → **what stays on screen
+     while scrolling and why each item earns it** (the context, the step,
+     the screen's one action — not the logo or the account) → the header's
+     two states: part of the page at rest, one compact bar once the title
+     has scrolled out. One band; 64 px or less on a desktop, 15% of a
+     phone's height top and bottom together.
    Then, per **surface**, answer **every one of these rows** — screens are
    composed from the planned components, not designed one by one (example
    and detail in `references/build-sheet.md`). A surface is every place the
@@ -301,6 +310,12 @@ change runs through all seven in minutes.
      plain web builds use the kit's `changeScreen(container, render)`,
      never `replaceChildren` on the whole screen; frameworks use the
      router's view transitions;
+   - **whatever stays at the top is a scroll edge:** nothing shows above
+     or beside it, nothing behind it can be read (frosted or solid once
+     content is under it, in the page's own tone), and focus and jump
+     targets land below it — plain web builds call the experience kit's
+     `scrollEdge(bar, { title })` and style its two states (`data-over`,
+     `data-context`); other stacks keep the same behaviour;
    - the test switches (`?latency`, `?fail`) and mock data run only in local
      or development builds, and are removed when the real API is wired in;
    - plain web builds with mock data copy `assets/experience-kit.js`:
@@ -318,17 +333,22 @@ change runs through all seven in minutes.
      only where Alpine can't (reordering lists); Flutter: theme tokens, Hero
      or shared-axis transitions, implicit animations, `disableAnimations`;
    - business systems on Liquid Glass copy
-     `arkar-ui-design-system/assets/liquid-glass.css`.
+     `arkar-ui-design-system/assets/liquid-glass.css` — a material, not a
+     layout: its `.lg-bar` is for bars floating over a canvas, and the
+     page's header uses `.lg-scroll-edge` (or `.lg-cap` around a bar that
+     floats).
    **Early look review — after two screens, before the rest (new
    products, page sets and redesigns).** Build the first screen and the one
    inner screen people will work in most (the table, the form step, the
    detail) with real content. Then start one fresh subagent (Agent tool,
    foreground) with the brief in
    `arkar-ui-visual-qa/references/early-review.md`: it sees only their
-   screenshots at desktop and phone, gives each a verdict — top tier, good
-   or ordinary — says whether the inner screen carries the first screen's
-   idea or is a standard table or form under a designed first screen, and
-   names the three changes that would lift each most. **Act on it now,
+   screenshots at desktop and phone — at rest and scrolled, in each theme
+   the product ships — gives each a verdict — top tier, good or ordinary —
+   says whether the inner screen carries the first screen's idea or is a
+   standard table or form under a designed first screen, whether what stays
+   pinned belongs to this product, and names the three changes that would
+   lift each most. **Act on it now,
    while a change costs one screen:** recompose what it calls ordinary or a
    standard pattern (sheet first), make the changes it asks for, then build
    the rest to that level. Record `## Early review` in
@@ -336,8 +356,9 @@ change runs through all seven in minutes.
    design; the review at the end is for defects.
 5. **Verify — against the sheet.** Load `arkar-ui-visual-qa` now (Skill
    tool) and run its premium pass: on local/test data, tick every
-   acceptance check — every state seen at the target sizes, the audit and
-   interaction probe, the main flows filmed with `film.cjs` and judged by
+   acceptance check — every state seen at the target sizes, the audit
+   (which also judges the header on the scrolled page: run it once per
+   theme with `--scheme`) and interaction probe, the main flows filmed with `film.cjs` and judged by
    eye and measured with `motion-metrics.cjs` (real presses: response time,
    timing and easing, frame pacing, pop-ins and jumps, one action
    interrupted mid-animation with `@<ms>`, and `--reduced`; `--real-browser`
@@ -421,7 +442,7 @@ Keep it short and factual:
 
 - `references/premium-standard.md` — AK's premium UI/UX standard: the most important rule.
 - `references/build-sheet.md` — the build sheet: every decision for a feature (direction, composition, components, states, interactions, motion, copy, responsive, accessibility, acceptance checks), written once before UI code.
-- `assets/experience-kit.js` — tested mechanics for the experience standard (mock server with latency/failure switches and persistence, URL view state, drafts, anchored toasts, roving focus).
+- `assets/experience-kit.js` — tested mechanics for the experience standard (mock server with latency/failure switches and persistence, URL view state, drafts, anchored toasts, roving focus, the scroll edge for whatever stays at the top).
 - `references/experience-standard.md` — End-to-End Product Craftsmanship & Experience Excellence: every moment of the experience (press, wait, success, dialogs, errors, transitions, timing of information, feedback, phones, consistency) and how it's checked.
 - `references/resilience.md` — recovery routes when a tool, library or network fails, so quality never drops.
 - `references/apple-ux-principles.md` — ten Apple-level UX habits and who applies each.

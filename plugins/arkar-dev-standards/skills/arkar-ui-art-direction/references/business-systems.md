@@ -70,9 +70,10 @@ called "mostly premium". So, unless the product's brand or context argues
 against it (record why in DESIGN.md), his business systems use Liquid
 Glass (`arkar-ui-design-system/references/materials-glass.md`):
 
-- glass for the whole floating layer: sidebar and top bar, toolbars and
-  filter bars, tab bars, bulk-action bars, detail sheets and side panels,
-  popovers, menus, the command palette, toasts;
+- glass for the whole floating layer: the sidebar, toolbars and filter
+  bars, tab bars, bulk-action bars, detail sheets and side panels,
+  popovers, menus, the command palette, toasts — and the header, which is
+  plain page at rest and frosted glass once content scrolls under it;
 - floating glass content panels wherever the screen has a visual canvas
   (a site map, skyline, floor plan, schedule or time grid, a hero chart):
   the canvas fills the space and the queue, alerts or crew float over it;
@@ -86,11 +87,16 @@ optional.
 
 **Build it with the material kit:** copy
 `arkar-ui-design-system/assets/liquid-glass.css` and use its surfaces —
-`.lg-bar` (sidebar, top bar, tab and filter bars), `.lg-panel` (floating
-content over a canvas), `.lg-sheet` (detail sheets, dialogs), `.lg-control`
-and `.lg-segmented` (controls and tabs on glass, with a sliding
-indicator), `.lg-pill` — over `.lg-field` or the product's real canvas,
-themed through its tokens. AK looked at a rebuild with one glass panel
+`.lg-bar` (sidebar, tab and filter bars floating over a canvas),
+`.lg-scroll-edge` or `.lg-cap` (whatever stays at the top while the page
+scrolls), `.lg-panel` (floating content over a canvas), `.lg-sheet` (detail
+sheets, dialogs), `.lg-control` and `.lg-segmented` (controls and tabs on
+glass, with a sliding indicator), `.lg-pill` — over `.lg-field` or the
+product's real canvas, themed through its tokens. The kit is a material,
+not a layout: what the navigation is and what the header holds are
+designed for each product
+(`arkar-ui-ux-engineering/references/navigation-and-header.md`) — the
+same floating bar on every product is the template look in glass. AK looked at a rebuild with one glass panel
 and a solid sidebar and top bar and said "it is not using Liquid Glass":
 the whole floating layer must visibly be glass, not one card.
 

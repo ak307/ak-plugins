@@ -15,7 +15,11 @@ and redesigns.
    **and of every key state** — the core flow done once (e.g. a question
    asked and answered, a booking confirmed, a form submitted with errors and
    then successfully), **every view behind each tab, segment and nav
-   item** (not only the first), a dialog open, loading, empty, error — plus the
+   item** (not only the first), a dialog open, loading, empty, error; one
+   window-sized screenshot of each main screen **scrolled part-way down**,
+   at desktop and phone size and in each theme the product ships (a
+   full-page screenshot can't show what stays pinned, or what shows above
+   and through it) — plus the
    filmstrips of the first load and the main flows
    (`scripts/interaction-probe.cjs`, `scripts/film.cjs`). A critic who only
    sees the empty start screen can't judge the product.
@@ -63,7 +67,12 @@ and redesigns.
 >    until the text is unreadable: if the remaining shapes match every
 >    other product of this type (e.g. header, a band of numbers, filters, a
 >    full-width list), say so — that is a top finding, ahead of any detail,
->    and its fix is a different composition, not nicer details.
+>    and its fix is a different composition, not nicer details. Look at
+>    the scrolled screenshots for what stays pinned: does it belong to this
+>    product and earn its place (the context, the step, the screen's
+>    action), or is it a generic bar with a logo and an account? Anything
+>    showing above, beside or through it, a second band under it, or a bar
+>    whose tone fights the page, is a defect.
 >
 > 5. Motion (the filmstrips — slowed down, times are real): does each
 >    change explain itself (where things came from and went), feel natural

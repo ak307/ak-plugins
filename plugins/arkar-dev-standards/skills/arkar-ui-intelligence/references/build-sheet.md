@@ -29,6 +29,7 @@ requirements and the existing design system:
 | **Extend** | Existing components that need a new variant, property or state — and why the existing ones don't cover it |
 | **New** | Each new component: purpose · variants · properties · states (default, hover, focus, active, disabled, loading, error, empty, selected — the ones that apply) · interactions and keyboard · responsive behaviour · accessibility (role, name, announcements) · tokens used |
 | **Foundation** (new product or redesign) | Tokens, then the shared primitives the screens need — buttons, fields and selects, surfaces and panels, list or table rows, badges, tabs or segmented controls, dialogs and sheets, toasts, empty / error / skeleton states — and the product's signature components |
+| **Navigation** | The destinations, counted → the pattern that count calls for (one: none · 2–5: tabs · 6+ or grouped: a side rail · phones: a bottom bar) → what stays on screen while scrolling, and why each item earns it → the header's two states (at rest; once content is under it) → the phone arrangement. Existing product: its navigation, named, and what this feature pins, if anything (`arkar-ui-ux-engineering/references/navigation-and-header.md`) |
 
 Rules:
 - **Reuse before you build.** Search the codebase and the component library
@@ -41,6 +42,10 @@ Rules:
 - **Components carry the quality.** Modular, configurable through
   properties, consistent, responsive, accessible, every state designed,
   tokens only — so every screen built from them inherits it.
+- **Navigation is decided here, from this product's structure** — not
+  taken from the last product or from a kit. "A top bar with the logo and
+  the account" is the obvious answer and is usually wrong: neither is
+  needed while scrolling.
 
 ## What it contains — per surface
 
@@ -111,6 +116,8 @@ Component plan:
   New: BalanceMeter — props: total, used, requested; variants: enough / low / over;
     states: loading (skeleton), unavailable (retry); role="meter" with label; tokens:
     success / warning / danger, radius-sm. Used here and later on the dashboard.
+  Navigation: unchanged — the product's sidebar. Nothing new is pinned: the form fits
+    a screen, and on phones Submit sticks above the keyboard (48 px, 6% of the height).
 Job: staff applying for leave; first question "how many days do I have left?" —
   the balance is noticed first, then the dates.
 Direction: existing AdminLTE theme, its card, form and alert components; no new identity.

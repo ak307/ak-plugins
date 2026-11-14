@@ -2,7 +2,8 @@
 // pass, so quality isn't judged by eye alone.
 //
 // Usage (from the project folder):
-//   node <path-to>/audit.cjs <url> [--sizes=1440x900,768x1024,375x812,320x640] [--json]
+//   node <path-to>/audit.cjs <url> [--sizes=1440x900,768x1024,375x812,320x640] [--scheme=dark|light] [--json]
+// --scheme runs every check with that colour scheme preferred: run it once per theme the product ships.
 // It also walks ten widths from 320 to 1920 px for sideways overflow and for controls that end
 // up under a fixed or sticky side panel — layouts break between the sizes people test at.
 // And it judges the header on the scrolled page, at desktop and phone size: how much stays pinned
@@ -26,6 +27,10 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { loadPlaywright, isLocalUrl } = require("./film-lib.cjs");
+
+// How every page is opened: its size, any colour scheme asked for, and the page's own CSP set aside so the checks can run.
+let scheme = null;
+const open = (viewport) => ({ viewport, bypassCSP: true, ...(scheme ? { colorScheme: scheme } : {}) });
 
 function findAxe() {
   const candidates = [path.join(process.cwd(), "node_modules", "axe-core", "axe.min.js"),
@@ -132,7 +137,7 @@ const coveredControls = () => {
 // Sideways overflow and covered controls at every width, looking down the page a screen at a time
 // (a collision is often below the first screen).
 async function sweepWidths(browser, url) {
-  const page = await browser.newPage({ viewport: { width: WIDTHS[0], height: 800 }, bypassCSP: true });
+  const page = await browser.newPage(open({ width: WIDTHS[0], height: 800 }));
   const found = { overflow: [], covered: [] };
   try {
     await page.goto(url, { waitUntil: "load", timeout: 30000 });
@@ -259,7 +264,7 @@ async function compare(helper, first, second, bar) {
 }
 
 async function checkHeader(browser, helper, url, [width, height]) {
-  const page = await browser.newPage({ viewport: { width, height }, bypassCSP: true });
+  const page = await browser.newPage(open({ width, height }));
   const found = { size: `${width}x${height}`, scrolls: false };
   try {
     await page.goto(url, { waitUntil: "load", timeout: 30000 });
@@ -301,7 +306,7 @@ async function checkHeader(browser, helper, url, [width, height]) {
 
 // Tab forwards down the page and back up it: a control that takes focus under a pinned bar can't be seen.
 async function checkFocus(browser, url) {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, bypassCSP: true });
+  const page = await browser.newPage(open({ width: 1280, height: 800 }));
   const hidden = new Set();
   let stops = 0;
   try {
@@ -324,7 +329,7 @@ async function checkFocus(browser, url) {
 
 // Notches and home indicators: this browser can't show them, so only the code can be checked.
 async function checkSafeAreas(browser, url) {
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, bypassCSP: true });
+  const page = await browser.newPage(open({ width: 390, height: 844 }));
   try {
     await page.goto(url, { waitUntil: "load", timeout: 30000 });
     return await page.evaluate(() => {
@@ -364,12 +369,20 @@ async function main() {
   const args = process.argv.slice(2);
   const url = args.find((arg) => !arg.startsWith("--"));
   if (!url) {
-    console.error("Usage: node audit.cjs <url> [--sizes=WxH,...] [--json]");
+    console.error("Usage: node audit.cjs <url> [--sizes=WxH,...] [--scheme=dark|light] [--json]");
     process.exit(1);
   }
   if (!isLocalUrl(url)) {
     console.error("Refusing: the audit runs against a local app only (localhost / 127.0.0.1 / *.test).");
     process.exit(1);
+  }
+  const schemeFlag = args.find((arg) => arg.startsWith("--scheme="));
+  if (schemeFlag) {
+    scheme = schemeFlag.split("=")[1];
+    if (!["dark", "light"].includes(scheme)) {
+      console.error("--scheme takes dark or light");
+      process.exit(1);
+    }
   }
   const sizesFlag = args.find((arg) => arg.startsWith("--sizes="));
   const sizes = (sizesFlag ? sizesFlag.split("=")[1] : "1440x900,768x1024,375x812,320x640")
@@ -377,11 +390,11 @@ async function main() {
   const axePath = findAxe();
   const { chromium } = loadPlaywright();
   const browser = await chromium.launch();
-  const report = { url, sizes: [], axeAvailable: Boolean(axePath) };
+  const report = { url, scheme: scheme || "the page's own", sizes: [], axeAvailable: Boolean(axePath) };
   try {
     for (const [width, height] of sizes) {
       // The audit adds axe to the page; a page with a Content-Security-Policy would refuse it.
-      const page = await browser.newPage({ viewport: { width, height }, bypassCSP: true });
+      const page = await browser.newPage(open({ width, height }));
       const problems = { consoleErrors: [], failedRequests: [] };
       page.on("console", (message) => { if (message.type() === "error") problems.consoleErrors.push(message.text().slice(0, 160)); });
       page.on("pageerror", (error) => problems.consoleErrors.push(error.message.slice(0, 160)));
@@ -419,6 +432,7 @@ async function main() {
     console.log(JSON.stringify(report));
     return;
   }
+  if (scheme) console.log(`colour scheme: ${scheme}`);
   for (const size of report.sizes) {
     const serious = (size.axe || []).filter((violation) => ["serious", "critical"].includes(violation.impact));
     console.log(`${size.size}: overflow ${size.overflow ? "YES" : "no"} · console errors ${size.consoleErrors.length} · failed requests ${size.failedRequests.length} · broken images ${size.brokenImages.length} · targets <24px ${size.smallTargets.length}` +

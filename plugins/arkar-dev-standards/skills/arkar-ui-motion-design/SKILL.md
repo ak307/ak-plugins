@@ -87,6 +87,12 @@ not finished. In particular:
   their layout animations (Motion `layout`/`layoutId`, `<TransitionGroup>`,
   Svelte `flip`, Flutter implicit/Hero animations) for the same ideas. A
   state change with no motion, where the kit makes it one line, is a defect.
+- **What stays at the top changes state, it doesn't perform.** Two
+  states — part of the page at rest, one compact frosted bar once content
+  is under it — switched at a threshold and cross-faded in about 180 ms
+  (`scrollEdge` in the experience kit). Nothing tied to each pixel of
+  scroll: no parallax, no blur that grows as you scroll, no bar that slides
+  away and back. Reduced motion: the switch is instant.
 - **Spatial continuity for every change of place:** opening a detail grows
   from the thing tapped, closing returns to it, steps slide with direction,
   filtered lists move rows rather than blinking them. Restraint applies to levels 4–5: marketing pages, signature

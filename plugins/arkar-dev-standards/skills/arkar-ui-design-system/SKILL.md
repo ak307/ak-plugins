@@ -60,7 +60,9 @@ sake.
 5. **Materials** (`references/materials-glass.md`): solid surfaces and,
    where the direction calls for it, Liquid Glass for the floating control
    layer (bars, sheets, menus, palette) — with legibility guards and
-   reduced-transparency fallbacks. Content surfaces stay solid.
+   reduced-transparency fallbacks. Content surfaces stay solid. The page's
+   header is a scroll edge — plain page at rest, frosted once content is
+   under it — not a floating bar; the kit is a material, never a layout.
 6. **Themes** (`references/theming.md`): light/dark and how themes switch,
    per stack.
 7. **Record** the system in `DESIGN.md` (colour, type, shape and space

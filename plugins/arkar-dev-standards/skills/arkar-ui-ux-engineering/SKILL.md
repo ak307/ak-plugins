@@ -40,7 +40,12 @@ behaviour right.
 
 1. **Structure** — information architecture and navigation
    (`references/information-architecture.md`): group by users' tasks, label
-   in their language, show where they are.
+   in their language, show where they are. **Navigation and the header are
+   designed per product, never a ready-made bar**
+   (`references/navigation-and-header.md`): count the destinations, let the
+   pattern follow (one → none · 2–5 → tabs · 6+ or grouped → a side rail ·
+   phones → a bottom bar), and pin only what people need while they scroll
+   — the build sheet's Navigation row.
 2. **Layout** — hierarchy, grouping, alignment, content widths, the primary
    action obvious (`references/layout-strategy.md`).
 3. **Interaction patterns** — forms, validation, states, feedback,
@@ -86,6 +91,12 @@ structure changed.
 - **Success is earned.** A form never shows success without validating:
   required fields and formats are checked (inline, human messages), the
   submit shows progress, then success — or a recoverable error.
+- **What stays on screen is earned.** Pinned while scrolling: where the
+  user is, the step, this screen's one action. The brand mark and the
+  account scroll away. One band at a time — once the title scrolls out, one
+  compact bar carries its context; no second header band under a top bar.
+  At most 64 px pinned at the top on a desktop, 15% of a phone's height top
+  and bottom together (`references/navigation-and-header.md`).
 - **Fixed composers and footers reserve their space:** the scrolling area
   ends above them (padding equal to their height), so the last message,
   suggestion or row is never hidden behind them.

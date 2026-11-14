@@ -62,7 +62,14 @@ breakpoints, and the sizes QA must check.
 - Text survives 200% zoom / large system text.
 - Navigation, tables and forms are re-composed, not shrunk, on small
   screens.
-- Native apps respect safe areas, platform navigation and gestures.
+- Native apps respect safe areas, platform navigation and gestures; on
+  the web, whatever is pinned to an edge uses `viewport-fit=cover` with
+  `env(safe-area-inset-*)`.
+- **Pinned chrome has a budget:** everything that stays on screen while a
+  phone scrolls, top and bottom together, takes 15% of the height or less
+  (64 px or less at the top on a desktop); destinations sit at the bottom,
+  the top keeps only the context
+  (`arkar-ui-ux-engineering/references/navigation-and-header.md`).
 - **Nothing becomes unreachable on a phone.** A side panel, sources rail or
   detail column on desktop gets a path on small screens (a tab, sheet or
   drawer with a visible trigger). Sticky bars never cover the hero or

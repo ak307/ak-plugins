@@ -22,8 +22,8 @@ is a material, never a reason for products to resemble iOS or each other.
 - On the working content of dense pages (the table, the form, long text):
   glass there gains nothing, so that content stays solid. This is about the
   content only — in AK's business systems the floating layer around it
-  (sidebar, top bar, filter and tab bars, sheets, menus) is still glass,
-  even on a table page (business-systems.md). A dashboard built around a
+  (sidebar, filter and tab bars, sheets, menus, and the header once content
+  is under it) is still glass, even on a table page (business-systems.md). A dashboard built around a
   map, floor plan or site view goes further — floating glass panels over
   it can be the whole idea.
 - Over flat, empty backgrounds (glass over nothing is just grey): put a
@@ -52,11 +52,19 @@ is a material, never a reason for products to resemble iOS or each other.
    container, a specular edge (a 1px inner highlight, brighter at the top),
    a soft shadow that separates it from content, and a tint that adapts to
    light/dark. Blur alone reads as 2015 "glassmorphism".
-5. **Motion makes it liquid:** controls morph between states (a tab bar
+5. **The page's header is a scroll edge, not a floating bar.** At rest it
+   is part of the page; once content is under it, it frosts — a tint of 0.7
+   or more with blur, so nothing behind it can be read — in the page's own
+   tone in each theme. Thin glass (the `.lg-bar` tint) over scrolling text
+   shows the text; a bar set in from the window's edges shows content in
+   the gap. Use `.lg-scroll-edge`, or `.lg-cap` around a bar that floats,
+   with `scrollEdge()` from the experience kit
+   (`arkar-ui-ux-engineering/references/navigation-and-header.md`).
+6. **Motion makes it liquid:** controls morph between states (a tab bar
    shrinks on scroll, a button expands into its menu, a sheet rises from the
    control that opened it) with well-damped springs; under reduced motion
    these become fades.
-6. **Performance budget:** a few glass surfaces per screen, blur radius
+7. **Performance budget:** a few glass surfaces per screen, blur radius
    moderate, no animated blur radius; check scrolling stays smooth on a
    phone-sized viewport.
 
@@ -64,7 +72,8 @@ is a material, never a reason for products to resemble iOS or each other.
 
 `../assets/liquid-glass.css` is the tested material (tint, blur and
 saturation, top-bright rim light, specular sheen, separating shadow,
-light/dark tints, a sliding segmented control, and the fallbacks). Copy it
+light/dark tints, a sliding segmented control, the scroll edge for
+whatever stays at the top, and the fallbacks). Copy it
 and theme it through its tokens; the recipe below shows the principle.
 
 ## Web recipe (adapt; tokens, not raw values in components)

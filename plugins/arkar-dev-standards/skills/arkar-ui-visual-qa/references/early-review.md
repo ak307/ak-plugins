@@ -14,10 +14,13 @@ changes, and not for a feature that must match an existing product's look.
 
 ## How
 
-1. Take four screenshots: the two screens at desktop and at phone size, with
-   real content (no skeletons, no lorem ipsum).
+1. Take the screenshots: the two screens at desktop and at phone size, with
+   real content (no skeletons, no lorem ipsum) — each **at rest and
+   scrolled** part-way down, because a header is judged where it goes
+   wrong, which is never the top of the page. If the product ships a second
+   theme, add the first screen in it, at rest and scrolled.
 2. Start **one** fresh subagent with the Agent tool, in the foreground. Give
-   it the four screenshot paths, one line on the product and who uses it,
+   it the screenshot paths, one line on the product and who uses it,
    and the brief below. Never the code, `DESIGN.md` or your reasoning.
    No Agent tool → do it yourself as a cold read (close the code, look only
    at the screenshots, answer the same questions) and say so in the record.
@@ -36,7 +39,12 @@ changes, and not for a feature that must match an existing product's look.
 >    the most important thing on the screen.
 > 3. **What looks wrong** — overlap, cramped or cut-off text, misalignment,
 >    weak contrast, anything inconsistent between the two screens.
-> 4. **The three changes that would lift it most**, most valuable first.
+> 4. **What stays on screen** — compare each screen at rest and scrolled.
+>    Does what stays pinned belong to this product and earn its place (the
+>    context, the step, the screen's action), or is it a generic bar holding
+>    a logo and an account? Is anything showing above, beside or through
+>    it? Is it one band? Is it in the page's own tone?
+> 5. **The three changes that would lift it most**, most valuable first.
 >    Each must be concrete enough to build (what, and where), and use what
 >    the product already has — its content, colours and type. No new
 >    features.

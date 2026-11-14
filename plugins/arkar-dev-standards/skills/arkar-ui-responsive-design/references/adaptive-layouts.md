@@ -4,7 +4,8 @@ How common elements re-compose across sizes.
 
 | Element | Phone | Tablet | Desktop |
 |---|---|---|---|
-| Primary navigation | top bar + menu, or bottom bar (3–5 destinations) | collapsible sidebar or rail | persistent sidebar or top navigation |
+| Primary navigation (by the number of destinations — `arkar-ui-ux-engineering/references/navigation-and-header.md`) | a bottom bar for the top 3–5 destinations and "More"; the top keeps only the context | collapsible rail | tabs in the header for 2–5, a side rail for more; none for a single-purpose tool |
+| What stays pinned | 15% of the height or less, top and bottom together, inside the safe areas | | 64 px or less at the top; one band |
 | Secondary navigation / filters | sheet or drawer, active filters as chips | side panel or drawer | persistent side panel |
 | Tables | priority columns as cards, or the table scrolling inside its own container with the key column sticky | fewer columns, horizontal scroll if needed | full table, sticky header |
 | Dashboards | key numbers first, one chart per row, details on tap | 2-column grid | multi-column grid, details beside |
@@ -16,8 +17,8 @@ How common elements re-compose across sizes.
 
 ## Orientation
 
-- Phones in landscape: keep critical actions visible; avoid fixed headers
-  that eat the short height.
+- Phones in landscape: keep critical actions visible; nothing stays
+  pinned that eats the short height — the context bar unpins or shrinks.
 - Tablets: design both portrait and landscape when the app supports them;
   split views shine in landscape.
 

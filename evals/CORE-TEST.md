@@ -326,3 +326,36 @@ No control takes focus under a pinned bar in any of the four.
 
 On the kit's own test pages (attached and floating, light and dark, desktop and phone): one band
 of 52–64 px, nothing above, beside or readable through it, no control takes focus under it.
+
+### One rebuilt brief: the permit form (setup `patched`, a frozen copy of the branch at `af96ac0`)
+
+Finished on its own: 54.9 min, $15.47, 155 turns, 11 skills, 3 reviewers (the early review and two
+independent reviews; its own reviewers' overall score went from 6.4 to 7.6). The released build of
+the same brief in round 4: 47.4 min, $17.3.
+
+Its navigation decision, from its build sheet: one destination and a seven-section task, so no
+navigation bar; nothing pinned on the list; in the editor one compact bar with the way back, the
+permit's title once the page title has scrolled out, the save state and "Review & submit"; on a
+phone the bar holds the section strip and Previous / Next sit at the bottom.
+
+| Check (a long section of the editor, scrolled) | Round 4 build (released) | New build |
+|---|---|---|
+| Pinned at the top, desktop | 76 px — over the budget | 56 px, one band |
+| Content showing above or beside the bar | yes | no |
+| The page readable through the bar | no | no |
+| Bar against the page | dark bar over a light page (phone) | in the page's tone |
+| Pinned on a phone, top and bottom | 64 px at the top (a bottom bar as well, not measured) | 52 + 65 px = 14% |
+| Focus under a pinned bar | none | none |
+| Safe areas | not handled | handled |
+| What the bar holds | logo, product name, save state, account | back, the permit's title when scrolled, save state, the screen's action |
+
+The early reviewer, given scrolled screenshots, called the phone's pinned bar "a generic truncated
+title" beside the section strip; the build merged the two before going on.
+
+Not good: the new build uses no Liquid Glass at all — it did not copy the glass kit, and its
+`DESIGN.md` does not say why. The two earlier permit builds both used it (top bar, segmented
+controls, sheets, toasts). The session read only the first 60 lines of
+`arkar-ui-art-direction/references/business-systems.md`; the section that makes Liquid Glass the
+default for business systems starts at line 65, and no always-read skill text states it. One
+build, so this may be chance, but with the top bar no longer the obvious glass surface the default
+is easier to miss.

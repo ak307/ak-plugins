@@ -230,3 +230,39 @@ the most screenshots, 61 of its 103 seconds standing still and 21 abrupt whole-s
 revised one 9. Some of "looks stuck and a little dizzying" is the recorder, not the product. Fix
 the recorder (video in a pass of its own) before the next comparison.
 
+## Round 5 — the released plugin with three targeted fixes (branch `ui-top-tier`)
+
+AK approved the plan from the diagnosis: a change of screen never cuts to blank (`changeScreen`
+in the motion kit), layout checked at ten widths including controls under a sticky panel (in
+`audit.cjs`), an early look-only review of the first screen and the main inner screen, and a test
+recorder that films in a pass of its own. The released look and process are otherwise unchanged.
+
+Builds: permit form and energy dashboard, setup `patched` (a frozen copy of the branch), results
+in `core-test-20261113-1139-r5`. **Both were stopped by the account's five-hour usage limit before
+the final independent review**: the energy dashboard at 54 min ($15.1) while preparing it, the
+permit form after Verify with the review started ($14.2; it then sat until the 105-minute cap).
+Neither wrote its record or final report, so time and cost can't be compared with other rounds,
+and both are shown as they stood.
+
+| Check | Released build AK chose | Patched build |
+|---|---|---|
+| Permit: empty frames between screens (fixed recorder, same journey) | 4 (0.16 s, list to form) | 0 |
+| Energy: controls under a fixed or sticky panel, ten widths | at 1200 and 1280 px (12 controls) | none |
+| Audit at 1440 / 768 / 375 / 320 (axe, console, overflow, small targets) | — | clean on both builds |
+
+- The permit build routes its screens through `changeScreen`. The energy dashboard is one screen
+  with a sheet, so it has no change of screen to route.
+- On first load the patched permit build shows its content about 0.2 s later than the released
+  one (3 empty frames at 0.5–0.6 s). That is the page starting, not a change of screen.
+- The early review ran in both builds, and both went back for a second one after changing what
+  the first asked for. Energy, first review: the first screen "top tier on desktop, held back by
+  the phone layout"; second: "the alerts column looks like it comes from a different product" —
+  the build as it stands has the alerts on the same dark surface. Permit, first: "good, close to
+  top tier"; second: the inner screen "desktop good, phone ordinary".
+- A fault in the released audit tool surfaced: it could not run on a page with a
+  Content-Security-Policy (both new builds ship one), because it adds axe to the page. Fixed on the
+  branch.
+
+Blind comparison (AK's two chosen builds against the patched ones, random A/B, both sides filmed
+with the fixed recorder) is published; AK will recognise the two he chose. Verdict: pending.
+

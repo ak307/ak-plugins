@@ -129,7 +129,7 @@ const coveredControls = () => {
 // Sideways overflow and covered controls at every width, looking down the page a screen at a time
 // (a collision is often below the first screen).
 async function sweepWidths(browser, url) {
-  const page = await browser.newPage({ viewport: { width: WIDTHS[0], height: 800 } });
+  const page = await browser.newPage({ viewport: { width: WIDTHS[0], height: 800 }, bypassCSP: true });
   const found = { overflow: [], covered: [] };
   try {
     await page.goto(url, { waitUntil: "load", timeout: 30000 });
@@ -173,7 +173,8 @@ async function main() {
   const report = { url, sizes: [], axeAvailable: Boolean(axePath) };
   try {
     for (const [width, height] of sizes) {
-      const page = await browser.newPage({ viewport: { width, height } });
+      // The audit adds axe to the page; a page with a Content-Security-Policy would refuse it.
+      const page = await browser.newPage({ viewport: { width, height }, bypassCSP: true });
       const problems = { consoleErrors: [], failedRequests: [] };
       page.on("console", (message) => { if (message.type() === "error") problems.consoleErrors.push(message.text().slice(0, 160)); });
       page.on("pageerror", (error) => problems.consoleErrors.push(error.message.slice(0, 160)));

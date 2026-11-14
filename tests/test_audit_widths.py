@@ -1,4 +1,4 @@
-"""audit.cjs walks ten widths: sideways overflow, and controls that end up under a fixed or sticky side panel."""
+"""audit.cjs: ten widths (sideways overflow, controls under a side panel) and the header judged on the scrolled page."""
 import json
 import shutil
 import subprocess
@@ -33,9 +33,13 @@ def audit():
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(PAGES)))
     threading.Thread(target=server.serve_forever, daemon=True).start()
 
+    done: dict[tuple[str, ...], subprocess.CompletedProcess] = {}
+
     def run(page: str, *flags: str) -> subprocess.CompletedProcess:
-        return subprocess.run(["node", str(AUDIT), f"http://127.0.0.1:{server.server_port}/{page}", *flags],
-                              capture_output=True, text=True, timeout=240)
+        if (page, *flags) not in done:  # each audit takes a while: run it once per page and flags
+            done[(page, *flags)] = subprocess.run(["node", str(AUDIT), f"http://127.0.0.1:{server.server_port}/{page}", *flags],
+                                                  capture_output=True, text=True, timeout=240)
+        return done[(page, *flags)]
 
     yield run
     server.shutdown()
@@ -61,3 +65,52 @@ def test_the_plain_report_says_where_and_what_to_do(audit):
     text = audit("overlap.html").stdout
     assert "controls under a fixed or sticky panel YES — 768 px: 3" in text
     assert "must hold its own column" in text
+
+
+# ---- the header, judged on the scrolled page
+
+
+def header(audit, page: str) -> dict:
+    result = audit(page, "--json")
+    assert result.returncode == 0, result.stderr[-1500:]
+    return json.loads(result.stdout.strip().splitlines()[-1])["header"]
+
+
+def test_a_floating_dark_bar_is_reported_for_what_shows_around_and_through_it(audit):
+    found = header(audit, "header-floating.html")
+    desktop = found["desktop"]
+    assert desktop["scrolls"] is True
+    assert desktop["around"] > 0.01  # the page scrolls in the gap above and beside the bar
+    assert desktop["through"] > 0.01 or desktop["tint"] < 0.7  # and can be read through its thin glass
+    assert desktop["top"] == {"height": 145, "bands": ["header.bar", "div.context"]}  # two bands, 145 px pinned
+    phone = found["phone"]
+    assert phone["bottom"]["height"] == 85 and phone["share"] > 0.25  # top and bottom bars take over a quarter of a phone
+    assert found["focus"]["hidden"]  # tabbing back up the page puts focus under the bars
+    assert found["safeAreas"] == {"cover": False, "insets": False}
+
+
+def test_one_compact_attached_bar_passes(audit):
+    found = header(audit, "header-attached.html")
+    desktop = found["desktop"]
+    assert desktop["around"] == 0 and desktop["through"] < 0.01 and desktop["tint"] >= 0.7
+    assert desktop["top"] == {"height": 57, "bands": ["header.bar"]}
+    assert found["phone"]["share"] < 0.15
+    assert found["focus"]["hidden"] == []  # scroll-padding keeps focus clear of the bar
+    assert found["safeAreas"] == {"cover": True, "insets": True}
+
+
+def test_the_plain_report_names_each_header_fault(audit):
+    text = audit("header-floating.html").stdout
+    assert "pinned at the top 145 px in 2 bands (header.bar, div.context) — OVER the budget of 64 px" in text
+    assert "content showing above or beside the bar YES" in text and "the page readable through the bar YES" in text
+    assert "take focus under a pinned bar" in text and "safe areas:" in text
+    good = audit("header-attached.html").stdout
+    assert "content showing above or beside the bar no" in good and "the page readable through the bar no" in good
+    assert "OVER" not in good and "no control takes focus under a pinned bar" in good and "safe areas:" not in good
+
+
+def test_a_solid_dark_bar_over_a_light_page_is_named(audit):
+    # The same floating bar made solid: nothing reads through it now, but its tone fights the page under it.
+    text = audit("header-floating.html?tint=0.96").stdout
+    assert "the page readable through the bar no" in text and "a dark bar over a light page" in text
+

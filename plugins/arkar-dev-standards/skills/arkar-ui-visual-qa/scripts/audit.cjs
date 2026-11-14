@@ -5,6 +5,9 @@
 //   node <path-to>/audit.cjs <url> [--sizes=1440x900,768x1024,375x812,320x640] [--json]
 // It also walks ten widths from 320 to 1920 px for sideways overflow and for controls that end
 // up under a fixed or sticky side panel — layouts break between the sizes people test at.
+// And it judges the header on the scrolled page, at desktop and phone size: how much stays pinned
+// and in how many bands, content showing above a floating bar or readable through it, a bar whose
+// tone fights the page under it, focus landing under a pinned bar, and safe areas (in code only).
 //
 // Reports, at each size:
 // - accessibility violations (axe-core: WCAG 2.0/2.1/2.2 A and AA rules), by impact;
@@ -153,6 +156,204 @@ async function sweepWidths(browser, url) {
   return found;
 }
 
+// ---- The header and anything else that stays on screen while the page scrolls.
+// Judged on the scrolled page, because that is where a bar goes wrong: content showing in the gap
+// above a floating bar, text readable through its glass, a dark bar left over a light page, bands
+// that pile up, and focus that lands underneath.
+const TOP_BUDGET = 64; // px of pinned chrome at the top on a desktop
+const PHONE_BUDGET = 0.15; // share of a phone's height for everything pinned, top and bottom
+const AROUND_MOVES = 0.01; // share of the pixels around the bar that change as the page scrolls
+const THROUGH_MOVES = 0.01; // and of the pixels of the bar itself
+const FROSTED = 0.7; // the tint a glass bar needs once content is under it, so that nothing behind it can be read
+
+// Everything pinned to the top or bottom edge right now: fixed, or sticky and stuck.
+const pinnedBands = () => {
+  const bands = [];
+  const name = (element) => element.tagName.toLowerCase() + (element.id ? `#${element.id}` : element.classList.length ? `.${element.classList[0]}` : "");
+  for (const element of document.querySelectorAll("body *")) {
+    const style = getComputedStyle(element);
+    if (style.position !== "fixed" && style.position !== "sticky") continue;
+    if (style.visibility === "hidden" || style.pointerEvents === "none" || Number(style.opacity) < 0.05) continue; // a fade or cap is not a band
+    const box = element.getBoundingClientRect();
+    if (box.width < innerWidth * 0.6 || box.height < 16 || box.height > innerHeight * 0.5 || box.bottom <= 0 || box.top >= innerHeight) continue;
+    const top = parseFloat(style.top), bottom = parseFloat(style.bottom);
+    const stuck = style.position === "fixed" || (Number.isFinite(top) && Math.abs(box.top - top) <= 1.5)
+      || (Number.isFinite(bottom) && Math.abs(innerHeight - box.bottom - bottom) <= 1.5);
+    if (!stuck || bands.some((band) => band.element.contains(element))) continue;
+    // The band may be a see-through wrapper around a bar that is set in from its edges: find what is painted.
+    const painted = (node) => {
+      const look = getComputedStyle(node);
+      const alpha = (look.backgroundColor.match(/[\d.]+/g) || []).map(Number)[3];
+      return (look.backgroundImage !== "none" || (alpha === undefined ? look.backgroundColor !== "rgba(0, 0, 0, 0)" : alpha > 0.05)
+        || (look.backdropFilter && look.backdropFilter !== "none")) && node.getBoundingClientRect().width >= box.width * 0.5;
+    };
+    const bar = painted(element) ? element : [...element.querySelectorAll("*")].find(painted) || element;
+    const inner = bar.getBoundingClientRect();
+    const look = getComputedStyle(bar);
+    const colour = (look.backgroundColor.match(/[\d.]+/g) || []).map(Number);
+    const blur = /blur\(([\d.]+)px\)/.exec(look.backdropFilter || "");
+    bands.push({ element, name: name(element), top: Math.round(box.top), bottom: Math.round(box.bottom), edge: box.top < innerHeight / 2 ? "top" : "bottom",
+      bar: { left: Math.round(inner.left), top: Math.round(inner.top), right: Math.round(inner.right), bottom: Math.round(inner.bottom),
+        // How much of the page a glass bar lets through: its tint (1 = solid) and its blur.
+        tint: colour.length === 4 ? colour[3] : colour.length === 3 ? 1 : null, blur: blur ? Number(blur[1]) : 0 } });
+  }
+  return bands.map(({ element, ...band }) => band);
+};
+
+// Whether the focused control is underneath a pinned band (WCAG 2.2: focus not obscured).
+const focusUnderBand = () => {
+  const active = document.activeElement;
+  if (!active || active === document.body) return null;
+  const box = active.getBoundingClientRect();
+  if (box.width < 2 || box.height < 2) return null;
+  const onTop = document.elementFromPoint(Math.min(innerWidth - 1, Math.max(0, box.left + box.width / 2)), Math.min(innerHeight - 1, Math.max(0, box.top + box.height / 2)));
+  if (!onTop || active.contains(onTop) || onTop.contains(active)) return null;
+  for (let node = onTop; node && node !== document.body; node = node.parentElement) {
+    const position = getComputedStyle(node).position;
+    if ((position === "fixed" || position === "sticky") && !node.contains(active)) {
+      return (active.getAttribute("aria-label") || active.innerText || active.value || active.tagName).trim().replace(/\s+/g, " ").slice(0, 30);
+    }
+  }
+  return null;
+};
+
+// Pixel arithmetic on two screenshots of the pinned region taken at two scroll positions, done in
+// a blank page (no image library needed). Nothing in that region should move with the page: what
+// changes outside the bar is content showing around it, and what changes inside is the page seen
+// through it. Returns, for each, the share of pixels that changed clearly, and the bar's brightness.
+async function compare(helper, first, second, bar) {
+  return helper.evaluate(async ([a, b, box]) => {
+    const load = (data) => new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = `data:image/png;base64,${data}`;
+    });
+    const read = async (data) => {
+      const image = await load(data);
+      const canvas = Object.assign(document.createElement("canvas"), { width: image.width, height: image.height });
+      const context = canvas.getContext("2d");
+      context.drawImage(image, 0, 0);
+      return { width: image.width, data: context.getImageData(0, 0, image.width, image.height).data };
+    };
+    const [one, two] = [await read(a), await read(b)];
+    const tally = { around: { pixels: 0, moved: 0 }, through: { pixels: 0, moved: 0, light: 0 } };
+    for (let index = 0; index < one.data.length; index += 4) {
+      const x = (index / 4) % one.width, y = Math.floor(index / 4 / one.width);
+      const part = x >= box.left && x < box.right && y >= box.top && y < box.bottom ? tally.through : tally.around;
+      const difference = Math.max(Math.abs(one.data[index] - two.data[index]), Math.abs(one.data[index + 1] - two.data[index + 1]),
+        Math.abs(one.data[index + 2] - two.data[index + 2]));
+      part.pixels += 1;
+      if (difference >= 28) part.moved += 1;
+      if (part === tally.through) part.light += (0.2126 * one.data[index] + 0.7152 * one.data[index + 1] + 0.0722 * one.data[index + 2]) / 255;
+    }
+    const share = (part) => (part.pixels ? part.moved / part.pixels : 0);
+    return { around: share(tally.around), through: share(tally.through), light: tally.through.pixels ? tally.through.light / tally.through.pixels : 0 };
+  }, [first.toString("base64"), second.toString("base64"), bar]);
+}
+
+async function checkHeader(browser, helper, url, [width, height]) {
+  const page = await browser.newPage({ viewport: { width, height }, bypassCSP: true });
+  const found = { size: `${width}x${height}`, scrolls: false };
+  try {
+    await page.goto(url, { waitUntil: "load", timeout: 30000 });
+    await page.waitForTimeout(2500);
+    const room = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+    if (room < 120) return found;
+    found.scrolls = true;
+    const far = Math.min(600, room - 40);
+    const settle = async (y) => {
+      await page.evaluate((to) => window.scrollTo(0, to), y);
+      await page.waitForTimeout(450); // a bar may change material once content is under it
+    };
+    await settle(far);
+    const bands = await page.evaluate(pinnedBands);
+    const top = bands.filter((band) => band.edge === "top").sort((a, b) => a.top - b.top);
+    const bottom = bands.filter((band) => band.edge === "bottom");
+    found.top = { height: top.length ? Math.max(...top.map((band) => band.bottom)) : 0, bands: top.map((band) => band.name) };
+    found.bottom = { height: bottom.length ? height - Math.min(...bottom.map((band) => band.top)) : 0, bands: bottom.map((band) => band.name) };
+    found.share = (found.top.height + found.bottom.height) / height;
+    if (top.length) {
+      const region = { x: 0, y: 0, width, height: Math.max(1, top[0].bottom) }; // from the window's top edge to the first band's lower edge
+      const here = await page.screenshot({ clip: region });
+      const below = await page.screenshot({ clip: { x: 0, y: Math.min(height - 2, found.top.height + 8), width, height: Math.max(1, Math.min(160, height - found.top.height - 8)) } });
+      await settle(far + 37);
+      const there = await page.screenshot({ clip: region });
+      const seen = await compare(helper, here, there, top[0].bar);
+      found.around = seen.around;
+      found.through = seen.through;
+      found.tint = top[0].bar.tint;
+      found.blur = top[0].bar.blur;
+      found.barLight = seen.light;
+      found.pageLight = (await compare(helper, below, below, { left: 0, top: 0, right: width, bottom: 160 })).light;
+    }
+  } finally {
+    await page.close();
+  }
+  return found;
+}
+
+// Tab forwards down the page and back up it: a control that takes focus under a pinned bar can't be seen.
+async function checkFocus(browser, url) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, bypassCSP: true });
+  const hidden = new Set();
+  let stops = 0;
+  try {
+    await page.goto(url, { waitUntil: "load", timeout: 30000 });
+    await page.waitForTimeout(2500);
+    for (const key of [...Array(30).fill("Tab"), ...Array(30).fill("Shift+Tab")]) {
+      await page.keyboard.press(key);
+      await page.waitForTimeout(60);
+      stops += 1;
+      if (!(await page.evaluate(focusUnderBand))) continue;
+      await page.waitForTimeout(350); // a skip link or a smooth scroll may still be moving: look again once it has settled
+      const under = await page.evaluate(focusUnderBand);
+      if (under) hidden.add(under);
+    }
+  } finally {
+    await page.close();
+  }
+  return { stops, hidden: [...hidden] };
+}
+
+// Notches and home indicators: this browser can't show them, so only the code can be checked.
+async function checkSafeAreas(browser, url) {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, bypassCSP: true });
+  try {
+    await page.goto(url, { waitUntil: "load", timeout: 30000 });
+    return await page.evaluate(() => {
+      const viewport = document.querySelector('meta[name="viewport"]');
+      let rules = "";
+      for (const sheet of document.styleSheets) {
+        try { for (const rule of sheet.cssRules) rules += rule.cssText; } catch (error) { /* another origin's sheet */ }
+      }
+      return { cover: Boolean(viewport && /viewport-fit\s*=\s*cover/.test(viewport.content)), insets: /env\(\s*safe-area-inset/.test(rules) };
+    });
+  } finally {
+    await page.close();
+  }
+}
+
+function describeHeader(found, phone) {
+  if (!found.scrolls) return `header when scrolled (${found.size}): the page does not scroll`;
+  const parts = [];
+  const over = phone ? found.share > PHONE_BUDGET : found.top.height > TOP_BUDGET + 8;
+  const pinned = phone
+    ? `pinned top ${found.top.height} px + bottom ${found.bottom.height} px = ${Math.round(found.share * 100)}% of the height`
+    : `pinned at the top ${found.top.height} px in ${found.top.bands.length} band${found.top.bands.length === 1 ? "" : "s"}${found.top.bands.length ? ` (${found.top.bands.join(", ")})` : ""}`;
+  parts.push(pinned + (over ? ` — OVER the budget of ${phone ? `${PHONE_BUDGET * 100}%` : `${TOP_BUDGET} px`}` : ""));
+  if (found.top.bands.length > 1) parts.push(`${found.top.bands.length} bands stacked`);
+  if (found.around !== undefined) {
+    parts.push(`content showing above or beside the bar ${found.around > AROUND_MOVES ? "YES" : "no"}`);
+    const thin = found.tint !== null && found.tint < FROSTED;
+    parts.push(`the page readable through the bar ${found.through > THROUGH_MOVES ? "YES" : thin
+      ? `LIKELY — its glass is thin with content under it (tint ${found.tint.toFixed(2)}, blur ${found.blur} px): large text shows through; frost it to ${FROSTED} or more once the page has scrolled` : "no"}`);
+    const dark = found.barLight < 0.35 && found.pageLight > 0.65, light = found.barLight > 0.65 && found.pageLight < 0.35;
+    if (dark || light) parts.push(`a ${dark ? "dark" : "light"} bar over a ${dark ? "light" : "dark"} page`);
+  }
+  return `header when scrolled (${found.size}): ${parts.join(" · ")}`;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const url = args.find((arg) => !arg.startsWith("--"));
@@ -198,7 +399,13 @@ async function main() {
       report.sizes.push(result);
       await page.close();
     }
-    report.widths = await sweepWidths(browser, url);
+    // The remaining checks each use a page of their own, so they run side by side.
+    const helper = await browser.newPage();
+    const [widths, desktop, phone, focus, safeAreas] = await Promise.all([sweepWidths(browser, url), checkHeader(browser, helper, url, [1280, 800]),
+      checkHeader(browser, helper, url, [390, 844]), checkFocus(browser, url), checkSafeAreas(browser, url)]);
+    report.widths = widths;
+    report.header = { desktop, phone, focus, safeAreas };
+    await helper.close();
   } finally {
     await browser.close();
   }
@@ -215,6 +422,14 @@ async function main() {
   console.log(`widths ${WIDTHS[0]}–${WIDTHS[WIDTHS.length - 1]} px: sideways overflow ${overflow.length ? `YES at ${overflow.join(", ")} px` : "no"}`
     + ` · controls under a fixed or sticky panel ${covered.length ? "YES — " + covered.map((at) => `${at.width} px: ${at.count} (${at.examples.join(", ")})`).join("; ") : "no"}`);
   if (covered.length) console.log("  a panel beside the content must hold its own column (or move below it) at every width — fix the layout, don't hide the overlap");
+  const { header } = report;
+  console.log(describeHeader(header.desktop, false));
+  console.log(describeHeader(header.phone, true));
+  console.log(`keyboard: ${header.focus.hidden.length ? `${header.focus.hidden.length} control(s) take focus under a pinned bar (${header.focus.hidden.slice(0, 3).join(", ")}) — set scroll-padding so focus and jump targets stay clear of it` : "no control takes focus under a pinned bar"}`);
+  const pinnedOnPhone = header.phone.scrolls && (header.phone.top.bands.length || header.phone.bottom.bands.length);
+  if (pinnedOnPhone && !(header.safeAreas.cover && header.safeAreas.insets)) {
+    console.log("safe areas: bars are pinned on a phone but the code has no viewport-fit=cover with env(safe-area-inset-*) — a notch or home indicator would cover them (checked in code only)");
+  }
   if (report.system) {
     const c = report.system.counts;
     console.log(`design system rendered: radii ${c.radius} · shadows ${c.shadow} · font sizes ${c.fontSize} · font families ${c.fontFamily} (${report.system.fonts.join(", ")}) · text colours ${c.textColour} · surfaces ${c.surface} · spacing values ${c.spacing}`);

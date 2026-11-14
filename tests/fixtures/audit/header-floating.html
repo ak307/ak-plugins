@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit fixture — a floating dark bar with everything wrong</title>
+<style>
+  body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #17212b; background: #f4f5f7; }
+  /* A dark pill set in from the edges, thin glass, over a light page: content shows above, beside and through it. */
+  .bar { position: sticky; top: 14px; z-index: 5; display: flex; align-items: center; justify-content: space-between;
+    height: 64px; margin: 14px 28px 0; padding: 0 20px; border-radius: 20px; color: #fff;
+    background: rgba(18, 28, 44, var(--tint, 0.42)); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+  /* A second band under it. */
+  .context { position: sticky; top: 92px; z-index: 4; height: 52px; padding: 0 28px; display: flex; align-items: center; background: #fff; border-bottom: 1px solid #d5dbe2; }
+  main { padding: 24px 28px 120px; }
+  h2 { font-size: 2.4rem; margin: 40px 0 12px; }
+  p { max-width: 70ch; }
+  a { display: inline-block; margin: 6px 0; }
+  .actions { position: sticky; bottom: 0; height: 84px; display: flex; align-items: center; padding: 0 28px; background: #fff; border-top: 1px solid #d5dbe2; }
+</style>
+</head>
+<body>
+<header class="bar"><strong>Sitepass</strong><span>Kestrel Engineering</span></header>
+<div class="context">Step 2 of 8 · Site and type of work</div>
+<main id="content"></main>
+<div class="actions"><button type="button">Continue</button></div>
+<script src="header-fill.js"></script>
+</body>
+</html>

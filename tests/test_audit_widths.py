@@ -156,6 +156,18 @@ def test_glass_over_a_flat_background_is_reported_and_glass_over_a_band_is_not(a
     assert "  nav.rail: nothing behind it to show (a flat background), so it reads as a plain panel" in text
 
 
+def test_a_bar_that_changes_its_own_content_is_not_read_as_the_page_showing_through(audit):
+    # The frosted bar drops its button between the two scroll positions the audit compares (a bar does this when
+    # the page's own action comes into view): those pixels moved, but nothing of the page shows through.
+    desktop = json.loads(audit("header-attached.html?drops", "--json").stdout.strip().splitlines()[-1])["header"]["desktop"]
+    assert desktop["barChanged"] is True and desktop["through"] is None and desktop["tint"] >= 0.7
+    text = audit("header-attached.html?drops").stdout
+    assert "the page readable through the bar no, by its tint (the bar changed its own content while scrolling" in text
+    # Unchanged, the same bar is compared pixel by pixel as before.
+    same = json.loads(audit("header-attached.html", "--json").stdout.strip().splitlines()[-1])["header"]["desktop"]
+    assert same["barChanged"] is False and same["through"] < 0.01
+
+
 # ---- restraint
 
 

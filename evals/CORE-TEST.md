@@ -540,3 +540,45 @@ The two checks on the round 7 builds, before any rebuild:
 | Permit form (chosen) | segmented control: flat behind (1.3) | nothing |
 
 The chosen builds are also reported for tints past 0.85 (0.86 to 0.96); they predate that rule.
+
+## Round 8 — the permit form rebuilt with the three rule sets (a frozen copy of the branch at `d43e9b0`, 14 Nov 2026)
+
+One rebuild, as planned. **The session was cut off at the 105-minute cap** while it waited for its
+second independent reviewer, so it wrote no final report and its cost was not reported (the last
+build, 101 minutes, cost $26.32). What it built was complete and its fixes were in; I checked it
+myself.
+
+| Check | Round 7 build | This build |
+|---|---|---|
+| Glass on screen in the editor | header, section rail and "still needed" panel — rail and panel flat behind (3.0 and 4.8) | header (0.85) on the scrolled page; at rest a glass stepper over a dark band with a drawn site plan; on a phone the step and preview pills and the bottom bar (0.8) |
+| Glass reported flat behind | 2 surfaces | none |
+| Status labels repeated in the first view | "needed" ×4 (half-filled draft) | none, on the board, a half-filled draft and an empty draft |
+| Filled buttons in the first view | 1 | 1 — the bar drops its own Continue while the form's is on screen |
+| A new, empty application | a wall of amber "Needed" | calm: numbered steps, an empty form, the permit tag with placeholders; what is missing is said once, on Review & submit |
+| "New application" | about a second of "Starting…" | the new form is on screen within 134 ms (filmstrip) |
+| Pinned at the top, desktop · phone | 56 px, one band · 15% | 56 px, one band · 13% |
+| Content above or beside the bar · readable through it | no · no | no · no |
+| Bar against the page | in the tone of the content under it | in the tone of the content under it |
+| axe serious or critical · console errors · overflow (four sizes; board and two drafts) | 0 · 0 · none | 0 · 0 · none |
+| Its own tests | — | 17 unit tests and 15 browser journeys pass (run by me) |
+
+Its first independent reviewer scored it 6.4 (look) and 5.7 (use) before the fixes, with two
+critical defects (an edit lost by a refresh within a second of typing; an approved permit shown
+with an error) — both fixed, with tests. The second review had not come back at the cap.
+
+Not good, or not known:
+
+- **Time.** Four builds of this brief on this branch: 55, 73, 101 and now more than 105 minutes.
+  Each added rule and review has cost time; the timeline of this run was 30 minutes to the early
+  reviews, 30 more to build and verify, 32 for the first independent review and its fixes, and 13
+  into a second review that never returned. A real session has no cap and would have finished; it
+  would still be the longest so far.
+- **The first screen has no glass**: nothing floats on it. The glass is in the editor.
+- **By looking:** the "Inducted until" date field clips its year on a desktop ("03/14/202"); dates
+  show in US format (its reviewer raised this; the build proposes a custom picker); the permit
+  tag's placeholders look like a loading state.
+- **An audit fault found here and fixed:** on one draft the audit said the page could be read
+  through the bar. It could not: the bar had dropped its own Continue button between the two
+  scroll positions the audit compares, and those pixels were counted as the page showing through.
+  The audit now notes when a bar changes its own content and judges by its tint instead. A test
+  covers it. (`evals/core_test.py` also crashed printing the summary of a cut-off run; fixed.)

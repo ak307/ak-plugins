@@ -182,7 +182,7 @@ def main() -> int:
     (out / "reply.md").write_text(summary.pop("final"), encoding="utf-8")
     (out / "stream.jsonl").write_text(stream, encoding="utf-8")
     (out / "meta.json").write_text(json.dumps(summary, indent=1), encoding="utf-8")
-    print(json.dumps({key: summary[key] for key in ("brief", "setup", "ending", "wall_minutes", "turns", "skills")}))
+    print(json.dumps({key: summary.get(key) for key in ("brief", "setup", "ending", "wall_minutes", "turns", "skills")}))
     return 0
 
 

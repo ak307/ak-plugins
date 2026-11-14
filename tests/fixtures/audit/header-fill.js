@@ -13,3 +13,10 @@ for (let section = 1; section <= 14; section += 1) {
 // ?tint=0.96 makes the floating bar solid, to test a dark bar over a light page on its own.
 const tint = new URLSearchParams(location.search).get("tint");
 if (tint) document.documentElement.style.setProperty("--tint", tint);
+
+// ?drops makes the bar drop its own button a little further down the page — as a bar does when the
+// page's own action comes into view — to test that the bar changing itself is not read as the page showing through.
+if (new URLSearchParams(location.search).has("drops")) {
+  const button = document.querySelector("header button");
+  addEventListener("scroll", () => { button.hidden = scrollY > 615; }, { passive: true });
+}

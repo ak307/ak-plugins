@@ -210,7 +210,13 @@ const pinnedBands = () => {
     const painted = (node) => material(node) && node.getBoundingClientRect().width >= box.width * 0.5;
     const bar = painted(element) ? element : [...element.querySelectorAll("*")].find(painted) || element;
     const inner = bar.getBoundingClientRect();
-    bands.push({ element, name: name(element), top: Math.round(box.top), bottom: Math.round(box.bottom), edge: box.top < innerHeight / 2 ? "top" : "bottom",
+    // What the bar itself says and shows: its text, and how many of its parts are visible.
+    const showing = [...element.querySelectorAll("*")].filter((part) => {
+      const look = getComputedStyle(part);
+      return part.getClientRects().length && look.visibility !== "hidden" && Number(look.opacity) > 0.05;
+    }).length;
+    bands.push({ element, says: `${(element.innerText || "").replace(/\s+/g, " ").trim()} · ${showing}`,
+      name: name(element), top: Math.round(box.top), bottom: Math.round(box.bottom), edge: box.top < innerHeight / 2 ? "top" : "bottom",
       bar: { left: Math.round(inner.left), top: Math.round(inner.top), right: Math.round(inner.right), bottom: Math.round(inner.bottom),
         ...(material(bar) || { tint: 0, blur: 0 }) } });
   }
@@ -451,8 +457,12 @@ async function checkHeader(browser, helper, url, [width, height]) {
       await settle(far + 37);
       const there = await page.screenshot({ clip: region });
       const seen = await compare(helper, here, there, top[0].bar);
+      // A bar that changed its own content between the two positions (a title swapped in, a button dropped
+      // because the page's own is now in view) moved pixels itself: the comparison can't speak for the page.
+      const after = (await page.evaluate(pinnedBands)).find((band) => band.edge === "top" && band.name === top[0].name);
+      found.barChanged = !after || after.says !== top[0].says;
       found.around = seen.around;
-      found.through = seen.through;
+      found.through = found.barChanged ? null : seen.through;
       found.tint = top[0].bar.tint;
       found.blur = top[0].bar.blur;
       found.barLight = seen.light;
@@ -532,7 +542,8 @@ function describeHeader(found, phone) {
     parts.push(`content showing above or beside the bar ${found.around > AROUND_MOVES ? "YES" : "no"}`);
     const thin = found.tint !== null && found.tint < FROSTED;
     parts.push(`the page readable through the bar ${found.through > THROUGH_MOVES ? "YES" : thin
-      ? `LIKELY — its glass is thin with content under it (tint ${found.tint.toFixed(2)}, blur ${found.blur} px): large text shows through; frost it to ${FROSTED} or more once the page has scrolled` : "no"}`);
+      ? `LIKELY — its glass is thin with content under it (tint ${found.tint.toFixed(2)}, blur ${found.blur} px): large text shows through; frost it to ${FROSTED} or more once the page has scrolled`
+      : found.barChanged ? "no, by its tint (the bar changed its own content while scrolling, so its pixels were not compared)" : "no"}`);
     const dark = found.barLight < 0.35 && found.pageLight > 0.65, light = found.barLight > 0.65 && found.pageLight < 0.35;
     if (dark || light) {
       parts.push(`a ${dark ? "dark" : "light"} bar over a ${dark ? "light" : "dark"} page — in a new product or redesign the pinned bar takes the tone `

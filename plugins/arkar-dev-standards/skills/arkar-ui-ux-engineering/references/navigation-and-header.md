@@ -69,9 +69,11 @@ The pattern follows the structure — count the destinations first:
   edge at full width; or, if it floats inside the page's margins, cap it:
   the page's own colour from the window's edge down to the bar, then a
   short fade, so content fades out before it reaches the bar.
-- **Nothing behind it can be read.** Once content is under it the bar is
-  frosted (a tint of 0.7 or more, with blur) or solid. Thin glass over
-  text shows the text.
+- **Nothing behind it can be read — and it is still glass.** Once content
+  is under it the bar is frosted: a tint from 0.7 to about 0.85, with blur.
+  Under 0.7 the text behind shows; past 0.85 it is solid to the eye. (A
+  product whose material is solid, for a reason in `DESIGN.md`, has a solid
+  bar.)
 - **Focus and jump targets never land under it.** `scroll-padding-top`
   equals the bar's height (WCAG 2.2, Focus Not Obscured), and anything that
   sticks lower down starts at the bar's lower edge.
@@ -86,9 +88,17 @@ The pattern follows the structure — count the destinations first:
   and cross-faded in about 180 ms. No effect tied to each pixel of scroll
   (parallax, blur that grows as you scroll), no animated blur radius.
   Reduced motion: the switch is instant.
-- **The bar is in the page's own tone, in every theme the product ships.**
-  No dark slab over a light page unless the brand requires it and
-  `DESIGN.md` says so. Tint, edge and shadow come from tokens.
+- **The bar is in the tone of the content passing under it, in every theme
+  the product ships.** A dark band at the top of a light page (a masthead,
+  a hero) is part of the page: at rest the bar sits on it, with light text;
+  once the page's light content is under it, the bar is light frosted glass
+  with dark text, and the band has scrolled away. No dark bar stays over a
+  light page (or the reverse). A new product or redesign has no brand that
+  requires one — the build writes that brand itself, so recording it in
+  `DESIGN.md` doesn't make it an exception. The exceptions are an existing
+  product whose real brand has it (Mode A), and AK asking for it. A dark
+  bar over light content also can't stay glass: it turns muddy until it is
+  tinted solid. Tint, edge and shadow come from tokens.
 - Text and icons on the bar keep their contrast over the busiest content
   that can pass under it.
 - Reduced transparency, more contrast, or no `backdrop-filter`: solid.
@@ -141,7 +151,8 @@ page, at desktop and phone size (run it once per theme with `--scheme`):
 | content showing above or beside the bar: YES | a defect |
 | the page readable through the bar: YES or LIKELY | a defect |
 | a control takes focus under a pinned bar | a defect |
-| a dark bar over a light page (or the reverse) | a defect, unless `DESIGN.md` records it as the brand's |
+| a dark bar over a light page (or the reverse) | a defect in a new product or redesign; in an existing product, unless it is that product's real brand |
+| a glass surface tinted past 0.85 | a defect: glass in the code, solid to the eye (`arkar-ui-design-system/references/materials-glass.md`, rule 2) |
 | OVER the budget, or bands stacked | a defect, unless each band is earned (§2) — say why in the Verify table |
 | safe areas missing with bars pinned on a phone | a defect |
 

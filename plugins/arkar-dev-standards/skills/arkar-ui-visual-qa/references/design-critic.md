@@ -72,13 +72,17 @@ and redesigns.
 >    the scrolled screenshots for what stays pinned: does it belong to this
 >    product and earn its place (the context, the step, the screen's
 >    action), or is it a generic bar with a logo and an account? Anything
->    showing above, beside or through it, a second band under it, or a bar
->    whose tone fights the page, is a defect. And the material: for a new
+>    showing above, beside or through it, a second band under it, or a
+>    dark bar over a light page (or the reverse), is a defect. And the
+>    material: for a new
 >    product or redesign, the layer that floats (what stays at the top once
 >    scrolled, bars and panels over the content, sheets, dialogs, toasts)
 >    should visibly be glass, with the working content solid — solid
 >    throughout, or one glass bar on an otherwise solid product, is a
->    finding; so is frosted glass everywhere.
+>    finding; so is frosted glass everywhere, and so is glass tinted until
+>    it looks solid. Where text on glass is hard to read, name the fix that
+>    keeps it glass (more blur, a dimmer page behind a sheet, stronger
+>    text), not a more solid surface.
 >
 > 5. Motion (the filmstrips — slowed down, times are real): does each
 >    change explain itself (where things came from and went), feel natural

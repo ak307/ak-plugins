@@ -43,10 +43,17 @@ never a reason for products to resemble iOS or each other.
    panels on glass need a stronger tint so text stays crisp. Over plain page
    backgrounds, tables and forms stay solid. Never glass on glass (a glass
    menu over a glass bar becomes a solid surface).
-2. **Legibility first.** Text and icons on glass meet WCAG AA against the
-   worst content that can pass beneath: add a tint (light or dark) strong
-   enough, a subtle inner shadow or vibrancy for text, and test it over the
-   busiest part of the page — not only over white.
+2. **Legibility first — and it stays glass.** Text and icons on glass meet
+   WCAG AA against the worst content that can pass beneath: add a tint
+   (light or dark) strong enough, a subtle inner shadow or vibrancy for
+   text, and test it over the busiest part of the page — not only over
+   white. The tint stops at about **0.85**: past that the surface is glass
+   in the code and solid to the eye. When text on glass is hard to read, or
+   a reviewer calls a sheet "too see-through" or a bar "muddy", the fix is
+   more blur, a dim layer under the sheet or dialog (`.lg-scrim`), a
+   stronger text colour or weight, or glass in the tone of what passes
+   under it — never a tint raised until the glass is gone. A surface that
+   has to be solid is solid by decision, and the Material line says so.
 3. **Respect the system:** `prefers-reduced-transparency: reduce` and
    `prefers-contrast: more` → solid tinted surface; no
    `backdrop-filter` support → solid fallback (`@supports`).
@@ -55,9 +62,10 @@ never a reason for products to resemble iOS or each other.
    a soft shadow that separates it from content, and a tint that adapts to
    light/dark. Blur alone reads as 2015 "glassmorphism".
 5. **The page's header is a scroll edge, not a floating bar.** At rest it
-   is part of the page; once content is under it, it frosts — a tint of 0.7
-   or more with blur, so nothing behind it can be read — in the page's own
-   tone in each theme. Thin glass (the `.lg-bar` tint) over scrolling text
+   is part of the page; once content is under it, it frosts — a tint from
+   0.7 to about 0.85 with blur, so nothing behind it can be read — in the
+   tone of the content under it in each theme (no dark bar over a light
+   page). Thin glass (the `.lg-bar` tint) over scrolling text
    shows the text; a bar set in from the window's edges shows content in
    the gap. Use `.lg-scroll-edge`, or `.lg-cap` around a bar that floats,
    with `scrollEdge()` from the experience kit
@@ -75,7 +83,8 @@ never a reason for products to resemble iOS or each other.
 `../assets/liquid-glass.css` is the tested material (tint, blur and
 saturation, top-bright rim light, specular sheen, separating shadow,
 light/dark tints, a sliding segmented control, the scroll edge for
-whatever stays at the top, and the fallbacks). Copy it
+whatever stays at the top, sheets with the dim layer under them, and the
+fallbacks). Copy it
 and theme it through its tokens; the recipe below shows the principle.
 
 ## Web recipe (adapt; tokens, not raw values in components)

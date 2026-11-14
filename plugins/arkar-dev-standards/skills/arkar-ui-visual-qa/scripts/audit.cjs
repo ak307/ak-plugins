@@ -172,7 +172,7 @@ const PHONE_BUDGET = 0.15; // share of a phone's height for everything pinned, t
 const AROUND_MOVES = 0.01; // share of the pixels around the bar that change as the page scrolls
 const THROUGH_MOVES = 0.01; // and of the pixels of the bar itself
 const FROSTED = 0.7; // the tint a glass bar needs once content is under it, so that nothing behind it can be read
-const SOLID_IN_EFFECT = 0.95; // from here up a tint hides everything behind it: glass in the code, solid to the eye
+const GLASS_CEILING = 0.85; // past this a tint hides what is behind it: glass in the code, solid to the eye
 
 // Everything pinned to the top or bottom edge right now: fixed, or sticky and stuck.
 const pinnedBands = () => {
@@ -407,7 +407,10 @@ function describeHeader(found, phone) {
     parts.push(`the page readable through the bar ${found.through > THROUGH_MOVES ? "YES" : thin
       ? `LIKELY — its glass is thin with content under it (tint ${found.tint.toFixed(2)}, blur ${found.blur} px): large text shows through; frost it to ${FROSTED} or more once the page has scrolled` : "no"}`);
     const dark = found.barLight < 0.35 && found.pageLight > 0.65, light = found.barLight > 0.65 && found.pageLight < 0.35;
-    if (dark || light) parts.push(`a ${dark ? "dark" : "light"} bar over a ${dark ? "light" : "dark"} page`);
+    if (dark || light) {
+      parts.push(`a ${dark ? "dark" : "light"} bar over a ${dark ? "light" : "dark"} page — in a new product or redesign the pinned bar takes the tone `
+        + "of the content under it; only an existing product's real brand keeps this");
+    }
   }
   return `header when scrolled (${found.size}): ${parts.join(" · ")}`;
 }
@@ -418,7 +421,7 @@ function describeHeader(found, phone) {
 function describeMaterial({ on, onScreen }) {
   const list = (names) => `${names.slice(0, 8).join(", ")}${names.length > 8 ? ` and ${names.length - 8} more` : ""}`;
   const seen = (surfaces) => (surfaces.length ? list(surfaces.map((surface) => surface.name + (surface.tint === null ? "" : ` (tint ${surface.tint})`))) : "none");
-  const solid = [...new Set([...onScreen.desktop, ...onScreen.phone].filter((surface) => surface.tint !== null && surface.tint >= SOLID_IN_EFFECT).map((surface) => surface.name))];
+  const solid = [...new Set([...onScreen.desktop, ...onScreen.phone].filter((surface) => surface.tint !== null && surface.tint > GLASS_CEILING).map((surface) => surface.name))];
   if (!on.length) {
     return "material: no glass anywhere in the styles (no backdrop blur) — Liquid Glass is the default for a new product or redesign: "
       + "use it for the floating layer, or give the reason in DESIGN.md. An existing product keeps its own material.";
@@ -429,7 +432,8 @@ function describeMaterial({ on, onScreen }) {
       + "if a bar, panel or rail does, it should be glass (or DESIGN.md says why not).";
   }
   return `material: glass on this screen — desktop: ${seen(onScreen.desktop)} · phone: ${seen(onScreen.phone)}`
-    + (solid.length ? ` — ${list(solid)}: a tint of ${SOLID_IN_EFFECT} or more is solid to the eye, not glass` : "")
+    + (solid.length ? ` — ${list(solid)}: tinted past ${GLASS_CEILING}, solid to the eye — keep it glass (more blur, a dim layer under a sheet, stronger text) `
+      + "or name it solid in DESIGN.md" : "")
     + ` — these should be the surfaces the build sheet's Material line names (${defined}: sheets, menus and other states are not on screen now)`;
 }
 

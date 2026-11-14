@@ -436,3 +436,13 @@ Two things about the checking itself, found on this build and fixed on the branc
   runs wrote their own scripts at 2, and the still screenshots sent to AK in rounds 4–6 were taken
   at 2 (the recordings at 1) — glass in those stills looked thinner than it is. The inspection reference and both review briefs now
   say to judge glass at 1.
+
+### Two rules after that rebuild (AK, 14 Nov: "go ahead")
+
+| Rule | Where |
+|---|---|
+| **The pinned bar takes the tone of the content under it.** A dark band at the top of a light page is part of the page: the bar sits on it at rest and is light frosted glass once the page's content is under it. No dark bar stays over a light page in a new product or redesign — the build writes its own brand, so recording one in `DESIGN.md` is not an exception. Only an existing product's real brand, or AK asking, keeps one. | Navigation and header standard (material, defect table), glass reference, orchestrator's build step, both review briefs, the audit's wording |
+| **Glass stays visibly glass: a tint of about 0.85 or less.** When text on glass is hard to read, the fix is more blur, a dim layer under a sheet or dialog, or stronger text — never a tint raised until the surface is solid. | Orchestrator's fixed rule, build sheet's Material line, glass reference (rule 2), both review briefs; the audit reports a glass surface tinted past 0.85; the kit gives sheets their own tint (0.74 light, 0.76 dark, was 0.62 and 0.66) and a dim layer (`.lg-scrim`) |
+
+The second rule answers what happened in the rebuild: its reviewer called the sheet (the kit's
+0.62) "too see-through" and the dark bar "muddy", and the build's only lever was the tint.

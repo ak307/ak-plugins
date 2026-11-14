@@ -4,6 +4,7 @@ Whatever stays at the top while the page scrolls is plain page at rest and frost
 under it; focus and jump targets land below it; one compact bar takes over the title's context.
 """
 import json
+import re
 import shutil
 import subprocess
 import threading
@@ -166,6 +167,14 @@ def test_stopping_it_leaves_the_bar_alone_and_without_it_the_same_key_press_hide
     found = walked["attached"]
     assert found["stopped"]["over"] is True  # scrolled back to the top, and nothing updated it
     assert found["focusWithoutKit"]["focused"] == "#section-7" and found["focusWithoutKit"]["clear"] < 0
+
+
+def test_the_kit_keeps_every_tint_under_the_glass_ceiling_and_gives_sheets_a_dim_layer():
+    # Past about 0.85 a tint is solid to the eye; a sheet stays readable through the dim layer under it instead.
+    css = GLASS.read_text()
+    tints = [float(value) for value in re.findall(r"--lg-(?:tint|panel|sheet|frost)-alpha:\s*([0-9.]+)", css)]
+    assert len(tints) >= 12 and max(tints) <= 0.85
+    assert ".lg-scrim {" in css and "var(--lg-sheet-alpha)" in css and "var(--lg-scrim-alpha)" in css
 
 
 def test_reduced_motion_switches_the_material_at_once(walked):

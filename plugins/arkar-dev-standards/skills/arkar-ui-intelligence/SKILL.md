@@ -72,7 +72,10 @@ review.
   people read and work in (tables, forms, long text) stays solid. It is a
   material, not a layout or a look: each product composes it in its own
   way (`arkar-ui-design-system/references/materials-glass.md`, kit
-  `arkar-ui-design-system/assets/liquid-glass.css`). Going without it is a
+  `arkar-ui-design-system/assets/liquid-glass.css`). It stays visibly
+  glass — a tint of about 0.85 or less: when text on it is hard to read,
+  the fix is more blur, a dim layer under a sheet or stronger text, never
+  a surface tinted until it is solid. Going without it is a
   decision with its reason in `DESIGN.md` (the brand, a Figma design, the
   device) — never an omission. An existing product (Mode A) keeps its own
   material; bringing glass into it is a 🟠 proposal.
@@ -325,8 +328,9 @@ change runs through all seven in minutes.
      never `replaceChildren` on the whole screen; frameworks use the
      router's view transitions;
    - **whatever stays at the top is a scroll edge:** nothing shows above
-     or beside it, nothing behind it can be read (frosted or solid once
-     content is under it, in the page's own tone), and focus and jump
+     or beside it, nothing behind it can be read (frosted glass once
+     content is under it, in the tone of that content — never a dark bar
+     over a light page), and focus and jump
      targets land below it — plain web builds call the experience kit's
      `scrollEdge(bar, { title })` and style its two states (`data-over`,
      `data-context`); other stacks keep the same behaviour;

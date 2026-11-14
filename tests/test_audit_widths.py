@@ -128,11 +128,13 @@ def test_the_report_names_the_surfaces_that_are_glass_or_says_there_are_none(aud
     assert material(audit, "overlap.html") == {"glass": False, "on": [], "onScreen": {"desktop": [], "phone": []}}
     # A page whose bar is frosted glass: the bar is named, to be set against the build sheet's Material line.
     # with its tint, because a tint near 1 is glass in the code and solid to the eye.
-    assert "material: glass on this screen — desktop: header.bar (tint 0.86) · phone: header.bar (tint 0.86)" in audit("header-attached.html").stdout
-    bar = [{"name": "header.bar", "tint": 0.86}]
+    attached = audit("header-attached.html").stdout
+    assert "material: glass on this screen — desktop: header.bar (tint 0.8) · phone: header.bar (tint 0.8)" in attached
+    assert "solid to the eye" not in attached  # 0.8 is under the ceiling of 0.85
+    bar = [{"name": "header.bar", "tint": 0.8}]
     assert material(audit, "header-attached.html") == {"glass": True, "on": [".bar"], "onScreen": {"desktop": bar, "phone": bar}}
     # The floating fixture's bar made almost solid (?tint=0.96): still a backdrop blur, and named as solid to the eye.
-    assert "header.bar: a tint of 0.95 or more is solid to the eye, not glass" in audit("header-floating.html?tint=0.96").stdout
+    assert "header.bar: tinted past 0.85, solid to the eye — keep it glass" in audit("header-floating.html?tint=0.96").stdout
 
 
 def test_glass_that_is_only_in_the_styles_is_not_reported_as_glass_on_the_screen(audit):

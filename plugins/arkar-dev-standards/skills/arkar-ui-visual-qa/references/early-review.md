@@ -45,12 +45,16 @@ changes, and not for a feature that must match an existing product's look.
 >    Does what stays pinned belong to this product and earn its place (the
 >    context, the step, the screen's action), or is it a generic bar holding
 >    a logo and an account? Is anything showing above, beside or through
->    it? Is it one band? Is it in the page's own tone?
+>    it? Is it one band? Is it in the tone of the content under it — or a
+>    dark bar over a light page (or the reverse)?
 > 5. **Material** — is the layer that floats (what stays at the top once
 >    the page has scrolled, bars and panels over the content, sheets)
 >    visibly glass — translucent, lit at its edge, with something behind it
 >    worth seeing through — while what people read and work in stays solid?
->    Or is the product solid throughout, or frosted everywhere?
+>    Or is the product solid throughout, frosted everywhere, or "glass"
+>    tinted so far that it looks solid? If text on a glass surface is hard
+>    to read, say so — and say whether more blur, a dimmer page behind it or
+>    stronger text would fix it, not a more solid surface.
 > 6. **The three changes that would lift it most**, most valuable first.
 >    Each must be concrete enough to build (what, and where), and use what
 >    the product already has — its content, colours and type. No new

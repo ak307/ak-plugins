@@ -31,7 +31,9 @@
   --lg-tint: 255 255 255;          /* RGB of the glass tint */
   --lg-tint-alpha: 0.42;           /* bars and sheets */
   --lg-panel-alpha: 0.62;          /* panels people read in */
-  --lg-frost-alpha: 0.78;           /* a pinned header with content under it: 0.7 or more */
+  --lg-sheet-alpha: 0.74;          /* sheets and dialogs over a page people were working in (with .lg-scrim) */
+  --lg-frost-alpha: 0.78;          /* a pinned header with content under it: 0.7 to 0.85 */
+  --lg-scrim-alpha: 0.28;          /* the dim layer under a sheet or dialog */
   --lg-blur: 22px;
   --lg-saturate: 1.8;
   --lg-edge: 255 255 255;          /* RGB of the rim light */
@@ -53,7 +55,9 @@
   --lg-tint: 22 28 40;
   --lg-tint-alpha: 0.46;
   --lg-panel-alpha: 0.66;
+  --lg-sheet-alpha: 0.76;
   --lg-frost-alpha: 0.8;
+  --lg-scrim-alpha: 0.5;
   --lg-edge: 255 255 255;
   --lg-shadow: 0 0 0;
   --lg-text: #f4f7fb;
@@ -67,7 +71,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --lg-tint: 22 28 40; --lg-tint-alpha: 0.46; --lg-panel-alpha: 0.66; --lg-frost-alpha: 0.8; --lg-shadow: 0 0 0;
+    --lg-tint: 22 28 40; --lg-tint-alpha: 0.46; --lg-panel-alpha: 0.66; --lg-sheet-alpha: 0.76; --lg-frost-alpha: 0.8;
+    --lg-scrim-alpha: 0.5; --lg-shadow: 0 0 0;
     --lg-text: #f4f7fb; --lg-solid: #161c28; --lg-page: #070b14; --lg-field-a: #1f4fd1; --lg-field-b: #0e8f73;
     --lg-field-c: #7a3db8; --lg-field-base: #070b14;
   }
@@ -114,7 +119,10 @@
 
 .lg-bar { border-radius: var(--lg-radius); }
 .lg-panel { border-radius: var(--lg-radius); background: rgb(var(--lg-tint) / var(--lg-panel-alpha)); }
-.lg-sheet { border-radius: calc(var(--lg-radius) + 6px); background: rgb(var(--lg-tint) / var(--lg-panel-alpha)); }
+.lg-sheet { border-radius: calc(var(--lg-radius) + 6px); background: rgb(var(--lg-tint) / var(--lg-sheet-alpha)); }
+/* The dim layer under a sheet or dialog: the page behind recedes, so the sheet stays glass and its text stays clear.
+   When text on glass is hard to read, this, more blur or a stronger text colour is the fix — never a tint past 0.85. */
+.lg-scrim { position: fixed; inset: 0; background: rgb(var(--lg-shadow) / var(--lg-scrim-alpha)); }
 .lg-pill { border-radius: var(--lg-radius-control); padding: 0.2em 0.7em; }
 
 /* Controls on glass: lighter glass that brightens on hover and presses in. */

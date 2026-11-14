@@ -446,3 +446,45 @@ Two things about the checking itself, found on this build and fixed on the branc
 
 The second rule answers what happened in the rebuild: its reviewer called the sheet (the kit's
 0.62) "too see-through" and the dark bar "muddy", and the build's only lever was the tint.
+
+## Round 7 — the two rules on two briefs (a frozen copy of the branch at `6c26aa9`, 14 Nov 2026)
+
+Both briefs AK judged in round 5, rebuilt once each with the navigation and header standard, glass
+as the default, the pinned bar in the tone of the content under it, and the glass ceiling.
+
+| | Permit form | Energy dashboard |
+|---|---|---|
+| Finished on its own | yes, 101.2 min (the cap is 105), $26.32, 4 reviewers | yes, 72.6 min, $17.58, 3 reviewers |
+| Its own reviewers' overall score | 7.25, then 7.3 (target 8) | 6.6, then 7.7 look and 7.6 use (target 8) |
+| Critical defects its reviewers found | 3, then 1 more; all fixed | 1; fixed |
+| Themes it ships | light only | light only (a dark theme is listed as a proposal) |
+| Pinned at the top, desktop | 56 px, one band | 56 px, one band |
+| Content above or beside the bar · readable through it | no · no | no · no |
+| Pinned on a phone, top and bottom | 56 + 68 px = 15% in the editor; 7% on the board | 52 px = 6% |
+| Bar against the page | in the tone of the content under it (dark glass over the dark board, light over the form) | in the page's tone |
+| Glass on screen, with tints | header 0.8 (0.85 on a phone), section rail 0.84 (dark), "still needed" panel 0.64, phone's bottom bar 0.55 | header 0.8, alerts rail's head 0.84, alert tabs 0.78 |
+| Sheets and dialogs | glass over the kit's dim layer | the building sheet, glass over the dim layer |
+| axe serious or critical · console errors · overflow (four sizes) | 0 · 0 · none | 0 · 0 · none |
+
+Both rules were picked up from the skill text. No glass surface is tinted past 0.85 and neither
+build has a dark bar over a light page; the permit form's own notes say "Pinned bar is glass in the
+tone of what's under it" and it switches the bar's tone from what passes under its lower edge.
+Both builds used the kit's new sheet tint and dim layer rather than tinting a sheet solid.
+
+Not good, or not known:
+
+- Both builds' own reviewers scored them under the target of 8, and the permit form needed two
+  rounds of critical fixes (a literal "null" in two headings; "Saved" shown before the save had
+  happened; a dead "Next" covering Submit on phones).
+- The permit form ran to within four minutes of the cap and cost $26.32 — half as much again as
+  the round 6 rebuild ($15.47). One build each: not enough to say the rules cost more.
+- Energy dashboard, by looking: the lower left of the page is empty beside the taller alerts rail;
+  on a phone the "resolved — Undo" notice sits over the next card's buttons for its five seconds
+  (the build reported this itself).
+- Neither build was checked with a screen reader or on a real graphics card (the permit form's
+  build measured 20–30 frames a second in the test renderer while glass animated).
+
+For the blind page the chosen builds (round 4, released plugin) and the new builds were recorded
+through the same journeys with `evals/core_flow.cjs` — screenshots at twice the pixel density with
+glass rendered correctly — and shown as A and B in a random order per brief. The key stays outside
+the repository until AK has judged them.

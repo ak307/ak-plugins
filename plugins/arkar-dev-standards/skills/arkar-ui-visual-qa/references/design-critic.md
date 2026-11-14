@@ -19,7 +19,8 @@ and redesigns.
    window-sized screenshot of each main screen **scrolled part-way down**,
    at desktop and phone size and in each theme the product ships (a
    full-page screenshot can't show what stays pinned, or what shows above
-   and through it) — plus the
+   and through it; at the normal pixel density, `deviceScaleFactor: 1`,
+   because at 2 headless Chromium can leave glass partly unblurred) — plus the
    filmstrips of the first load and the main flows
    (`scripts/interaction-probe.cjs`, `scripts/film.cjs`). A critic who only
    sees the empty start screen can't judge the product.

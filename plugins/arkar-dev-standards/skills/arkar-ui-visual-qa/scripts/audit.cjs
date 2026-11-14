@@ -172,6 +172,7 @@ const PHONE_BUDGET = 0.15; // share of a phone's height for everything pinned, t
 const AROUND_MOVES = 0.01; // share of the pixels around the bar that change as the page scrolls
 const THROUGH_MOVES = 0.01; // and of the pixels of the bar itself
 const FROSTED = 0.7; // the tint a glass bar needs once content is under it, so that nothing behind it can be read
+const SOLID_IN_EFFECT = 0.95; // from here up a tint hides everything behind it: glass in the code, solid to the eye
 
 // Everything pinned to the top or bottom edge right now: fixed, or sticky and stuck.
 const pinnedBands = () => {
@@ -211,6 +212,32 @@ const pinnedBands = () => {
         ...(material(bar) || { tint: 0, blur: 0 }) } });
   }
   return bands.map(({ element, ...band }) => band);
+};
+
+// The surfaces that are glass on the screen right now: an element, or its ::before / ::after layer, that
+// paints a backdrop blur — each with the tint over that blur (1 = nothing shows through; null = an image
+// or gradient). A control sitting on a glass surface is part of that surface, not another one.
+const glassOnScreen = () => {
+  const name = (element) => element.tagName.toLowerCase() + (element.id ? `#${element.id}` : element.classList.length ? `.${element.classList[0]}` : "");
+  const surfaces = [];
+  const found = new Map();
+  for (const element of document.querySelectorAll("body *")) {
+    const box = element.getBoundingClientRect();
+    if (box.width < 24 || box.height < 16 || box.bottom <= 0 || box.top >= innerHeight || box.right <= 0 || box.left >= innerWidth) continue;
+    const own = getComputedStyle(element);
+    if (own.visibility === "hidden" || Number(own.opacity) < 0.05 || surfaces.some((surface) => surface.contains(element))) continue;
+    for (const layer of [null, "::before", "::after"]) {
+      const look = layer ? getComputedStyle(element, layer) : own;
+      if (layer && (look.content === "none" || look.content === "normal" || look.display === "none" || Number(look.opacity) < 0.05)) continue;
+      if (!/blur\(/.test(look.backdropFilter || "")) continue;
+      const colour = (look.backgroundColor.match(/[\d.]+/g) || []).map(Number);
+      const alpha = colour.length === 4 ? colour[3] : colour.length === 3 ? 1 : 0;
+      surfaces.push(element);
+      if (!found.has(name(element))) found.set(name(element), alpha < 0.05 && look.backgroundImage !== "none" ? null : Math.round(alpha * 100) / 100);
+      break;
+    }
+  }
+  return [...found].map(([surface, tint]) => ({ name: surface, tint }));
 };
 
 // Whether the focused control is underneath a pinned band (WCAG 2.2: focus not obscured).
@@ -272,7 +299,10 @@ async function checkHeader(browser, helper, url, [width, height]) {
     await page.goto(url, { waitUntil: "load", timeout: 30000 });
     await page.waitForTimeout(2500);
     const room = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
-    if (room < 120) return found;
+    if (room < 120) {
+      found.glass = await page.evaluate(glassOnScreen);
+      return found;
+    }
     found.scrolls = true;
     const far = Math.min(600, room - 40);
     const settle = async (y) => {
@@ -280,6 +310,7 @@ async function checkHeader(browser, helper, url, [width, height]) {
       await page.waitForTimeout(450); // a bar may change material once content is under it
     };
     await settle(far);
+    found.glass = await page.evaluate(glassOnScreen); // on the scrolled page: a header's glass only shows once content is under it
     const bands = await page.evaluate(pinnedBands);
     const top = bands.filter((band) => band.edge === "top").sort((a, b) => a.top - b.top);
     const bottom = bands.filter((band) => band.edge === "bottom");
@@ -330,9 +361,9 @@ async function checkFocus(browser, url) {
 }
 
 // Two things only the code can show. Notches and home indicators: this browser has none, so the
-// styles are read for safe-area handling. And the material: whether any style uses glass at all
-// (a backdrop blur) — most glass is on sheets, menus and a header's scrolled state, which a page
-// at rest doesn't show.
+// styles are read for safe-area handling. And the material the styles define (a backdrop blur):
+// sheets, menus and toasts are glass that no screenshot of this screen shows. A copied glass kit
+// defines it whether or not anything uses it, so checkHeader also reports what is glass on screen.
 async function checkStyles(browser, url) {
   const page = await browser.newPage(open({ width: 390, height: 844 }));
   try {
@@ -379,6 +410,27 @@ function describeHeader(found, phone) {
     if (dark || light) parts.push(`a ${dark ? "dark" : "light"} bar over a ${dark ? "light" : "dark"} page`);
   }
   return `header when scrolled (${found.size}): ${parts.join(" · ")}`;
+}
+
+// What is glass on this screen (scrolled, at desktop and phone size), then what the styles define
+// besides. The two differ: a copied kit defines glass that nothing may use, and sheets, menus and
+// toasts are glass that this screen doesn't show.
+function describeMaterial({ on, onScreen }) {
+  const list = (names) => `${names.slice(0, 8).join(", ")}${names.length > 8 ? ` and ${names.length - 8} more` : ""}`;
+  const seen = (surfaces) => (surfaces.length ? list(surfaces.map((surface) => surface.name + (surface.tint === null ? "" : ` (tint ${surface.tint})`))) : "none");
+  const solid = [...new Set([...onScreen.desktop, ...onScreen.phone].filter((surface) => surface.tint !== null && surface.tint >= SOLID_IN_EFFECT).map((surface) => surface.name))];
+  if (!on.length) {
+    return "material: no glass anywhere in the styles (no backdrop blur) — Liquid Glass is the default for a new product or redesign: "
+      + "use it for the floating layer, or give the reason in DESIGN.md. An existing product keeps its own material.";
+  }
+  const defined = `the styles define glass for ${list(on)}`;
+  if (!onScreen.desktop.length && !onScreen.phone.length) {
+    return `material: nothing on this screen is glass — ${defined}, but no surface here uses it. Right if nothing floats on this screen; `
+      + "if a bar, panel or rail does, it should be glass (or DESIGN.md says why not).";
+  }
+  return `material: glass on this screen — desktop: ${seen(onScreen.desktop)} · phone: ${seen(onScreen.phone)}`
+    + (solid.length ? ` — ${list(solid)}: a tint of ${SOLID_IN_EFFECT} or more is solid to the eye, not glass` : "")
+    + ` — these should be the surfaces the build sheet's Material line names (${defined}: sheets, menus and other states are not on screen now)`;
 }
 
 async function main() {
@@ -439,8 +491,10 @@ async function main() {
     const [widths, desktop, phone, focus, styles] = await Promise.all([sweepWidths(browser, url), checkHeader(browser, helper, url, [1280, 800]),
       checkHeader(browser, helper, url, [390, 844]), checkFocus(browser, url), checkStyles(browser, url)]);
     report.widths = widths;
-    report.header = { desktop, phone, focus, safeAreas: styles.safeAreas };
-    report.material = styles.material;
+    const { glass: desktopGlass = [], ...desktopHeader } = desktop;
+    const { glass: phoneGlass = [], ...phoneHeader } = phone;
+    report.header = { desktop: desktopHeader, phone: phoneHeader, focus, safeAreas: styles.safeAreas };
+    report.material = { ...styles.material, onScreen: { desktop: desktopGlass, phone: phoneGlass } };
     await helper.close();
   } finally {
     await browser.close();
@@ -467,12 +521,7 @@ async function main() {
   if (pinnedOnPhone && !(header.safeAreas.cover && header.safeAreas.insets)) {
     console.log("safe areas: bars are pinned on a phone but the code has no viewport-fit=cover with env(safe-area-inset-*) — a notch or home indicator would cover them (checked in code only)");
   }
-  const glassOn = report.material.on;
-  console.log(glassOn.length
-    ? `material: glass (a backdrop blur) on ${glassOn.slice(0, 8).join(", ")}${glassOn.length > 8 ? ` and ${glassOn.length - 8} more` : ""}`
-      + " — these should be the surfaces the build sheet's Material line names"
-    : "material: no glass anywhere in the styles (no backdrop blur) — Liquid Glass is the default for a new product or redesign: "
-      + "use it for the floating layer, or give the reason in DESIGN.md. An existing product keeps its own material.");
+  console.log(describeMaterial(report.material));
   if (report.system) {
     const c = report.system.counts;
     console.log(`design system rendered: radii ${c.radius} · shadows ${c.shadow} · font sizes ${c.fontSize} · font families ${c.fontFamily} (${report.system.fonts.join(", ")}) · text colours ${c.textColour} · surfaces ${c.surface} · spacing values ${c.spacing}`);

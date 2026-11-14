@@ -370,3 +370,69 @@ is easier to miss.
 | Art direction, design system, glass references | The default stated where the direction is chosen; "glassmorphism" (frosted cards everywhere) told apart from it. |
 | Audit | A `material` line: the selectors whose styles use glass (a backdrop blur), or "no glass anywhere". On the round 4 permit build: `.lg-bar, .lg-panel, .lg-sheet, .lg-control, .lg-pill, .lg-segmented, .toast`. On the round 6 rebuild: `.bottom-bar`. |
 | Early and final reviewers | Asked whether the floating layer is visibly glass and the content solid — or the product is solid throughout, or frosted everywhere. |
+
+### The permit form rebuilt again, with glass stated as the default (a frozen copy of the branch at `8f47888`)
+
+Finished on its own: 72.8 min, $20.53, 221 turns, 11 skills, 3 reviewers (the early review twice —
+the first sent the editor back as "a standard stacked form" — and one independent review: no
+critical defect, 9 major, all fixed; its overall score was 7.1 before the fixes and the build did
+not have it scored again). The round 6 rebuild of the same brief: 54.9 min, $15.47. One build
+each, so the extra 18 minutes and $5 can't be put down to the glass rule.
+
+The default was picked up. `DESIGN.md` has the Material line ("Liquid Glass for the floating
+layer — the scroll-edge header, the floating section rail, the readiness panel, the phone section
+sheet and bottom bar, toasts. The forms, worker cards and upload slots people work in are solid.
+Beneath the glass is the product's own canvas: a blueprint site-plan grid with a soft amber and
+teal light field"), the build copied `liquid-glass.css` and used `.lg-scroll-edge`, `.lg-bar`,
+`.lg-panel`, `.lg-sheet` and `.lg-cap`, and its early reviewer was shown the screens at rest and
+scrolled, in light and dark.
+
+| Check (the Workers section of the editor, scrolled) | Round 6 rebuild | This rebuild |
+|---|---|---|
+| Glass on screen, desktop | none | header (tint 0.92), section rail (0.42), "Still needed" panel (0.62) |
+| Glass on screen, phone | the bottom bar (hand-made) | header (0.92), bottom bar (0.42); the section sheet when open |
+| Glass kit copied | no | yes |
+| Material line in `DESIGN.md` | none | yes |
+| Pinned at the top, desktop | 56 px, one band | 56 px, one band |
+| Content above or beside the bar · readable through it | no · no | no · no |
+| Pinned on a phone, top and bottom | 52 + 65 px = 14% | 52 + 66 px = 14% |
+| Focus under a pinned bar · safe areas | none · handled | none · handled |
+| Bar against the page | in the page's tone | dark navy over a light page in the light theme (in tone in the dark theme) |
+| axe serious or critical · console errors · overflow (four sizes, light and dark) | not rerun | 0 · 0 · none |
+
+Not settled, or not good:
+
+- **The dark bar.** After the early review the build carried the first screen's dark band into the
+  editor, kept the pinned bar dark navy in the light theme, and recorded that in `DESIGN.md` as the
+  brand's tone. The standard allows a dark bar over a light page only when the brand requires it;
+  here the build invented the brand, so the exception is its own. It did raise it as a decision
+  for AK. The bar is attached, the page opens with the same dark band, and nothing shows around or
+  through it — unlike the round 5 floating bars — but it is still the thing the rule was written
+  against.
+- **Two of the glass surfaces are close to solid.** Its independent reviewer called the pinned bar
+  "muddy" and the tablet sheet "too see-through"; the build raised their tints to 0.92 and 0.97.
+  What reads as glass is the section rail, the "Still needed" panel and the phone's bottom bar,
+  over a pale grid. This is restrained glass, not the round 4 build's.
+- **The first screen has no glass on a desktop** (a phone gets a glass bar with the main action
+  once the hero's button has scrolled away). Nothing floats on that screen, so this follows the
+  rule as written.
+- **Defects its own checks missed** (found by looking at the screenshots): on a desktop, an open
+  worker card whose certificate has expired shows the name as "A…" — the red stamp takes the room;
+  and the hanging tag's ring is cut by the pinned bar once the page has scrolled.
+
+Two things about the checking itself, found on this build and fixed on the branch:
+
+- **The audit's material line named style rules, not the screen.** On this build's first screen it
+  listed `.lg-bar, .lg-panel, .lg-sheet…` — the copied kit — while nothing on that screen was
+  glass: a build that copies the kit and uses none of it would have passed. The line now names
+  what is glass on the scrolled screen at desktop and phone size, each with its tint (0.95 or more
+  is reported as solid to the eye), and lists what the styles define apart from that. Tests: a
+  page whose styles define glass that nothing uses; a bar at tint 0.96.
+- **Screenshots at twice the pixel density under-render glass in this test browser.** At
+  `deviceScaleFactor: 2`, headless Chromium 153 blurred only the upper part of each glass surface
+  (checked on a bare page with one glass strip: fully blurred at 1, text readable through its lower
+  half at 2). The bottom bar looked as if the form could be read through it; at 1 it is correctly
+  blurred. The plugin's own scripts use 1, and nobody in this run used 2, but reviewers in earlier
+  runs wrote their own scripts at 2, and the still screenshots sent to AK in rounds 4–6 were taken
+  at 2 (the recordings at 1) — glass in those stills looked thinner than it is. The inspection reference and both review briefs now
+  say to judge glass at 1.

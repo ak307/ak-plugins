@@ -118,10 +118,25 @@ def test_a_solid_dark_bar_over_a_light_page_is_named(audit):
 # ---- the material
 
 
+def material(audit, page: str) -> dict:
+    return json.loads(audit(page, "--json").stdout.strip().splitlines()[-1])["material"]
+
+
 def test_the_report_names_the_surfaces_that_are_glass_or_says_there_are_none(audit):
     plain = audit("overlap.html")
     assert "material: no glass anywhere in the styles" in plain.stdout and "DESIGN.md" in plain.stdout
-    assert json.loads(audit("overlap.html", "--json").stdout.strip().splitlines()[-1])["material"] == {"glass": False, "on": []}
+    assert material(audit, "overlap.html") == {"glass": False, "on": [], "onScreen": {"desktop": [], "phone": []}}
     # A page whose bar is frosted glass: the bar is named, to be set against the build sheet's Material line.
-    assert "material: glass (a backdrop blur) on .bar" in audit("header-attached.html").stdout
-    assert json.loads(audit("header-attached.html", "--json").stdout.strip().splitlines()[-1])["material"] == {"glass": True, "on": [".bar"]}
+    # with its tint, because a tint near 1 is glass in the code and solid to the eye.
+    assert "material: glass on this screen — desktop: header.bar (tint 0.86) · phone: header.bar (tint 0.86)" in audit("header-attached.html").stdout
+    bar = [{"name": "header.bar", "tint": 0.86}]
+    assert material(audit, "header-attached.html") == {"glass": True, "on": [".bar"], "onScreen": {"desktop": bar, "phone": bar}}
+    # The floating fixture's bar made almost solid (?tint=0.96): still a backdrop blur, and named as solid to the eye.
+    assert "header.bar: a tint of 0.95 or more is solid to the eye, not glass" in audit("header-floating.html?tint=0.96").stdout
+
+
+def test_glass_that_is_only_in_the_styles_is_not_reported_as_glass_on_the_screen(audit):
+    # A copied kit defines glass whether or not anything uses it: the report goes by what is on screen.
+    assert material(audit, "kit-unused.html") == {"glass": True, "on": [".glass-bar", ".glass-sheet"], "onScreen": {"desktop": [], "phone": []}}
+    text = audit("kit-unused.html").stdout
+    assert "material: nothing on this screen is glass — the styles define glass for .glass-bar, .glass-sheet, but no surface here uses it" in text

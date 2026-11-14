@@ -191,5 +191,10 @@ def test_the_audit_finds_nothing_wrong_with_the_scrolled_header_in_either_theme(
     assert header["safeAreas"] == {"cover": True, "insets": True}
     # The kit's glass, by name: the bars, panels and controls, and the header's frosted layer.
     assert report["material"]["glass"] is True and {".lg-bar", ".lg-sheet", ".lg-scroll-edge::before"} <= set(report["material"]["on"])
+    # And what is glass on the scrolled screen itself, not only what the kit defines: the attached header's
+    # frosted layer, or the bar floating inside its cap.
+    bar = "header#bar" if page == "attached.html" else "header.lg-bar"
+    for size in ("desktop", "phone"):
+        assert bar in {surface["name"] for surface in report["material"]["onScreen"][size]}
     for size in report["sizes"]:
         assert size["consoleErrors"] == [] and size["overflow"] is False and size["axe"] == []

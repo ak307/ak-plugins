@@ -18,7 +18,9 @@ changes, and not for a feature that must match an existing product's look.
    real content (no skeletons, no lorem ipsum) — each **at rest and
    scrolled** part-way down, because a header is judged where it goes
    wrong, which is never the top of the page. If the product ships a second
-   theme, add the first screen in it, at rest and scrolled.
+   theme, add the first screen in it, at rest and scrolled. Use the normal
+   pixel density (`deviceScaleFactor: 1`): at 2, headless Chromium can leave
+   glass partly unblurred, and the reviewer would see text through it.
 2. Start **one** fresh subagent with the Agent tool, in the foreground. Give
    it the screenshot paths, one line on the product and who uses it,
    and the brief below. Never the code, `DESIGN.md` or your reasoning.

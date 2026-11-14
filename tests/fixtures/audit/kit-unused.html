@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit fixture — a glass kit in the styles that nothing on the page uses</title>
+<style>
+  body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #17212b; background: #f4f5f7; }
+  /* Copied with the kit, never put on an element. */
+  .glass-bar, .glass-sheet { background: rgba(255, 255, 255, 0.5); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  .bar { position: sticky; top: 0; height: 56px; padding: 0 28px; display: flex; align-items: center; background: #fff; border-bottom: 1px solid #d5dbe2; }
+  main { padding: 24px 28px 120px; }
+  h2 { font-size: 2.4rem; margin: 40px 0 12px; }
+  p { max-width: 70ch; }
+  a { display: inline-block; margin: 6px 0; }
+</style>
+</head>
+<body>
+<header class="bar"><strong>Site and type of work</strong></header>
+<main id="content"></main>
+<script src="header-fill.js"></script>
+</body>
+</html>

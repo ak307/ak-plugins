@@ -155,11 +155,14 @@ or moment the sheet missed is added to the sheet and built.
    these are defects, not notes; a header that is over the budget or has a
    second band is a defect unless the band is earned
    (`arkar-ui-ux-engineering/references/navigation-and-header.md` §9).
-   Its **material** line names the surfaces whose styles are glass. On a
-   new product or redesign, "no glass anywhere", or glass on fewer
-   surfaces than the build sheet's Material line names (one bar is not the
-   floating layer), is a defect too, unless `DESIGN.md` gives the reason:
-   Liquid Glass is the default material. A wide spread of values means tokens aren't being used —
+   Its **material** line names what is glass on this screen (scrolled, at
+   desktop and phone size) and, apart from that, what the styles define — a
+   copied kit defines glass whether or not anything uses it. On a new
+   product or redesign, "no glass anywhere", "nothing on this screen is
+   glass" on a screen where something floats, or glass on fewer surfaces
+   than the build sheet's Material line names (one bar is not the floating
+   layer), is a defect too, unless `DESIGN.md` gives the reason: Liquid
+   Glass is the default material. A wide spread of values means tokens aren't being used —
    consolidate to about ≤ 6 radii, ≤ 12–14 font sizes and ≤ 5 shadows.
 2. **Interaction probe:** `scripts/interaction-probe.cjs` takes a full-page
    screenshot, flags **template structures** (equal-card rows, tiles over a

@@ -1,4 +1,4 @@
-# AK's UI standard (always on) — arkar-ui v4.0.0
+# AK's UI standard (always on) — arkar-ui v4.0.1
 
 This is the UI part of AK's coding standards; the rest is in the
 `arkar-dev-standards` plugin, and its Rule 0 (production safety) comes before

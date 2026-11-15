@@ -9,8 +9,9 @@
 Needs: the `claude` CLI signed in, `uv`, and Python 3.11+ with PyYAML
 (`uv run --with pyyaml python evals/run.py` works). Each scenario is several
 Claude sessions, so a full run takes a while and uses your plan's quota.
-The plugin under test is this repo's working copy (loaded with --plugin-dir,
-which hides the installed copy for those sessions only). Results go to
+The plugins under test are this repo's working copy (every plugin under
+plugins/, each loaded with --plugin-dir, which hides the installed copies for
+those sessions only). Results go to
 evals/results/<timestamp>/ (summary.md and results.json); the exit code is 1
 if any check that isn't a known gap failed.
 """
@@ -30,7 +31,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import PLUGIN, empty_plugin_dir  # noqa: E402
+from lib import PLUGINS, empty_plugin_dir  # noqa: E402
 from scenarios import SCENARIOS  # noqa: E402
 
 RESULTS = Path(__file__).resolve().parent / "results"
@@ -100,8 +101,9 @@ def main() -> int:
         os.environ["EVAL_MODEL"] = args.model
     if args.brief_suffix:
         os.environ["EVAL_BRIEF_SUFFIX"] = args.brief_suffix
-    plugin = empty_plugin_dir() if args.baseline else PLUGIN
-    label = "without the plugin" if args.baseline else f"plugin v{json.loads((PLUGIN / '.claude-plugin' / 'plugin.json').read_text())['version']}"
+    plugin = empty_plugin_dir() if args.baseline else PLUGINS
+    version = json.loads((PLUGINS / "arkar-dev-standards" / ".claude-plugin" / "plugin.json").read_text())["version"]
+    label = "without the plugins" if args.baseline else f"plugins v{version}"
     if args.model:
         label += f" · model {args.model}"
     if args.brief_suffix:

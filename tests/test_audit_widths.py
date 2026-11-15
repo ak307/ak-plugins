@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-AUDIT = ROOT / "plugins/arkar-dev-standards/skills/arkar-ui-visual-qa/scripts/audit.cjs"
+AUDIT = ROOT / "plugins/arkar-ui/skills/arkar-ui-visual-qa/scripts/audit.cjs"
 PAGES = Path(__file__).parent / "fixtures" / "audit"
 
 

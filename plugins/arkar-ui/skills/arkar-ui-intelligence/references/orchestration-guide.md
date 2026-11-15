@@ -5,7 +5,7 @@
 - Every specialist is an independent skill in this plugin and works on its
   own. The orchestrator decides which ones a task needs; it doesn't run them
   all.
-- Load a specialist with the Skill tool (`arkar-dev-standards:<name>`), then
+- Load a specialist with the Skill tool (`arkar-ui:<name>`), then
   follow it. Read its references only when the task touches that topic.
 - If a specialist can't be loaded, find and read its `SKILL.md` (search
   `~/.claude/plugins` for `skills/<name>/SKILL.md`), or apply its procedure

@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-KIT = ROOT / "plugins/arkar-dev-standards/skills/arkar-ui-motion-design/assets/motion-kit.js"
+KIT = ROOT / "plugins/arkar-ui/skills/arkar-ui-motion-design/assets/motion-kit.js"
 PAGE = Path(__file__).parent / "fixtures" / "motion-kit"
 
 DRIVER = r"""

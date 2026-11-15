@@ -35,12 +35,12 @@ jobs:
         run: npx -y @anthropic-ai/claude-code plugin validate .
 
       - name: Lint the repo's Python (guard, read-only tool, tests, evals)
-        run: uvx --from 'ruff>=0.12,<1' ruff check tests evals scripts plugins/arkar-dev-standards/hooks plugins/arkar-dev-standards/skills/arkar-change-workflow/scripts
+        run: uvx --from 'ruff>=0.12,<1' ruff check tests evals scripts shared plugins/arkar-dev-standards/hooks plugins/arkar-ui/hooks plugins/arkar-dev-standards/skills/arkar-change-workflow/scripts
 
       - name: Production guard, read-only tool, hooks and template code
         run: uvx --with "psycopg[binary]" --with pymysql --with pyyaml pytest -q
 
-      - name: Subagent rules file is in sync with the always-on rules
+      - name: Generated files are in sync (each plugin's rules for subagents, its copy of the shared gate code)
         run: |
-          python3 scripts/build_subagent_context.py
-          git diff --exit-code plugins/arkar-dev-standards/hooks/subagent-context.json
+          python3 scripts/build_generated.py
+          git diff --exit-code plugins

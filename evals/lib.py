@@ -13,7 +13,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-PLUGIN = REPO / "plugins" / "arkar-dev-standards"
+# Every plugin of the marketplace. Sessions load all of them, as an installed laptop does (see plugin_dir_args).
+PLUGINS = REPO / "plugins"
+UI_PLUGIN = PLUGINS / "arkar-ui"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 SKILL_KEYS = {
     "workflow": "arkar-change-workflow",
@@ -49,25 +51,38 @@ class Run:
         return any(skill.endswith(SKILL_KEYS[key]) for skill in self.skills)
 
 
+def plugin_folders(folder: Path) -> list[Path]:
+    """The plugin folders to load: the folder itself when it is a plugin, otherwise each plugin inside it."""
+    if (folder / ".claude-plugin" / "plugin.json").exists():
+        return [folder]
+    return sorted(child for child in folder.iterdir() if (child / ".claude-plugin" / "plugin.json").exists())
+
+
+def plugin_dir_args(folder: Path) -> list[str]:
+    """`--plugin-dir` once per plugin, so a folder of several plugins loads on any Claude Code version."""
+    return [part for plugin in plugin_folders(folder) for part in ("--plugin-dir", str(plugin))]
+
+
 def empty_plugin_dir() -> Path:
-    """A plugin with the same name and nothing in it: loading it hides the installed plugin."""
+    """Plugins with the same names and nothing in them: loading them hides the installed plugins."""
     folder = Path(tempfile.mkdtemp(prefix="arkar-baseline-"))
-    (folder / ".claude-plugin").mkdir()
-    (folder / ".claude-plugin" / "plugin.json").write_text(json.dumps({
-        "name": "arkar-dev-standards",
-        "version": "0.0.0-baseline",
-        "description": "Empty stand-in so evals can run without the plugin.",
-    }))
+    for plugin in plugin_folders(PLUGINS):
+        (folder / plugin.name / ".claude-plugin").mkdir(parents=True)
+        (folder / plugin.name / ".claude-plugin" / "plugin.json").write_text(json.dumps({
+            "name": plugin.name,
+            "version": "0.0.0-baseline",
+            "description": "Empty stand-in so evals can run without the plugin.",
+        }))
     return folder
 
 
 def run_claude(prompt: str, cwd: Path, plugin_dir: Path, max_turns: int = 100, resume: str | None = None) -> Run:
-    """Run one headless Claude Code session with the given plugin folder loaded."""
+    """Run one headless Claude Code session with the given plugin folder (one plugin, or a folder of plugins) loaded."""
     # EVAL_BRIEF_SUFFIX adds a requirement to the first message (e.g. a requested material or style).
     if os.environ.get("EVAL_BRIEF_SUFFIX") and not resume:
         prompt = f"{prompt} {os.environ['EVAL_BRIEF_SUFFIX']}"
     command = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose",
-               "--dangerously-skip-permissions", "--max-turns", str(max_turns), "--plugin-dir", str(plugin_dir)]
+               "--dangerously-skip-permissions", "--max-turns", str(max_turns), *plugin_dir_args(plugin_dir)]
     if resume:
         command += ["--resume", resume]
     # EVAL_MODEL picks the model under test (default: the CLI's own default).

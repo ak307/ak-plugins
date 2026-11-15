@@ -1,7 +1,7 @@
 {
   "name": "arkar-dev-standards",
-  "version": "3.6.0",
-  "description": "AK's always-on coding rules, production guard, project templates, delivery, the clean/secure change workflow, and Adaptive UI Intelligence (ten arkar-ui-* skills for design, motion, UX, accessibility, implementation and visual QA)",
+  "version": "4.0.0",
+  "description": "The core of AK's development standards: always-on coding rules, the production guard and the security gate, with the skills every project needs — the clean/secure change and bug-fix workflow, security, testing, project templates, delivery and AI engineering. Domain plugins (arkar-ui, …) build on it.",
   "author": {
     "name": "AK"
   }

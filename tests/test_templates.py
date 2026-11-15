@@ -20,8 +20,8 @@ import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILLS = ROOT / "plugins" / "arkar-dev-standards" / "skills"
-DOCS = sorted(SKILLS.rglob("*.md"))
+PLUGINS = ROOT / "plugins"
+DOCS = sorted(PLUGINS.glob("*/skills/**/*.md"))  # every skill of every plugin
 FENCE = re.compile(r"```(\w+)\n(.*?)\n\s*```", re.S)
 
 
@@ -30,7 +30,7 @@ def blocks(language: str):
         for number, (fence_language, body) in enumerate(FENCE.findall(doc.read_text())):
             if fence_language == language:
                 # Blocks inside list items are indented in the Markdown.
-                yield pytest.param(textwrap.dedent(body), id=f"{doc.relative_to(SKILLS)}#{number}")
+                yield pytest.param(textwrap.dedent(body), id=f"{doc.relative_to(PLUGINS)}#{number}")
 
 
 @pytest.mark.parametrize("code", list(blocks("python")))
@@ -69,7 +69,7 @@ def test_php_blocks_parse(code, tmp_path):
 # The FastAPI template, assembled and run
 # ---------------------------------------------------------------------------
 
-FASTAPI_DOC = SKILLS / "arkar-project-structure" / "references" / "fastapi.md"
+FASTAPI_DOC = PLUGINS / "arkar-dev-standards" / "skills" / "arkar-project-structure" / "references" / "fastapi.md"
 POSTGRES_URL = os.environ.get("ARKAR_TEST_POSTGRES_URL")
 
 PERMISSION_TESTS = '''

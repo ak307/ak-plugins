@@ -5,7 +5,11 @@ updated automatically when this repo changes.
 
 ## What's inside
 
-**`arkar-dev-standards`** plugin (everything AK created is prefixed `arkar-`):
+Two plugins (everything AK created is prefixed `arkar-`): **`arkar-dev-standards`**, the core every
+project needs, and **`arkar-ui`**, the UI skills. How they fit together, and how to add a skill or
+another domain plugin later, is in [`ARCHITECTURE.md`](ARCHITECTURE.md).
+
+**`arkar-dev-standards`** (core):
 
 - **Always-on coding rules** (`plugins/arkar-dev-standards/hooks/coding-rules.md`) —
   loaded into every Claude Code session at startup by a SessionStart hook.
@@ -48,7 +52,8 @@ Tests for the guard and the read-only tool:
   Templates in `plugins/arkar-dev-standards/skills/arkar-project-structure/references/`:
   FastAPI, Django, Django agentic (LangChain / LangGraph / LangSmith),
   Laravel (Inertia + React starter kit) and Flutter.
-- **Adaptive UI Intelligence — ten `arkar-ui-*` skills** for all UI work
+- **Adaptive UI Intelligence — ten `arkar-ui-*` skills** (the **`arkar-ui`** plugin, with its own
+  always-on UI rule and the UI quality gate in `plugins/arkar-ui/hooks/`) for all UI work
   (web, mobile, desktop). `arkar-ui-intelligence` is the orchestrator: the
   always-on rules load it for any UI task; it classifies the scope and mode
   (A preserve & improve · B modernize & transform · C create & innovate) and
@@ -123,7 +128,8 @@ skills and from UI/UX Pro Max (MIT, Next Level Builder).
 ## How it reaches every laptop
 
 The repo is added as a plugin marketplace on claude.ai (Customize → Plugins,
-"Sync automatically" on) and the `arkar-dev-standards` plugin is enabled there.
+"Sync automatically" on) and **both plugins** — `arkar-dev-standards` and `arkar-ui` — are enabled
+there. (A plugin added to this repo later has to be enabled there once, too.)
 Claude Code on any laptop signed in with that claude.ai account downloads it
 at session start — nothing to install per laptop.
 
@@ -135,12 +141,13 @@ Fallback if a laptop can't use claude.ai sync:
 ```bash
 claude plugin marketplace add ak307/ak-plugins
 claude plugin install arkar-dev-standards@ak-plugins
+claude plugin install arkar-ui@ak-plugins
 ```
 
 ## Updating the rules or templates
 
-1. Edit the files here, bump `version` in
-   `plugins/arkar-dev-standards/.claude-plugin/plugin.json`, commit and push to
+1. Edit the files here, bump `version` in the changed plugin's
+   `plugins/<plugin>/.claude-plugin/plugin.json` (and the first line of its rules file), commit and push to
    `main`. Try larger changes on a branch first and merge when the tests pass.
 2. On claude.ai: **Customize → Plugins → Add → Manage marketplaces → ⋮ on
    `ak-plugins` → Check for updates.** The "Synced commit" should change to the
@@ -172,7 +179,7 @@ check that `subagent-context.json` matches the rules. Run the same locally:
 ```bash
 claude plugin validate .
 uvx --with "psycopg[binary]" --with pymysql --with pyyaml pytest -q
-python3 scripts/build_subagent_context.py   # after editing coding-rules.md
+python3 scripts/build_generated.py   # after editing a rules file or anything under shared/
 ```
 
 **Before publishing a change** — the behaviour evals: real Claude sessions

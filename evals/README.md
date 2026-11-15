@@ -21,10 +21,10 @@ uv run --with pyyaml python evals/run.py --baseline        # without the plugin,
 ```
 
 - Needs the `claude` CLI signed in and `uv`.
-- The plugin under test is **this folder's working copy**, loaded with
-  `--plugin-dir`; it hides the installed copy for those sessions only, so
-  nothing on the laptop changes. `--baseline` loads an empty stand-in
-  instead.
+- The plugins under test are **this folder's working copy** (every plugin
+  under `plugins/`), each loaded with `--plugin-dir`; they hide the installed
+  copies for those sessions only, so nothing on the laptop changes.
+  `--baseline` loads empty stand-ins instead.
 - Each run works in a temporary folder; the "live" database is a SQLite file
   created there — nothing touches a real database.
 - Results: `evals/results/<timestamp>/summary.md` and `results.json`

@@ -30,7 +30,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import PLUGIN, empty_plugin_dir, run_claude, workspace_from  # noqa: E402
+from lib import PLUGINS, empty_plugin_dir, plugin_dir_args, run_claude, workspace_from  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
@@ -84,7 +84,7 @@ def grade(probe: dict, reply: str) -> list[dict]:
         f"Build sheet:\n<<<\n{reply[:60000]}\n>>>\n\n"
         'Answer with JSON only: [{"line": 1, "pass": true, "evidence": "short quote or why it fails"}, ...]')
     command = ["claude", "-p", prompt, "--model", GRADER_MODEL, "--max-turns", "1", "--tools", "",
-               "--plugin-dir", str(empty_plugin_dir())]
+               *plugin_dir_args(empty_plugin_dir())]
     marks: list = []
     for _ in range(2):  # one retry: a grader that answers in prose would count as a fail of the skill
         output = subprocess.run(command, capture_output=True, text=True, timeout=600, stdin=subprocess.DEVNULL).stdout
@@ -180,7 +180,7 @@ def main() -> int:
     out.mkdir(parents=True)
     results = []
     with ThreadPoolExecutor(max_workers=min(args.jobs, 4)) as pool:
-        futures = [pool.submit(run_probe, probe, attempt, PLUGIN) for probe in probes for attempt in range(1, args.runs + 1)]
+        futures = [pool.submit(run_probe, probe, attempt, PLUGINS) for probe in probes for attempt in range(1, args.runs + 1)]
         for future in as_completed(futures):
             try:
                 result = future.result()

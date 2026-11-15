@@ -33,11 +33,11 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import FIXTURES, PLUGIN, run_claude, workspace_from  # noqa: E402
+from lib import FIXTURES, PLUGINS, UI_PLUGIN, run_claude, workspace_from  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
-MOTION = PLUGIN / "skills/arkar-ui-visual-qa/scripts/motion-metrics.cjs"
+MOTION = UI_PLUGIN / "skills/arkar-ui-visual-qa/scripts/motion-metrics.cjs"
 SIZES = {"desktop": "1440x900", "phone": "390x844"}
 
 
@@ -108,7 +108,7 @@ def process_checks(run, workspace: Path) -> list[dict]:
 def run_surface(surface: dict, attempt: int, out: Path) -> dict:
     root = Path(tempfile.mkdtemp(prefix=f"arkar-surface-{surface['id']}-{attempt}-"))
     workspace = workspace_from(surface["fixture"], root / "workspace")
-    run = run_claude(surface["prompt"], workspace, PLUGIN, max_turns=surface.get("max_turns", 200))
+    run = run_claude(surface["prompt"], workspace, PLUGINS, max_turns=surface.get("max_turns", 200))
     shots = shoot(workspace, surface, out, f"after-{attempt}")
     motion = measure(workspace, surface)
     findings = sum(len(step["findings"]) for mode in motion.values() for step in mode)

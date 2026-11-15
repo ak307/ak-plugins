@@ -123,7 +123,7 @@ otherwise state the assumption and continue.
 
 Each specialist is a separate skill in this plugin. Load the ones the task
 needs **with the Skill tool**, by name (listed as
-`arkar-dev-standards:<name>`), and follow them. If a skill can't be loaded,
+`arkar-ui:<name>`), and follow them. If a skill can't be loaded,
 find its file (e.g. search `~/.claude/plugins` for `skills/<name>/SKILL.md`)
 and read it, or do the procedure yourself from this file — never skip the
 verification.
@@ -404,8 +404,8 @@ change runs through all seven in minutes.
    that job — use or extend the component (a `link` or `icon` variant, say);
    no raw colour, shadow or radius outside the tokens; the audit's rendered
    counts within ≤ 6 radii, ≤ 5 shadows (inset highlights count),
-   ≤ 14 font sizes. Each miss is a defect. Run
-   `arkar-security/scripts/security-check.cjs <url> --code=<src>` on the
+   ≤ 14 font sizes. Each miss is a defect. Run `arkar-security`'s
+   `scripts/security-check.cjs <url> --code=<src>` on the
    changed pages (with `--steps` that fill a form when the surface collects
    personal data): findings in the new code are defects, findings in
    existing code are 🟢 / 🟠 proposals for AK — never applied unasked. **Fix

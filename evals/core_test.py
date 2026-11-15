@@ -30,7 +30,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import PLUGIN, REPO, workspace_from  # noqa: E402
+from lib import PLUGINS, REPO, plugin_dir_args, workspace_from  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 DRAFT = REPO / "drafts" / "ui-core" / "arkar-ui-design-intelligence"
@@ -57,8 +57,8 @@ def build_variant(destination: Path) -> Path:
     """The test copy of the plugin: the draft core in place of the UI skills, the checklist gate off."""
     if destination.exists():
         shutil.rmtree(destination)
-    shutil.copytree(PLUGIN, destination)
-    skills = destination / "skills"
+    shutil.copytree(PLUGINS, destination)  # both plugins; the draft core replaces the skills of the UI plugin
+    skills = destination / "arkar-ui" / "skills"
     core = skills / CORE
     core.mkdir()
     for folder, sources in TOOLS.items():
@@ -72,11 +72,10 @@ def build_variant(destination: Path) -> Path:
     text = (DRAFT / "SKILL.md").read_text(encoding="utf-8")
     (core / "SKILL.md").write_text(text.replace("DRAFT for AK's review — not part of the live plugin. ", ""), encoding="utf-8")
 
-    hooks = destination / "hooks"
-    rules = (hooks / "coding-rules.md").read_text(encoding="utf-8")
-    start, end = rules.index("## 2b. UI work"), rules.index("## 2c.")
-    rules = rules[:start] + UI_RULE + "\n" + rules[end:]
-    (hooks / "coding-rules.md").write_text(rules, encoding="utf-8")
+    hooks = destination / "arkar-ui" / "hooks"
+    rules = (hooks / "ui-rules.md").read_text(encoding="utf-8")
+    rules = rules[:rules.index("## 2b. UI work")] + UI_RULE
+    (hooks / "ui-rules.md").write_text(rules, encoding="utf-8")
     (hooks / "subagent-context.json").write_text(json.dumps({"hookSpecificOutput": {
         "hookEventName": "SubagentStart", "additionalContext": rules}}) + "\n", encoding="utf-8")
 
@@ -90,7 +89,7 @@ def build_variant(destination: Path) -> Path:
         entry["hooks"] = [hook for hook in entry["hooks"] if "ui_quality_gate" not in hook["command"]]
     (hooks / "hooks.json").write_text(json.dumps(registered, indent=2), encoding="utf-8")
 
-    for path in skills.rglob("*.md"):  # other skills point at UI skills that no longer exist in this copy
+    for path in destination.glob("*/skills/**/*.md"):  # other skills point at UI skills that no longer exist in this copy
         if CORE in path.parts:
             continue
         body = path.read_text(encoding="utf-8")
@@ -103,7 +102,7 @@ def build_variant(destination: Path) -> Path:
 def session(prompt: str, workspace: Path, plugin: Path) -> tuple[str, bool]:
     """One headless session; returns its event stream and whether the time cap cut it off."""
     command = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose",
-               "--dangerously-skip-permissions", "--max-turns", "500", "--plugin-dir", str(plugin)]
+               "--dangerously-skip-permissions", "--max-turns", "500", *plugin_dir_args(plugin)]
     environment = {**os.environ, "IS_SANDBOX": "1"}
     try:
         process = subprocess.run(command, cwd=workspace, env=environment, stdin=subprocess.DEVNULL,
@@ -160,17 +159,17 @@ def main() -> int:
     parser.add_argument("--variant", type=Path, help="where the test plugin copy lives (built if missing)")
     parser.add_argument("--variant-only", action="store_true")
     args = parser.parse_args()
-    variant = args.variant or Path(tempfile.gettempdir()) / "arkar-core-variant" / "arkar-dev-standards"
+    variant = args.variant or Path(tempfile.gettempdir()) / "arkar-core-variant" / "plugins"
     if args.variant_only or (args.setup == "core" and not variant.exists()):
         build_variant(variant)
         print(f"test plugin copy: {variant}")
         if args.variant_only:
             return 0
     if args.setup in ("surface", "patched") and not variant.exists():  # both: a frozen copy of this working copy's plugin
-        shutil.copytree(PLUGIN, variant)
+        shutil.copytree(PLUGINS, variant)
     briefs = {brief["id"]: brief for brief in yaml.safe_load((HERE / "core-briefs.yaml").read_text())["briefs"]}
     brief = briefs[args.brief]
-    plugin = PLUGIN if args.setup == "current" else variant
+    plugin = PLUGINS if args.setup == "current" else variant
     root = Path(tempfile.mkdtemp(prefix=f"arkar-core-{brief['id']}-{args.setup}-"))
     workspace = workspace_from(brief.get("fixture"), root / "workspace")
     started = time.time()

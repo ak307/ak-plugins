@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILLS = ROOT / "plugins/arkar-dev-standards/skills"
+SKILLS = ROOT / "plugins/arkar-ui/skills"
 KIT = SKILLS / "arkar-ui-intelligence/assets/experience-kit.js"
 GLASS = SKILLS / "arkar-ui-design-system/assets/liquid-glass.css"
 AUDIT = SKILLS / "arkar-ui-visual-qa/scripts/audit.cjs"

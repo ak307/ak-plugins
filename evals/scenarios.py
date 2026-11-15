@@ -251,7 +251,7 @@ def figma_design_given(root: Path, plugin: Path):
 # Motion: graded by running the QA script's --motion check on what was built
 # ---------------------------------------------------------------------------
 
-SCREENSHOT_SCRIPT = Path(__file__).resolve().parents[1] / "plugins" / "arkar-dev-standards" / "skills" / \
+SCREENSHOT_SCRIPT = Path(__file__).resolve().parents[1] / "plugins" / "arkar-ui" / "skills" / \
     "arkar-ui-visual-qa" / "scripts" / "screenshot.cjs"
 
 

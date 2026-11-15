@@ -21,7 +21,7 @@ import subprocess  # noqa: E402
 import lib  # noqa: E402
 import scenarios  # noqa: E402
 
-from run import PLUGIN, RESULTS, SCENARIOS, write_summary  # noqa: E402
+from run import PLUGINS, RESULTS, SCENARIOS, write_summary  # noqa: E402
 
 TRANSCRIPTS = Path.home() / ".claude" / "projects"
 
@@ -81,7 +81,7 @@ def regrade(run_folder: Path) -> dict:
     # Reuse the finished session and its workspace instead of starting new ones.
     scenarios.run_claude = lambda *args, **kwargs: run
     scenarios.workspace_from = lambda fixture, destination: destination
-    checks = scenario(run_folder, PLUGIN)
+    checks = scenario(run_folder, PLUGINS)
     return {"scenario": name, "area": area, "attempt": attempt, "workspace": str(run_folder), "checks": checks,
             "minutes": None, "skills_commit": commit_at(run_folder), "regraded": True}
 

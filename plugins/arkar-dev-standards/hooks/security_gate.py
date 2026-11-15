@@ -24,7 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from ui_quality_gate import SKIP_PATH, blocks_so_far, inside, loaded, read_session, relative  # noqa: E402
+from gate_common import SKIP_PATH, blocks_so_far, inside, loaded, read_session, relative  # noqa: E402
 
 SECURITY_SKILL = "arkar-security"
 MAX_BLOCKS = 2

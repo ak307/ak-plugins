@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "plugins/arkar-dev-standards/skills/arkar-ui-visual-qa/scripts/motion-metrics.cjs"
+SCRIPT = ROOT / "plugins/arkar-ui/skills/arkar-ui-visual-qa/scripts/motion-metrics.cjs"
 FIXTURES = Path(__file__).parent / "fixtures"
 
 

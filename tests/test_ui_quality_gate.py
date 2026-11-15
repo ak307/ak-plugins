@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-HOOKS = Path(__file__).resolve().parents[1] / "plugins" / "arkar-dev-standards" / "hooks"
+HOOKS = Path(__file__).resolve().parents[1] / "plugins" / "arkar-ui" / "hooks"
 LAUNCHER = HOOKS / "ui_quality_gate.sh"
 BASH = shutil.which("bash")
 
@@ -56,7 +56,7 @@ NEW_SCREEN = SMALL_CHANGE + ("arkar-ui-motion-design", "arkar-ui-responsive-desi
 
 
 def skills(*names: str) -> list:
-    return [tool_use("Skill", skill=f"arkar-dev-standards:{name}") for name in names]
+    return [tool_use("Skill", skill=f"arkar-ui:{name}") for name in names]
 
 
 def write_project(tmp_path: Path, design: str | None, record: str | None) -> list:

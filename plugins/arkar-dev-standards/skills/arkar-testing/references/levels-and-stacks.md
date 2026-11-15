@@ -100,7 +100,7 @@ defaults, not the standard: follow what an existing project already uses.
 | Django | pytest-django with the test client | factory_boy | Templates through the test client | Playwright |
 | FastAPI | pytest + `TestClient`, dependency overrides | Factories or builders | — | Playwright where there is a UI |
 | React (standalone) | Vitest | Builders | Testing Library, user-event; network faked at the boundary | Playwright |
-| Flutter | `flutter_test`, fakes in `test/fakes/` | Fakes and builders | Widget tests, golden tests for settled screens (see `arkar-ui-visual-qa/references/responsive-testing.md`) | `integration_test` |
+| Flutter | `flutter_test`, fakes in `test/fakes/` | Fakes and builders | Widget tests, golden tests for settled screens (see `arkar-ui-visual-qa`, its responsive-testing reference) | `integration_test` |
 
 Time: `travel_to` / `freezegun` / `time-machine` / a clock passed in.
 Parallel: `pest --parallel`, `pytest -n auto`. Coverage: `pest --coverage

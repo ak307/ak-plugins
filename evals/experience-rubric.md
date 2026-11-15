@@ -2,7 +2,7 @@
 
 The visual rubric (`scoring-rubric.md`) judges what a build looks like.
 This one judges what it is like to **use**, against
-`plugins/arkar-dev-standards/skills/arkar-ui-intelligence/references/experience-standard.md`
+`plugins/arkar-ui/skills/arkar-ui-intelligence/references/experience-standard.md`
 (AK's "End-to-End Product Craftsmanship & Experience Excellence"). A build
 is accepted only when **both** scores pass.
 

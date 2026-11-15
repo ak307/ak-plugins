@@ -9,7 +9,7 @@ every required step.
 
 | What went wrong | Do this instead | Never |
 |---|---|---|
-| A specialist skill didn't load | Retry with the full name `arkar-dev-standards:<skill>`. Still failing → read its `SKILL.md` from the plugin folder (`skills/<skill>/SKILL.md`) with the Read tool and follow it. Say so in the report. | Carry on without that specialist's rules |
+| A specialist skill didn't load | Retry with the full name `arkar-ui:<skill>`. Still failing → read its `SKILL.md` from the plugin folder (`skills/<skill>/SKILL.md`) with the Read tool and follow it. Say so in the report. | Carry on without that specialist's rules |
 | Web fonts / CDN blocked | Bundle the chosen fonts locally (e.g. the `@fontsource/<font>` npm package → copy the `.woff2` files into the project), or pick a characterful font already available to the project. | Drop to the default system sans |
 | Animation library unavailable or not allowed | CSS transitions/keyframes, the Web Animations API, View Transitions; on mobile, the platform's built-in animation APIs. Same motion language, same timings. | Ship without motion |
 | No images, no image generation, no stock | Build visuals in code: SVG illustration, CSS/SVG patterns and textures, data visuals, product renders made of the UI itself. | Leave empty space or grey boxes where a visual belongs |

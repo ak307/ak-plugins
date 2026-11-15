@@ -1,13 +1,10 @@
-"""Core test: the same brief built with the released plugin and with the draft design-intelligence core.
+"""Core test: one brief (core-briefs.yaml) built in one real session with this repo's plugins.
 
-    uv run -q --no-project --with pyyaml python evals/core_test.py --brief assets-table --setup core --out <folder>
-    uv run -q --no-project --with pyyaml python evals/core_test.py --variant-only      # build the test plugin copy
+    uv run -q --no-project --with pyyaml python evals/core_test.py --brief assets-table --setup current --out <folder>
 
-"current" is this repo's plugin as it stands. "core" is a copy of it in which the draft
-(drafts/ui-core/arkar-ui-design-intelligence) replaces every arkar-ui-* skill, the UI quality
-gate only holds UI writes until the core is loaded (its end-of-session checklist is off), and
-the always-on UI rule points at the core. Everything else — production guard, code gate,
-the other skills — is the same in both.
+"current" is the plugins as they stand in this working copy. "surface" and "patched" are a frozen
+copy of them (--variant), so later edits can't change a build that is still running; the two names
+are kept because earlier results are filed under them.
 
 One build per call, so each can run as its own background job (at most four at a time).
 Each build leaves <out>/<brief>-<setup>/ with meta.json (time, turns, tokens, skills), reply.md
@@ -30,73 +27,10 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import PLUGINS, REPO, plugin_dir_args, workspace_from  # noqa: E402
+from lib import PLUGINS, plugin_dir_args, workspace_from  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-DRAFT = REPO / "drafts" / "ui-core" / "arkar-ui-design-intelligence"
-CORE = "arkar-ui-design-intelligence"
-SESSION_CAP_SECONDS = 6300  # 105 minutes: both setups get the same limit
-TOOLS = {
-    "scripts": ["arkar-ui-visual-qa/scripts"],
-    "assets": ["arkar-ui-design-system/assets", "arkar-ui-motion-design/assets", "arkar-ui-intelligence/assets"],
-}
-UI_RULE = """## 2b. UI work: designed and checked for real
-
-Whenever you build, change, style, animate or fix anything users see (web
-or app) — **load `arkar-ui-design-intelligence` first** (with
-`arkar-change-workflow` for existing code) and work the way it describes:
-understand, decide one direction, build it as a system, then look at the
-real rendered UI on local or test data and fix what matters. Decide freely
-within what AK asked; propose anything beyond it. Never claim checks you
-didn't run. **Most important: premium, Apple-level quality in look and
-behaviour — never accept UI just because it works.**
-"""
-
-
-def build_variant(destination: Path) -> Path:
-    """The test copy of the plugin: the draft core in place of the UI skills, the checklist gate off."""
-    if destination.exists():
-        shutil.rmtree(destination)
-    shutil.copytree(PLUGINS, destination)  # both plugins; the draft core replaces the skills of the UI plugin
-    skills = destination / "arkar-ui" / "skills"
-    core = skills / CORE
-    core.mkdir()
-    for folder, sources in TOOLS.items():
-        (core / folder).mkdir()
-        for source in sources:
-            for item in (skills / source).iterdir():
-                shutil.copy2(item, core / folder / item.name)
-    for old in skills.glob("arkar-ui-*"):
-        if old.name != CORE:
-            shutil.rmtree(old)
-    text = (DRAFT / "SKILL.md").read_text(encoding="utf-8")
-    (core / "SKILL.md").write_text(text.replace("DRAFT for AK's review — not part of the live plugin. ", ""), encoding="utf-8")
-
-    hooks = destination / "arkar-ui" / "hooks"
-    rules = (hooks / "ui-rules.md").read_text(encoding="utf-8")
-    rules = rules[:rules.index("## 2b. UI work")] + UI_RULE
-    (hooks / "ui-rules.md").write_text(rules, encoding="utf-8")
-    (hooks / "subagent-context.json").write_text(json.dumps({"hookSpecificOutput": {
-        "hookEventName": "SubagentStart", "additionalContext": rules}}) + "\n", encoding="utf-8")
-
-    gate = (hooks / "ui_quality_gate.py").read_text(encoding="utf-8")
-    gate = gate.replace('ORCHESTRATOR = "arkar-ui-intelligence"', f'ORCHESTRATOR = "{CORE}"')
-    gate = re.sub(r"Load it now with the Skill tool and follow its workflow — .*?If the skill can't load",
-                  "Load it now with the Skill tool, then make this change. If the skill can't load", gate, flags=re.S)
-    (hooks / "ui_quality_gate.py").write_text(gate, encoding="utf-8")
-    registered = json.loads((hooks / "hooks.json").read_text(encoding="utf-8"))
-    for entry in registered["hooks"]["Stop"]:  # the end-of-session checklist is what the test switches off
-        entry["hooks"] = [hook for hook in entry["hooks"] if "ui_quality_gate" not in hook["command"]]
-    (hooks / "hooks.json").write_text(json.dumps(registered, indent=2), encoding="utf-8")
-
-    for path in destination.glob("*/skills/**/*.md"):  # other skills point at UI skills that no longer exist in this copy
-        if CORE in path.parts:
-            continue
-        body = path.read_text(encoding="utf-8")
-        changed = re.sub(r"arkar-ui-(?!design-intelligence)[a-z-]+", CORE, body)
-        if changed != body:
-            path.write_text(changed, encoding="utf-8")
-    return destination
+SESSION_CAP_SECONDS = 6300  # 105 minutes: every setup gets the same limit
 
 
 def session(prompt: str, workspace: Path, plugin: Path) -> tuple[str, bool]:
@@ -150,22 +84,15 @@ def summarise(stream: str) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--brief")
-    parser.add_argument("--setup", choices=["current", "core", "surface", "patched"],
-                        help="current: the plugin as it is in this working copy; core: the draft core in place of the "
-                             "UI skills; surface: a frozen copy of this working copy's plugin (--variant), so later "
-                             "edits can't change a build that is still running")
-    parser.add_argument("--out", type=Path)
-    parser.add_argument("--variant", type=Path, help="where the test plugin copy lives (built if missing)")
-    parser.add_argument("--variant-only", action="store_true")
+    parser.add_argument("--brief", required=True)
+    parser.add_argument("--setup", required=True, choices=["current", "surface", "patched"],
+                        help="current: the plugins as they are in this working copy; surface, patched: a frozen "
+                             "copy of them (--variant), so later edits can't change a build that is still running")
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--variant", type=Path, help="where the frozen copy lives (made from this working copy if missing)")
     args = parser.parse_args()
     variant = args.variant or Path(tempfile.gettempdir()) / "arkar-core-variant" / "plugins"
-    if args.variant_only or (args.setup == "core" and not variant.exists()):
-        build_variant(variant)
-        print(f"test plugin copy: {variant}")
-        if args.variant_only:
-            return 0
-    if args.setup in ("surface", "patched") and not variant.exists():  # both: a frozen copy of this working copy's plugin
+    if args.setup != "current" and not variant.exists():
         shutil.copytree(PLUGINS, variant)
     briefs = {brief["id"]: brief for brief in yaml.safe_load((HERE / "core-briefs.yaml").read_text())["briefs"]}
     brief = briefs[args.brief]

@@ -1,6 +1,5 @@
-# Briefs for the core test (core_test.py): the same request built once with the released plugin
-# ("current") and once with a test copy where the draft design-intelligence core replaces the UI
-# skills ("core"). Written the way AK writes requests: short, with no design hints.
+# Briefs for the core test (core_test.py): each is built in one real session with the plugins.
+# Written the way AK writes requests: short, with no design hints.
 #
 # fixture: an existing app to work in (none = a new product in an empty folder).
 # build / serve: commands that build the app, and the folder to serve afterwards.

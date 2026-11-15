@@ -1,5 +1,9 @@
 # Core test — released plugin vs the draft design-intelligence core (13 Nov 2026)
 
+> The draft core was never merged to `main` (it is kept on the `ui-core-draft` branch), and the "core"
+> setup that built with it was removed from `core_test.py` in November 2026: on `main` it pointed at a
+> folder that isn't there. The results below stay as the record of that test.
+
 Record of the test AK approved: the same four briefs (`core-briefs.yaml`) built with the released
 plugin (v3.5.0, "current") and with a test copy in which the draft core
 (`drafts/ui-core/arkar-ui-design-intelligence/SKILL.md`) replaces every `arkar-ui-*` skill and the

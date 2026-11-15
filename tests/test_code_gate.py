@@ -64,6 +64,12 @@ def test_the_testing_reason_puts_the_test_target_first(tmp_path):
     assert "otherwise don't run" in reason
 
 
+def test_the_session_is_asked_for_its_whole_report_again(tmp_path):
+    # Sent back, a session tends to end on the additions alone, and the last message is the one AK reads.
+    reason = reason_given(tmp_path, [edit_of(tmp_path, "app/services/orders.py")])
+    assert reason.endswith("give your final report again in full, with these lines in it — it replaces the one before.")
+
+
 def test_loading_both_skills_passes(tmp_path):
     edit = tool_use("Write", file_path=str(tmp_path / "app" / "services" / "orders.py"))
     assert run_gate(tmp_path, [SECURITY_LOADED, TESTING_LOADED, edit]) == ""

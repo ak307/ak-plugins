@@ -122,6 +122,8 @@ def decide(event: dict) -> str | None:
     lines = [f"arkar code gate — code or tests were changed without loading {names}. Load with the Skill tool (or "
              "read the SKILL.md), then:"]
     lines += [f"- {WHAT_EACH_SKILL_ASKS[skill]}" for skill in missing]
+    # The message after this one is the last thing AK reads: it must not be the additions alone.
+    lines.append("Then give your final report again in full, with these lines in it — it replaces the one before.")
     return "\n".join(lines)
 
 

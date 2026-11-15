@@ -7,6 +7,11 @@ dependency manifests — this hook checks that `arkar-security` was loaded
 (the Skill tool, or its SKILL.md read as the fallback). The skill itself
 scales the work to the change, so loading it costs little on trivial edits.
 
+"Changed" means changed by the session in any way: by Write or Edit, or on
+disk while one of its shell commands or subagents was running — a script run
+in the shell can change code without any tool call naming the file. A file
+changed at another moment (AK in his editor) is not the session's work.
+
 If it wasn't loaded, the stop is blocked with a short reason — at most twice
 per session, counted across turns, then the session may stop. It never
 applies fixes: in existing code, security fixes stay proposals labelled
@@ -49,8 +54,8 @@ def decide(event: dict) -> str | None:
     transcript_path = event.get("transcript_path")
     if not transcript_path or not Path(transcript_path).exists():
         return None
-    skills, edited, _written, _sheet = read_session(transcript_path)
     cwd = Path(event.get("cwd") or ".")
+    skills, edited, _written, _sheet = read_session(transcript_path, cwd)
     changed = [path for path in edited if is_project_code(path, cwd)]
     if not changed or loaded(skills, SECURITY_SKILL):
         return None

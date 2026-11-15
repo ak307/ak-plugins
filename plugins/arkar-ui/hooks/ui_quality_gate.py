@@ -28,6 +28,10 @@ two ends of it:
      experience walk with its videos, the security check) and the
      `## Independent review`.
 
+At the end, "changed" means changed by the session in any way: by Write or
+Edit, or on disk while one of its shell commands or subagents was running
+(a script can rewrite a page without any tool call naming the file).
+
 When something is missing at the end it blocks the stop with a reason that
 tells Claude exactly what to finish — up to three times per session, then
 lets it stop. Any error inside the gate lets Claude go on normally: the gate
@@ -175,8 +179,8 @@ def decide(event: dict) -> str | None:
     transcript_path = event.get("transcript_path")
     if not transcript_path or not Path(transcript_path).exists():
         return None
-    skills, edited, written, sheet_written = read_session(transcript_path)
     cwd = Path(event.get("cwd") or ".")
+    skills, edited, written, sheet_written = read_session(transcript_path, cwd)
     if not any(is_project_ui(path, cwd) for path in edited):
         return None
     problems: list[str] = []

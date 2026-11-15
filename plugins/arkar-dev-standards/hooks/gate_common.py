@@ -1,10 +1,11 @@
 """What a session loaded and wrote — the part every arkar gate shares.
 
 The gates (the UI quality gate, the security gate, and any gate a later
-domain plugin adds) all ask the same questions of a session's transcript:
-which skills were loaded, which files were written or edited, and how many
-times this gate has already stopped the session. Those answers live here so
-the gates can't drift apart.
+domain plugin adds) all ask the same questions of a session: which skills
+were loaded, which files it wrote or edited — through the file tools, or on
+disk while one of its shell commands or subagents ran — and how many times
+this gate has already stopped the session. Those answers live here so the
+gates can't drift apart.
 
 One source: `shared/hooks/gate_common.py` in the ak-plugins repo. An installed
 plugin can only read files inside its own folder, so
@@ -17,8 +18,12 @@ Standard library only, Python 3.8+.
 from __future__ import annotations
 
 import json
+import os
 import re
+import subprocess
 import tempfile
+import time
+from datetime import datetime
 from pathlib import Path
 
 UI_FILE = re.compile(
@@ -62,6 +67,17 @@ def shell_writes(command: str) -> list[tuple[str, bool]]:
 SKILL_FILE = re.compile(r"skills/(arkar-[\w-]+)/SKILL\.md$")
 BUILD_SHEET = re.compile(r"build sheet", re.IGNORECASE)
 
+# Tools that can change files without a Write or Edit appearing in the transcript.
+OUTSIDE_VIEW = ("Bash", "Agent", "Task")
+# Folders not looked into when the project is not a git repository (otherwise git's own ignore rules decide).
+NOT_SOURCE = {"node_modules", "vendor", "dist", "build", "storage", "coverage", "target", "Pods", "venv", "__pycache__"}
+# Code that can hold HTML: only these are read to see whether a change put markup into them.
+CAN_HOLD_MARKUP = re.compile(r"\.(php|py|js|mjs|cjs|ts|rb|go|java|kt|swift|cs)$", re.IGNORECASE)
+DISK_SCAN_SECONDS = 4.0   # the hook has 20 seconds in all
+DISK_SCAN_FILES = 30000
+DISK_READ_FILES = 40
+DISK_READ_BYTES = 200_000
+
 
 def completed_tool_calls(transcript_path: str) -> list[dict]:
     """The session's tool calls in order, without file edits that failed or were held (they changed nothing)."""
@@ -96,8 +112,141 @@ def written_text(tool_input: dict) -> str:
     return "".join(parts)
 
 
-def read_session(transcript_path: str) -> tuple[set[str], list[str], list[str], bool]:
-    """The skills loaded, the files written or edited, the files written whole, and whether a build sheet was written."""
+def moment(timestamp: object) -> float | None:
+    """A transcript timestamp ("2026-11-15T02:50:17.633Z") as seconds since the epoch."""
+    try:
+        return datetime.fromisoformat(str(timestamp).replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return None
+
+
+def outside_view_windows(transcript_path: str) -> list[tuple[float, float]]:
+    """When the session's shell commands and subagents ran: (start, end) for each, in seconds since the epoch.
+
+    A command left running in the background, a subagent (it may go on in the background) and a command with no
+    result yet all count as running until now.
+    """
+    running: dict[str, tuple[float, bool]] = {}
+    windows: list[tuple[float, float]] = []
+    with open(transcript_path, encoding="utf-8", errors="ignore") as transcript:
+        for line in transcript:
+            try:
+                event = json.loads(line, strict=False)
+            except json.JSONDecodeError:
+                continue
+            at = moment(event.get("timestamp"))
+            content = event.get("message", {}).get("content", []) if isinstance(event.get("message"), dict) else []
+            if at is None or not isinstance(content, list):
+                continue
+            for block in content:
+                if not isinstance(block, dict):
+                    continue
+                if event.get("type") == "assistant" and block.get("type") == "tool_use" and block.get("name") in OUTSIDE_VIEW:
+                    in_background = block.get("name") != "Bash" or bool((block.get("input") or {}).get("run_in_background"))
+                    running[str(block.get("id", ""))] = (at, in_background)
+                elif event.get("type") == "user" and block.get("type") == "tool_result":
+                    begun = running.pop(str(block.get("tool_use_id", "")), None)
+                    if begun:
+                        windows.append((begun[0], time.time() if begun[1] else at))
+    return windows + [(begun, time.time()) for begun, _in_background in running.values()]
+
+
+def git_files(cwd: Path, *flags: str) -> list[str] | None:
+    """Paths `git ls-files` lists for the project folder, or None when it is not a git repository."""
+    try:
+        listed = subprocess.run(["git", "ls-files", "-z", *flags], cwd=cwd, capture_output=True, text=True, timeout=DISK_SCAN_SECONDS)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return [path for path in listed.stdout.split("\0") if path] if listed.returncode == 0 else None
+
+
+def project_files(cwd: Path) -> tuple[list[str], set[str]]:
+    """The project's own files (paths from its folder), and which of them are new: not yet tracked by git."""
+    tracked, untracked = git_files(cwd, "--cached"), git_files(cwd, "--others", "--exclude-standard")
+    if tracked is not None and untracked is not None:
+        return tracked + untracked, set(untracked)
+    files: list[str] = []
+    deadline = time.monotonic() + DISK_SCAN_SECONDS
+    for folder, folders, names in os.walk(cwd):
+        folders[:] = [name for name in folders if name not in NOT_SOURCE and not name.startswith(".")]
+        files += [(Path(folder) / name).relative_to(cwd).as_posix() for name in names]
+        if len(files) > DISK_SCAN_FILES or time.monotonic() > deadline:
+            break
+    return files, set()
+
+
+def disk_changes(transcript_path: str, cwd: Path) -> list[tuple[str, bool]]:
+    """(path, new file) for each project file changed while a shell command or subagent of this session was running.
+
+    A script run in the shell, or a subagent, can change files with no Write or Edit in the transcript, and the gates
+    would not see it. The project itself is the record: its files whose modification time falls inside one of those
+    runs. A file changed at any other moment — by AK in his editor — is not the session's work and is not counted.
+    """
+    windows = outside_view_windows(transcript_path)
+    if not windows or not cwd.is_dir():
+        return []
+    earliest = min(start for start, _end in windows) - 1
+    files, new = project_files(cwd)
+    changed: list[tuple[str, bool]] = []
+    deadline = time.monotonic() + DISK_SCAN_SECONDS
+    for path in files[:DISK_SCAN_FILES]:
+        if time.monotonic() > deadline:
+            break
+        try:
+            modified = (cwd / path).stat().st_mtime
+        except OSError:
+            continue
+        if modified >= earliest and any(start - 1 <= modified <= end + 1 for start, end in windows):
+            changed.append((path, path in new))
+    return changed
+
+
+def text_added(cwd: Path, path: str, new: bool) -> str:
+    """What a change put into a file: the added lines for a file git tracks, the whole text for a new one."""
+    if not new:
+        try:
+            diff = subprocess.run(["git", "diff", "-U0", "HEAD", "--", path], cwd=cwd, capture_output=True, text=True,
+                                  timeout=DISK_SCAN_SECONDS)
+            if diff.returncode == 0 and diff.stdout:
+                return "\n".join(line[1:] for line in diff.stdout.splitlines() if line.startswith("+") and not line.startswith("+++"))
+        except (OSError, subprocess.SubprocessError):
+            pass
+    try:
+        with open(cwd / path, encoding="utf-8", errors="ignore") as changed_file:
+            return changed_file.read(DISK_READ_BYTES)
+    except OSError:
+        return ""
+
+
+def disk_edits(transcript_path: str, cwd: Path) -> tuple[list[str], list[str], bool]:
+    """read_session's last three answers, for the files changed on disk by a shell command or a subagent."""
+    edited: list[str] = []
+    written: list[str] = []
+    sheet_written = False
+    texts_read = 0
+    for file_path, new in disk_changes(transcript_path, cwd):
+        full_path = (cwd.resolve() / file_path).as_posix()
+        is_design = Path(file_path).name == "DESIGN.md"
+        may_hold_markup = bool(CAN_HOLD_MARKUP.search(file_path)) and not UI_FILE.search(full_path)
+        text = ""
+        if (is_design or may_hold_markup) and texts_read < DISK_READ_FILES:  # reading is bounded: a formatter can touch hundreds
+            text = text_added(cwd, file_path, new)
+            texts_read += 1
+        marker = "#markup" if may_hold_markup and MARKUP.search(text) else ""
+        edited.append(full_path + marker)
+        if new:
+            written.append(full_path)
+        if is_design and BUILD_SHEET.search(text):
+            sheet_written = True
+    return edited, written, sheet_written
+
+
+def read_session(transcript_path: str, cwd: Path | None = None) -> tuple[set[str], list[str], list[str], bool]:
+    """The skills loaded, the files written or edited, the files written whole, and whether a build sheet was written.
+
+    With the project folder given (the check at the end of a session), files changed on disk by a shell command or
+    a subagent are included too, even when no tool call names them.
+    """
     skills: set[str] = set()
     edited: list[str] = []
     written: list[str] = []
@@ -132,6 +281,11 @@ def read_session(transcript_path: str) -> tuple[set[str], list[str], list[str], 
                 written.append(str(tool_input.get("file_path", "")))
             if Path(file_path).name == "DESIGN.md" and BUILD_SHEET.search(text):
                 sheet_written = True
+    if cwd is not None:
+        disk_edited, disk_written, disk_sheet = disk_edits(transcript_path, cwd)
+        edited += disk_edited
+        written += disk_written
+        sheet_written = sheet_written or disk_sheet
     return skills, edited, written, sheet_written
 
 

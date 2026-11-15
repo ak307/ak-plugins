@@ -55,6 +55,10 @@ TEST_FILE = re.compile(
     + CODE_EXTENSION,
     re.IGNORECASE,
 )
+# Tests the shared list of paths to skip doesn't know, and that can only ever be tests: Jest's `__tests__` folders
+# and RSpec files. A `spec/` folder or a `test_*.py` file can hold product code (an API spec, a script that opens a
+# database), so those still count as code for the security check.
+ONLY_EVER_A_TEST = re.compile(r"(^|/)__tests__/|(^|/)spec/.*_spec\.rb$", re.IGNORECASE)
 WHAT_EACH_SKILL_ASKS = {
     SECURITY_SKILL: ("`arkar-security` — apply what it requires for this change (it scales: copy or styling needs "
                      "nothing, logic needs its checks, sensitive features need its review) and add the Security line "
@@ -75,7 +79,10 @@ def without_markup_marker(path: str) -> str:
 
 def is_project_code(path: str, cwd: Path) -> bool:
     plain = without_markup_marker(path)
-    return bool(CODE_FILE.search(plain)) and inside(plain, cwd) and not SKIP_PATH.search(relative(plain, cwd))
+    if not CODE_FILE.search(plain) or not inside(plain, cwd):
+        return False
+    path_in_project = relative(plain, cwd)
+    return not SKIP_PATH.search(path_in_project) and not ONLY_EVER_A_TEST.search(path_in_project)
 
 
 def is_project_test(path: str, cwd: Path) -> bool:

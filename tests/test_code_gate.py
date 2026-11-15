@@ -85,6 +85,7 @@ def test_reading_the_skill_files_counts_as_loading_them(tmp_path):
 @pytest.mark.parametrize("test_file", [
     "tests/test_orders.py", "tests/Feature/LoanTest.php", "tests/conftest.py", "src/orders.test.ts",
     "e2e/checkout.spec.ts", "lib/orders_test.dart", "pkg/orders_test.go", "src/test/java/OrderTest.java",
+    "src/__tests__/orders.tsx", "src/__tests__/helpers/api.ts", "spec/models/order_spec.rb",
 ])
 def test_a_change_to_tests_alone_needs_the_testing_skill_only(tmp_path, test_file):
     reason = reason_given(tmp_path, [edit_of(tmp_path, test_file)])
@@ -92,10 +93,11 @@ def test_a_change_to_tests_alone_needs_the_testing_skill_only(tmp_path, test_fil
     assert run_gate(tmp_path, [TESTING_LOADED, edit_of(tmp_path, test_file)]) == ""
 
 
-@pytest.mark.parametrize("test_file", ["test_orders.py", "src/__tests__/orders.tsx", "spec/models/order_spec.rb"])
-def test_tests_the_security_check_takes_for_code_need_both_as_before(tmp_path, test_file):
-    # The security check's own list of test paths is shorter and is left as it was: what it asks for is AK's to change.
-    reason = reason_given(tmp_path, [edit_of(tmp_path, test_file)])
+@pytest.mark.parametrize("could_be_product_code", ["test_orders.py", "scripts/test_connection.py", "spec/openapi_builder.py"])
+def test_a_test_like_name_that_could_be_product_code_still_needs_security(tmp_path, could_be_product_code):
+    # A `test_*.py` can be a script that opens a database and a `spec/` folder can hold an API spec: the security
+    # check keeps counting them as code. Narrowing what security checks is AK's decision.
+    reason = reason_given(tmp_path, [edit_of(tmp_path, could_be_product_code)])
     assert "arkar-testing" in reason and "arkar-security" in reason
 
 

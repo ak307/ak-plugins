@@ -1,5 +1,5 @@
 {
-  "description": "AK's always-on coding rules (including Rule 0: production safety) for sessions and subagents, the production guard that checks commands before they run, and the security gate that makes code changes go through arkar-security before finishing.",
+  "description": "AK's always-on coding rules (including Rule 0: production safety) for sessions and subagents, the production guard that checks commands before they run, and the code gate that makes code changes go through arkar-security and arkar-testing before finishing.",
   "hooks": {
     "SessionStart": [
       {
@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/security_gate.sh\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/code_gate.sh\"",
             "timeout": 20
           }
         ]

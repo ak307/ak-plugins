@@ -1,7 +1,7 @@
 """Both gates see files changed by a script in the shell or by a subagent, not only by Write and Edit.
 
 A real session changed `index.html` and `js/app.js` through a Python script run in the shell. Nothing in the
-transcript named those files, so the security gate let the session finish without `arkar-security`. The project
+transcript named those files, so the gate for code let the session finish without `arkar-security`. The project
 itself is the record: files whose modification time falls inside one of the session's shell commands or subagent
 runs. Files changed at any other moment (AK in his editor) are not the session's work.
 """
@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 
 HOOKS = Path(__file__).resolve().parents[1] / "plugins"
-SECURITY_GATE = HOOKS / "arkar-dev-standards" / "hooks" / "security_gate.sh"
+CODE_GATE = HOOKS / "arkar-dev-standards" / "hooks" / "code_gate.sh"
 UI_GATE = HOOKS / "arkar-ui" / "hooks" / "ui_quality_gate.sh"
 BASH = shutil.which("bash")
 GIT = shutil.which("git")
@@ -42,6 +42,8 @@ def ran(name: str, started: float = START, ended: float = START + 10, call: str 
 
 
 SCRIPT = ran("Bash", command="python3 tools/apply_fix.py")  # names no file it changes
+STANDARDS_LOADED = (ran("Skill", call="call-security", skill="arkar-dev-standards:arkar-security")
+                    + ran("Skill", call="call-testing", skill="arkar-dev-standards:arkar-testing"))
 
 
 def put(project: Path, name: str, text: str, modified: float) -> Path:
@@ -78,18 +80,17 @@ both_kinds = pytest.mark.parametrize("with_git", [pytest.param(True, id="git rep
                                                   pytest.param(False, id="plain folder")])
 
 
-# ---- the security gate
+# ---- the code gate
 
 
 @both_kinds
 def test_code_changed_by_a_script_in_the_shell_is_sent_back(tmp_path, with_git):
     project = make_project(tmp_path, with_git)
     put(project, "app/claims.py", "def approve(claim): ...\n", DURING)
-    reason = json.loads(run_gate(SECURITY_GATE, tmp_path, project, SCRIPT))["reason"]
-    assert "arkar-security" in reason
-    # The same change with the skill loaded passes.
-    loaded = ran("Skill", call="call-0", skill="arkar-dev-standards:arkar-security")
-    assert run_gate(SECURITY_GATE, tmp_path, project, loaded + SCRIPT) == ""
+    reason = json.loads(run_gate(CODE_GATE, tmp_path, project, SCRIPT))["reason"]
+    assert "arkar-security" in reason and "arkar-testing" in reason
+    # The same change with both skills loaded passes.
+    assert run_gate(CODE_GATE, tmp_path, project, STANDARDS_LOADED + SCRIPT) == ""
 
 
 @both_kinds
@@ -98,31 +99,40 @@ def test_a_file_changed_at_another_moment_is_not_the_sessions_work(tmp_path, wit
     project = make_project(tmp_path, with_git)
     put(project, "app/claims.py", "def approve(claim): ...\n", AFTER)
     put(project, "app/older.py", "x = 1\n", START - 3600)
-    assert run_gate(SECURITY_GATE, tmp_path, project, SCRIPT) == ""
+    assert run_gate(CODE_GATE, tmp_path, project, SCRIPT) == ""
 
 
 def test_without_a_shell_command_or_subagent_the_disk_is_not_looked_at(tmp_path):
     project = make_project(tmp_path, with_git=False)
     put(project, "app/claims.py", "def approve(claim): ...\n", DURING)
-    assert run_gate(SECURITY_GATE, tmp_path, project, ran("Read", file_path=str(project / "README.md"))) == ""
+    assert run_gate(CODE_GATE, tmp_path, project, ran("Read", file_path=str(project / "README.md"))) == ""
 
 
 def test_a_command_left_in_the_background_and_a_subagent_count_until_now(tmp_path):
     project = make_project(tmp_path, with_git=False)
     put(project, "app/claims.py", "def approve(claim): ...\n", AFTER)  # after the call returned
     background = ran("Bash", command="npm run fix &", run_in_background=True)
-    assert "arkar-security" in run_gate(SECURITY_GATE, tmp_path, project, background)
-    assert "arkar-security" in run_gate(SECURITY_GATE, tmp_path, project, ran("Agent", prompt="apply the fix", description="fix"))
+    assert "arkar-security" in run_gate(CODE_GATE, tmp_path, project, background)
+    assert "arkar-security" in run_gate(CODE_GATE, tmp_path, project, ran("Agent", prompt="apply the fix", description="fix"))
     # A command that has not returned yet is still running.
-    assert "arkar-security" in run_gate(SECURITY_GATE, tmp_path, project, SCRIPT[:1])
+    assert "arkar-security" in run_gate(CODE_GATE, tmp_path, project, SCRIPT[:1])
 
 
 @both_kinds
-def test_dependencies_tests_and_build_output_are_not_counted(tmp_path, with_git):
+def test_dependencies_and_build_output_are_not_counted(tmp_path, with_git):
     project = make_project(tmp_path, with_git)
-    for name in ("node_modules/lib/index.js", "vendor/pkg/Thing.php", "tests/test_claims.py", "dist/app.js", "notes.md", "css/app.css"):
+    for name in ("node_modules/lib/index.js", "node_modules/lib/test/index.test.js", "vendor/pkg/Thing.php", "dist/app.js",
+                 "notes.md", "css/app.css"):
         put(project, name, "content\n", DURING)
-    assert run_gate(SECURITY_GATE, tmp_path, project, SCRIPT) == ""
+    assert run_gate(CODE_GATE, tmp_path, project, SCRIPT) == ""
+
+
+@both_kinds
+def test_a_test_changed_by_a_script_needs_the_testing_skill_only(tmp_path, with_git):
+    project = make_project(tmp_path, with_git)
+    put(project, "tests/test_claims.py", "def test_approve(): ...\n", DURING)
+    reason = json.loads(run_gate(CODE_GATE, tmp_path, project, SCRIPT))["reason"]
+    assert "arkar-testing" in reason and "arkar-security" not in reason
 
 
 @pytest.mark.skipif(GIT is None, reason="no git")
@@ -130,7 +140,7 @@ def test_a_file_git_ignores_is_not_counted(tmp_path):
     project = make_project(tmp_path, with_git=True)
     put(project, ".gitignore", "generated/\n", START - 3600)
     put(project, "generated/client.py", "x = 1\n", DURING)
-    assert run_gate(SECURITY_GATE, tmp_path, project, SCRIPT) == ""
+    assert run_gate(CODE_GATE, tmp_path, project, SCRIPT) == ""
 
 
 def test_a_transcript_without_times_changes_nothing(tmp_path):
@@ -138,7 +148,7 @@ def test_a_transcript_without_times_changes_nothing(tmp_path):
     project = make_project(tmp_path, with_git=False)
     put(project, "app/claims.py", "def approve(claim): ...\n", DURING)
     untimed = [{key: value for key, value in event.items() if key != "timestamp"} for event in SCRIPT]
-    assert run_gate(SECURITY_GATE, tmp_path, project, untimed) == ""
+    assert run_gate(CODE_GATE, tmp_path, project, untimed) == ""
 
 
 # ---- the UI gate
@@ -176,7 +186,7 @@ def test_code_counts_as_ui_only_when_the_change_put_markup_into_it(tmp_path):
     put(project, "app/report.py", page.replace("sum(rows)", "sum(rows) or 0"), DURING)
     os.utime(project / "app/export.py", (START - 3600, START - 3600))
     assert run_gate(UI_GATE, tmp_path, project, SCRIPT) == ""
-    assert "arkar-security" in run_gate(SECURITY_GATE, tmp_path, project, SCRIPT)
+    assert "arkar-security" in run_gate(CODE_GATE, tmp_path, project, SCRIPT)
     # The script writes a button into plain code: that is UI.
     put(project, "app/export.py", 'def export(rows):\n    return "<button type=\\"submit\\">Export</button>"\n', DURING)
     assert "arkar-ui-intelligence" in run_gate(UI_GATE, tmp_path, project, SCRIPT)

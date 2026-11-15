@@ -41,12 +41,12 @@ def test_generated_files_are_up_to_date():
     assert not stale, f"run: python3 scripts/build_generated.py — out of date: {stale}"
 
 
-def test_core_hooks_wire_rules_guard_security_gate_and_subagents():
+def test_core_hooks_wire_rules_guard_code_gate_and_subagents():
     hooks = wiring(CORE_HOOKS)
     assert "coding-rules.md" in commands(hooks["SessionStart"])
     assert "production_guard.sh" in hooks["PreToolUse"][0]["hooks"][0]["command"]
     assert "subagent-context.json" in commands(hooks["SubagentStart"])
-    assert "security_gate.sh" in commands(hooks["Stop"])
+    assert "code_gate.sh" in commands(hooks["Stop"])
 
 
 def test_ui_hooks_wire_rules_gate_and_subagents():

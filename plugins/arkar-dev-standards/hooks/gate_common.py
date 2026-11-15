@@ -1,6 +1,6 @@
 """What a session loaded and wrote — the part every arkar gate shares.
 
-The gates (the UI quality gate, the security gate, and any gate a later
+The gates (the UI quality gate, the code gate, and any gate a later
 domain plugin adds) all ask the same questions of a session: which skills
 were loaded, which files it wrote or edited — through the file tools, or on
 disk while one of its shell commands or subagents ran — and how many times

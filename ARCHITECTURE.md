@@ -10,7 +10,7 @@ below on every plugin under `plugins/`.
 ```
 plugins/
   arkar-dev-standards/   the core — every project needs it
-    hooks/               always-on rules (coding-rules.md), production guard, security gate
+    hooks/               always-on rules (coding-rules.md), production guard, code gate
     skills/              change workflow, security, testing, project structure, delivery, AI engineering
   arkar-ui/              a domain — UI work
     hooks/               its always-on rule (ui-rules.md) and the UI quality gate

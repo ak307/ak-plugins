@@ -99,8 +99,8 @@ Tests for the guard and the read-only tool:
   findings plus personal data in URLs and browser storage), an independent
   review for sensitive features, `SECURITY.md`. Its most important rule: in
   existing code, security fixes are proposed first, labelled 🟢 safe or 🟠
-  risky, never just applied. A security gate (Stop hook) sends a session back
-  — at most twice — when code changed without the skill.
+  risky, never just applied. The code gate (Stop hook) sends a session back
+  — at most twice — when code changed without this skill or `arkar-testing`.
 
 - **`arkar-testing` skill** — every change verified, existing behaviour
   protected, and testing never a risk to live data: check where tests point
@@ -110,7 +110,9 @@ Tests for the guard and the read-only tool:
   and accessibility, AI evals), what every change must test, what makes a
   test trustworthy (behaviour not implementation, seen failing once, fakes
   only at the edge, deterministic), never forcing green, and the evidence to
-  report. `scripts/test_smells.py` lists tests that can't be trusted.
+  report. `scripts/test_smells.py` lists tests that can't be trusted. The
+  code gate sends a session back when code or tests changed without the
+  skill.
 - **`arkar-ai-engineering` skill** — features that call a language model:
   single calls, workflows, agents and RAG. Principles (simplest pattern that
   works; code computes, the model reads and writes; model output is untrusted

@@ -6,7 +6,7 @@
 "current" is this repo's plugin as it stands. "core" is a copy of it in which the draft
 (drafts/ui-core/arkar-ui-design-intelligence) replaces every arkar-ui-* skill, the UI quality
 gate only holds UI writes until the core is loaded (its end-of-session checklist is off), and
-the always-on UI rule points at the core. Everything else — production guard, security gate,
+the always-on UI rule points at the core. Everything else — production guard, code gate,
 the other skills — is the same in both.
 
 One build per call, so each can run as its own background job (at most four at a time).

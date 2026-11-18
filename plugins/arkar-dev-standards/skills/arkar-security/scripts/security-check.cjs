@@ -7,6 +7,9 @@
 // Usage (from the project folder; local URLs only):
 //   node <path-to>/security-check.cjs <url> [<url> ...] [--steps <step> ...] [--code=<folder>] [--json]
 //   node <path-to>/security-check.cjs <url> [<url> ...] --readiness [--paths=/admin,/debug-tool] [--json]
+//   node <path-to>/security-check.cjs <sign-in url> <page> [<page> ...] --keep-session --steps <step> ...
+// --keep-session carries the sign-in done by the steps on the first page to the pages after it, so pages
+// behind sign-in are checked as a signed-in user sees them (test accounts only).
 // --readiness is the pass before a VAPT (references/vapt-readiness.md): besides the page checks it asks the
 // site, once, what an outsider's scanner asks — are cross-origin requests allowed, is TRACE on, does a missing
 // page show debug details, which docs, admin and debug paths answer without signing in, which more files are
@@ -365,8 +368,9 @@ async function checkPage(context, url, steps, readiness) {
   }
   const leaky = console_.filter((text) => sensitiveIn(text).some((kind) => /token|NRIC|card/.test(kind)));
   if (leaky.length) notes.push({ area: "build", alert: "Sensitive values in console output", label: "fix in new code / 🟢", detail: `${leaky.length} message(s)` });
+  const finalUrl = page.url();  // a page behind sign-in that ends on the sign-in page was not checked signed in
   await page.close();
-  return { url, status: response ? response.status() : null, notes, stepErrors: errors };
+  return { url, finalUrl, status: response ? response.status() : null, notes, stepErrors: errors };
 }
 
 async function main() {
@@ -377,10 +381,11 @@ async function main() {
   const steps = stepsAt >= 0 ? args.slice(stepsAt + 1).filter((arg) => !arg.startsWith("--")) : [];
   const urls = (stepsAt >= 0 ? args.slice(0, stepsAt) : args).filter((arg) => !arg.startsWith("--"));
   const readiness = args.includes("--readiness");
+  const keepSession = args.includes("--keep-session");
   const pathsFlag = args.find((arg) => arg.startsWith("--paths="));
   const extraPaths = pathsFlag ? pathsFlag.slice(8).split(",").map((item) => `/${item.trim().replace(/^\/+/, "")}`).filter((item) => item.length > 1) : [];
   if (!urls.length && !codeFlag) {
-    console.error("Usage: node security-check.cjs <url> [<url> ...] [--steps <step> ...] [--readiness] [--paths=/a,/b] [--code=<folder>] [--json]");
+    console.error("Usage: node security-check.cjs <url> [<url> ...] [--keep-session] [--steps <step> ...] [--readiness] [--paths=/a,/b] [--code=<folder>] [--json]");
     process.exit(1);
   }
   const refused = urls.filter((url) => !isLocalUrl(url));
@@ -393,11 +398,14 @@ async function main() {
   if (urls.length) {
     const { chromium } = loadPlaywright();
     const browser = await chromium.launch();
+    // Each page normally starts with fresh storage and cookies; --keep-session shares one browser session.
+    const sharedContext = keepSession ? await browser.newContext() : null;
     for (const [index, url] of urls.entries()) {
-      const context = await browser.newContext();  // fresh storage and cookies per page
+      const context = sharedContext || await browser.newContext();
       pages.push(await checkPage(context, url, index === 0 ? steps : [], readiness));
-      await context.close();
+      if (!sharedContext) await context.close();
     }
+    if (sharedContext) await sharedContext.close();
     if (readiness) {
       // Once per site, as a visitor who is not signed in.
       for (const origin of new Set(urls.map((url) => new URL(url).origin))) {
@@ -415,7 +423,8 @@ async function main() {
     return;
   }
   for (const result of pages) {
-    console.log(`\n${result.url} (HTTP ${result.status})`);
+    const movedTo = result.finalUrl.split("?")[0] !== result.url.split("?")[0] ? ` → ended at ${result.finalUrl.split("?")[0]}` : "";
+    console.log(`\n${result.url} (HTTP ${result.status})${movedTo}`);
     if (!result.notes.length) console.log("  no findings");
     for (const note of result.notes) console.log(`  - [${note.area}] ${note.alert} — ${note.detail} (${note.label})`);
     result.stepErrors.forEach((error) => console.log(`  ! step failed: ${error}`));

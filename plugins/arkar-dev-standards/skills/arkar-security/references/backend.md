@@ -4,11 +4,14 @@ Basic, solid practice (OWASP Top 10 basics), organised by what the code does.
 The server is where security is enforced: anything the browser or app checks
 is convenience and is checked again here. Use it while writing new code and
 when reviewing a change and the code paths it touches; the browser side is
-`frontend.md`, mobile apps `mobile.md`. Each item: what to check, the usual fix per stack.
+`frontend.md`, mobile apps `mobile.md`. Each item says what must be true; the
+frameworks named are examples of how it is done there. In any other language
+or framework the item holds just the same — find that stack's own mechanism
+(`vapt-checklist.md` section 1).
 
 ## Contents
 1. Input and validation
-2. Database access (injection)
+2. Database access and other interpreters (injection)
 3. Output (XSS) and templates
 4. Authentication and sessions
 5. Authorisation (who may do what)
@@ -30,8 +33,10 @@ when reviewing a change and the code paths it touches; the browser side is
 - Mass assignment: Laravel — only `$request->validated()` into
   `create()/update()`, never `$request->all()`; Django — explicit form fields;
   FastAPI — separate Create/Update schemas without `id`, `role`, `is_admin`.
+- Limits: a maximum length on every text field, a request body size limit,
+  a cap on page size and on the rows of an import.
 
-## 2. Database access (injection)
+## 2. Database access and other interpreters (injection)
 
 - ORM or parameterised queries only. Never build SQL with string formatting,
   f-strings, `+` or `%` from any input — including sort/order and column names.
@@ -40,6 +45,17 @@ when reviewing a change and the code paths it touches; the browser side is
   - Django: ORM; `raw()`/`cursor.execute()` only with params `[...]`.
   - SQLAlchemy: `select()` / `text("... :name")` with params.
 - `ORDER BY` from user input → map to an allow-listed column.
+- **Operating-system commands:** no shell. Run the program through the
+  process API with an argument list, and take the program and its options
+  from an allow-list — never a command string built from input.
+- **Templates:** input is data handed to a template, never the template's
+  source or its name.
+- **Native object formats** (PHP `unserialize`, Python `pickle`, Java
+  serialisation, a YAML loader that builds objects): never on data a user or
+  another system could have changed — JSON with validation instead.
+- **Headers:** input reaches response headers, redirects, cookies and email
+  headers only through the framework's own functions, which refuse line
+  breaks.
 
 ## 3. Output (XSS) and templates
 
@@ -59,8 +75,21 @@ when reviewing a change and the code paths it touches; the browser side is
 - Session/cookie flags: `Secure` (HTTPS), `HttpOnly`, `SameSite=Lax` or stricter.
 - CSRF protection on for every state-changing form/request in session-based
   apps (Laravel `VerifyCsrfToken`/`@csrf`, Django `CsrfViewMiddleware`).
+- A new session ID at sign-in and whenever the user's rights change — the
+  framework's sign-in function does it; a session value set by hand doesn't.
+- An idle timeout and a maximum lifetime for sessions, set in configuration.
 - Logout invalidates the session; password change invalidates other sessions
   where the framework supports it.
+- A stated password rule (`vapt-checklist.md` section 5); changing the
+  password, email or second factor asks for the current password.
+- Reset emails, verification codes and one-time passwords: sending is limited
+  per account and per client; codes are single-use, short-lived and
+  attempt-limited.
+- No account with a known password outside local and test: seeders and
+  fixtures that create users run only there.
+- API tokens: signature (a fixed algorithm), expiry and audience are verified
+  on every request; lifetimes are short, the key comes from configuration,
+  and there is a way to revoke.
 - Admin accounts and the Django admin / Filament / back-office: two-factor
   authentication (Fortify 2FA, `django-otp`), and staff-only access.
 
@@ -109,6 +138,8 @@ The most common real-world hole. For every new action/endpoint:
 - Rich text from users (comments, descriptions with formatting): sanitise to
   an allow-list of tags (`nh3` in Python, HTMLPurifier in PHP, DOMPurify in
   the browser) before storing or showing it.
+- Uploaded HTML and SVG can carry scripts: never show them from the app's own
+  origin — send them as a download, or refuse the type.
 
 ## 7. External calls, redirects, SSRF
 
@@ -123,12 +154,20 @@ The most common real-world hole. For every new action/endpoint:
   placeholders.
 - Production: `APP_DEBUG=false` / `DEBUG=False`; no default keys
   (`APP_KEY`, `SECRET_KEY` set and secret).
-- CORS: explicit origins, not `*` with credentials.
+- CORS: explicit origins, not `*` with credentials, and never the caller's
+  origin echoed back.
+- Debug, admin, monitoring and API-documentation tools are available only in
+  local development or behind sign-in — switched by the environment.
+- The app answers only its configured host names, and builds the links in
+  emails from the configured address, not from the request.
 
 ## 9. Errors and logging
 
 - Users see generic error messages; stack traces, SQL and paths never reach
-  the response in production.
+  the response in production — a plain page for every error status (not
+  found, forbidden, expired, server error).
+- User input can't forge a log line: structured logging, or line breaks
+  removed.
 - Log security events (failed logins, permission denials) without secrets,
   passwords, tokens or full personal data.
 

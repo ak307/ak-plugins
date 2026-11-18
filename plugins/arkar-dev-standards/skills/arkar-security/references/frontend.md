@@ -3,7 +3,8 @@
 What the user's browser receives, stores, shows and sends. Everything here
 is defence in depth: the server checks every request again (`backend.md`) —
 hiding a button or validating a field in the browser never protects anything
-on its own.
+on its own. The template engines and libraries named are examples; in any
+other stack, find its own way of escaping output and its own bypasses.
 
 ## Contents
 1. Output and the DOM (XSS)
@@ -16,7 +17,7 @@ on its own.
 8. What ships in the build
 9. Mock data and test switches
 10. Third-party code
-11. Quick checks per stack
+11. Quick checks — examples for common stacks
 
 ## 1. Output and the DOM (XSS)
 
@@ -115,6 +116,9 @@ without breaking the page:
 - Styles in stylesheets; computed styles set from JS (`element.style.x`) are
   fine.
 - Fonts, scripts and images served from the app itself where possible.
+- A policy that allows `'unsafe-inline'`, `'unsafe-eval'` or scripts from any
+  host is still reported as weak: inline code that must stay gets a nonce or
+  a hash.
 
 ## 8. What ships in the build
 
@@ -142,7 +146,7 @@ without breaking the page:
 - Embeds (maps, video, chat widgets) only where needed; they can see the
   page.
 
-## 11. Quick checks per stack
+## 11. Quick checks — examples for common stacks
 
 | Stack | Look for |
 |---|---|
@@ -153,4 +157,5 @@ without breaking the page:
 | Django templates / htmx | `|safe`, `mark_safe`; `hx-` requests without the CSRF header |
 
 `scripts/security-check.cjs` checks the running local page for most of
-sections 2, 3, 7, 8 and 10, plus the VAPT header and cookie findings.
+sections 2, 3, 5, 6, 7, 8 and 10, plus the header, cookie and caching
+findings.

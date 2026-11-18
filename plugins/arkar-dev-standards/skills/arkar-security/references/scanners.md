@@ -17,9 +17,10 @@ report and continue with the others.
 3. Laravel / PHP
 4. JavaScript / TypeScript front-ends
 5. Flutter / Dart
-6. Secrets (any project)
-7. Optional extra pass
-8. Reading the results
+6. Any other stack
+7. Secrets (any project)
+8. Optional extra pass
+9. Reading the results
 
 ## 1. Tests (always — after Rule 0 confirms they point at a local or test database)
 
@@ -71,7 +72,25 @@ dart analyze
 flutter pub outdated                      # then check advisories for outdated packages
 ```
 
-## 6. Secrets (any project)
+## 6. Any other stack
+
+The sections above are the stacks used most; the rule is the same
+everywhere:
+
+- **Tests:** the project's own command — its README, the manifest's scripts
+  or the CI file say which.
+- **Known-vulnerable packages:** the ecosystem's own audit against its live
+  advisory database — most package managers have one built in. Look the
+  command up when unsure, and say which one ran.
+- **Libraries copied into the project by hand** (a script file in the public
+  folder) are seen by no package audit: the page check's `--readiness` run
+  lists them with their versions; look each up in the live advisory source.
+- **Static analysis:** the linter or analyser the project already uses.
+
+Nothing is added to the project and nothing is installed on AK's machines
+for this.
+
+## 7. Secrets (any project)
 
 ```
 uvx --from 'detect-secrets>=1.5,<2' detect-secrets scan --all-files <changed files or folder>
@@ -81,7 +100,7 @@ Also check by reading: no keys, passwords, tokens or connection strings in
 code, config committed to git, logs or front-end bundles; `.env` is in
 `.gitignore`; `.env.example` has placeholders only.
 
-## 7. Optional extra pass
+## 8. Optional extra pass
 
 Claude's own review (`backend.md`, `frontend.md`) covers what pattern
 scanners look for, in context. Use these only as an extra pass on a large or
@@ -96,7 +115,7 @@ metrics on); if semgrep.dev is blocked, skip it and say so. Claude Code's
 built-in `/security-review` command is another optional pass over pending
 changes. Don't install other tools on AK's machines for this.
 
-## 8. Reading the results
+## 9. Reading the results
 
 - **Confirm before reporting.** Open the flagged line and decide whether it's
   real in context (e.g. bandit flags every `subprocess` import — only

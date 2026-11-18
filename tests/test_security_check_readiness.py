@@ -117,6 +117,24 @@ class SinglePageSite(Site):
         self.reply(405, "Method not allowed", HARDENED_HEADERS, content_type="text/plain")
 
 
+class SignInSite(Site):
+    """A sign-in form, and an account page that only a signed-in visitor gets."""
+
+    def do_GET(self):
+        if self.path == "/sign-in":
+            form = ('<!doctype html><html><body><form method="post" action="/sign-in"><input type="hidden" name="_token" value="t">'
+                    '<label>Email <input name="email"></label><button>Sign in</button></form></body></html>')
+            self.reply(200, form, HARDENED_HEADERS)
+        elif self.path == "/account" and "app_session=signed-in" in self.headers.get("Cookie", ""):
+            self.reply(200, "<!doctype html><html><body><h1>Account</h1></body></html>")  # no Cache-Control: a finding
+        else:
+            self.reply(303, "", {"Location": "/sign-in"})
+
+    def do_POST(self):
+        self.rfile.read(int(self.headers.get("Content-Length", 0)))
+        self.reply(303, "", {"Location": "/account", "Set-Cookie": "app_session=signed-in; Path=/; HttpOnly; SameSite=Lax"})
+
+
 def serve(handler):
     server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -140,6 +158,13 @@ def hardened():
 @pytest.fixture(scope="module")
 def single_page():
     server, base = serve(SinglePageSite)
+    yield base
+    server.shutdown()
+
+
+@pytest.fixture(scope="module")
+def sign_in_site():
+    server, base = serve(SignInSite)
     yield base
     server.shutdown()
 
@@ -207,6 +232,21 @@ def test_inline_scripts_allowed_next_to_a_nonce_are_not_a_weak_csp(hardened):
 def test_an_app_that_answers_every_path_with_its_own_page_is_not_reported(single_page):
     result = check(f"{single_page}/", "--readiness", "--paths=/telescope,/admin-tool")
     assert result["sites"][0]["notes"] == []
+
+
+SIGN_IN_STEPS = ("--steps", "type=label:Email=someone@example.test", "click=button")
+
+
+def test_keep_session_checks_a_page_behind_sign_in_as_a_signed_in_user(sign_in_site):
+    result = check(f"{sign_in_site}/sign-in", f"{sign_in_site}/account", "--keep-session", *SIGN_IN_STEPS)
+    account = result["pages"][1]
+    assert account["finalUrl"].endswith("/account")
+    assert "Page with a session may be cached (Cache-Control)" in {note["alert"] for note in account["notes"]}
+
+
+def test_without_keep_session_every_page_starts_signed_out(sign_in_site):
+    result = check(f"{sign_in_site}/sign-in", f"{sign_in_site}/account", *SIGN_IN_STEPS)
+    assert result["pages"][1]["finalUrl"].endswith("/sign-in")
 
 
 def test_the_code_scan_lists_injection_and_debug_lines_in_any_language(tmp_path):

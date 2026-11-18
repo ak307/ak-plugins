@@ -80,8 +80,9 @@ reply so the decision is visible.
   non-local database; unit tests for the rules and a feature test per
   endpoint with its permission, state-change and boundary cases; the
   evidence reported.
-- Security from the first commit (`arkar-security`): its plan lines, secure
-  defaults, and its checks — dependency audit, secret scan, security tests,
+- Security from the first commit (`arkar-security`): its new-project
+  baseline — the same outcomes in whatever stack — its plan lines, and its
+  checks — dependency audit, secret scan, security tests,
   and the running-page check for web apps.
 - New tables follow `data-and-api.md` section 7 (types, constraints,
   indexes, audit trail where people's records change).

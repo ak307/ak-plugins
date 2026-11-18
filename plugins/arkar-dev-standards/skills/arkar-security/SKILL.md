@@ -1,6 +1,6 @@
 ---
 name: arkar-security
-description: AK's security standard for every stage of development, front end and back end — classify the data, plan who may do what, write secure code by default, check it (code review, dependency audit, secret scan, a check of the running page for VAPT findings), and record open items — so CBM apps pass VAPT scans. In existing code, security fixes are always proposed first and labelled 🟢 safe or 🟠 risky, never just applied. Use this whenever writing or changing code that handles sign-in, sessions, permissions, user input, forms, uploads, personal data, APIs, database queries, files, payments, configuration, headers, cookies or dependencies — in a new project or an existing one, in Laravel, Django, FastAPI, React, Livewire, plain HTML/JS or Flutter — and when asked about security, VAPT, OWASP, XSS, CSRF, injection or a security review.
+description: AK's security standard for every stage of development, front end and back end, in any language or framework — classify the data, plan who may do what, write secure code by default, check it (code review, dependency audit, secret scan, a check of the running page), and record open items — so CBM apps pass a VAPT (the vendor's scan and penetration test). In existing code, security fixes are always proposed first and labelled 🟢 safe or 🟠 risky, never just applied. Use this whenever writing or changing code or server configuration that handles sign-in, sessions, permissions, user input, forms, uploads, personal data, APIs, database queries, files, payments, headers, cookies or dependencies — in a new project or an existing one — when an app is being prepared for a VAPT, penetration test or security audit, when a VAPT or scanner report has findings to fix or answer, and when asked about security, OWASP, XSS, CSRF, injection or a security review.
 ---
 
 # Security — front end, back end, every stage
@@ -43,6 +43,17 @@ approval list (step 3) with the cleanup and related-bug items.
 | Ordinary logic, a new page, endpoint or form | Plan lines → secure defaults → the checks in step 4. |
 | **Sensitive** — sign-in, sessions, permissions or roles, personal data (NRIC, salary, medical, contact details), payments, uploads, exports, admin, external callbacks | All of it, plus the independent review (step 5). |
 
+## Any language, any framework
+
+The references say **what must be true** — for the data, the session, the
+route, the response. The frameworks they name are examples. **How** it is
+done is decided for the project in front of you: identify the stack, use its
+own mechanism (or a maintained library where it has none), check its current
+documentation when unsure, and set each control once, at the outermost layer
+the project owns (`references/vapt-checklist.md` section 1). What does not
+change with the stack: the approval rule above, the checks in step 4, and
+the report.
+
 ## Every stage
 
 1. **Understand.** Which data the feature touches and how sensitive it is
@@ -63,7 +74,8 @@ approval list (step 3) with the cleanup and related-bug items.
    every state-changing request; no inline event handlers or inline scripts
    (pages ready for a CSP); no secrets in code or the front-end bundle;
    test switches and mock data only in development builds; tokens never in
-   `localStorage`; sensitive form drafts only in `sessionStorage`.
+   `localStorage`; sensitive form drafts only in `sessionStorage`. A new
+   project starts from `references/new-project-baseline.md`.
 4. **Check — every time, by tool where a tool is better** (commands per
    stack in `references/scanners.md`; nothing needs installing):
    - **Review** your diff and the code paths it touches against
@@ -77,10 +89,10 @@ approval list (step 3) with the cleanup and related-bug items.
      model's training date, so this needs the live database.
    - **Secret scan** of the changed files (`detect-secrets` through `uvx`).
    - **Running page** (web, on a local URL only):
-     `node <this skill>/scripts/security-check.cjs <url> [<url> …]` — the VAPT
-     header, cookie and disclosure findings, plus personal data in the URL or
-     browser storage, source maps, inline handlers and CDN files without
-     integrity.
+     `node <this skill>/scripts/security-check.cjs <url> [<url> …]` — the
+     header, cookie, form and caching findings a VAPT reports, plus personal
+     data in the URL or browser storage, source maps, inline handlers and CDN
+     files without integrity.
    Findings in your new code: fix now. Findings in existing code: proposals
    (the most important rule). Confirm each finding in the code before
    reporting it.
@@ -95,6 +107,18 @@ approval list (step 3) with the cleanup and related-bug items.
 7. **Release.** `arkar-delivery`: production build hygiene (no source maps or
    debug output served, mock layer off), headers and cookies per
    `vapt-checklist.md`, CI running the audits on every push. AK deploys.
+
+## VAPT — before the test, and after the report
+
+- **An app is going for a VAPT, a penetration test or an audit**, or AK asks
+  whether it is ready: `references/vapt-readiness.md` — one pass over the
+  whole app (the page check with `--readiness`, dependencies, secrets, the
+  code by area, the server checklist for AK) that ends in a readiness report.
+- **AK has the vendor's findings:** `references/vapt-report.md` — confirm
+  each, give it a verdict (fix 🟢, decision 🟠, server, dispute, accept), fix
+  what he asked for, and write the retest evidence.
+- What a vendor's scan and manual test report, whatever their tool:
+  `references/vapt-checklist.md`.
 
 ## Report
 
@@ -114,7 +138,14 @@ numbered 🟢 / 🟠 proposals for existing code awaiting AK's decision.
 - `references/ai.md` — LLM and agent features: the four layers, prompt
   injection, model output as untrusted input, tools and writes, leakage,
   personal data and outside services.
-- `references/vapt-checklist.md` — the VAPT findings, their fixes and default labels.
+- `references/vapt-checklist.md` — what a VAPT reports, by area: what must be
+  true in any stack, the default label, and where each is checked.
+- `references/vapt-readiness.md` — the pass before a VAPT, the server
+  checklist for AK, the readiness report.
+- `references/vapt-report.md` — a vendor's report in hand: verdicts, findings
+  to answer rather than apply, retest evidence.
+- `references/new-project-baseline.md` — what a new project has on day one.
 - `references/scanners.md` — tests and checks per stack, and reading results.
 - `references/security-md-template.md` — the `SECURITY.md` template.
-- `scripts/security-check.cjs` — checks a running local page.
+- `scripts/security-check.cjs` — checks a running local page; `--readiness`
+  for the pass before a VAPT.

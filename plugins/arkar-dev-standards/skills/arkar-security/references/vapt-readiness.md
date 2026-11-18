@@ -43,7 +43,10 @@ series of fixes. Everything found in existing code is a proposal
    - signed in, once per role that matters — the first URL is the sign-in
      page, `--steps` fills it in, and `--keep-session` carries the session to
      the pages that follow:
-     `node … <sign-in url> <page> <page> --keep-session --steps type=label:Email=<test user> type=label:Password=<test password> click=<submit>`
+     `node … <sign-in url> <page> <page> --keep-session --steps "type=label:Email=<test user>" "type=label:Password=<test password>" "click=text:Sign in"`
+     (a field is named by its label, the button by its text). The output
+     says where each page ended: a page that ended on the sign-in page was
+     not checked signed in — fix the steps and run again.
    `--paths` is the list of this project's own debug, admin, monitoring and
    documentation paths — work them out from its dependencies and routes; the
    script only knows the ones any stack can have. Use test accounts only.

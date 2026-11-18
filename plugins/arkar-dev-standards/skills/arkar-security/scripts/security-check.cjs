@@ -18,8 +18,8 @@
 // any stack can have.
 // Steps run on the first URL before storage and the URL are inspected (same
 // syntax as record.cjs: click=<selector> type=<selector>=<text> press=<key> wait=<ms>; a field can
-// also be named by its label: type=label:Full name=Mei Ling),
-// so a form can be filled to see what the page keeps.
+// also be named by its label: type=label:Full name=Mei Ling, and a button or link by its text:
+// click=text:Sign in), so a form can be filled to see what the page keeps.
 // --code=<folder> also lists source lines to review (raw HTML output, eval,
 // inline handlers, tokens in storage, public env variables with secret-like names).
 
@@ -251,10 +251,23 @@ function codeFindings(folder) {
   return results;
 }
 
+function byText(page, text) {
+  return page.getByRole("button", { name: text }).or(page.getByRole("link", { name: text }));
+}
+
+// click=text:<visible text> names a button or link in the user's words. A value that matches nothing as a
+// selector is taken as the visible text too, because that is what people write.
+async function clickTarget(page, name) {
+  if (name.startsWith("text:")) return byText(page, name.slice(5));
+  const bySelector = page.locator(name);
+  const found = await bySelector.count().catch(() => 0);
+  return found ? bySelector : byText(page, name);
+}
+
 async function perform(page, raw) {
   const [action, ...rest] = raw.split("=");
   const value = rest.join("=");
-  if (action === "click") await page.locator(value).first().click({ timeout: 5000 });
+  if (action === "click") await (await clickTarget(page, value)).first().click({ timeout: 5000 });
   else if (action === "press") await page.keyboard.press(value);
   else if (action === "wait") await page.waitForTimeout(Number(value));
   else if (action === "type") {

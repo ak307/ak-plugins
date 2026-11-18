@@ -244,6 +244,15 @@ def test_keep_session_checks_a_page_behind_sign_in_as_a_signed_in_user(sign_in_s
     assert "Page with a session may be cached (Cache-Control)" in {note["alert"] for note in account["notes"]}
 
 
+@pytest.mark.parametrize("click", ["click=text:Sign in", "click=Sign in"])
+def test_a_button_can_be_named_by_its_text(sign_in_site, click):
+    # People name a button by what it says; a step that fails leaves the next pages signed out.
+    result = check(f"{sign_in_site}/sign-in", f"{sign_in_site}/account", "--keep-session",
+                   "--steps", "type=label:Email=someone@example.test", click)
+    assert result["pages"][0]["stepErrors"] == []
+    assert result["pages"][1]["finalUrl"].endswith("/account")
+
+
 def test_without_keep_session_every_page_starts_signed_out(sign_in_site):
     result = check(f"{sign_in_site}/sign-in", f"{sign_in_site}/account", *SIGN_IN_STEPS)
     assert result["pages"][1]["finalUrl"].endswith("/sign-in")

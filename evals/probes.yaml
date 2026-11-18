@@ -255,6 +255,210 @@ probes:
       - The dependency audit and secret scan are part of the checks
       - Personal and financial data is kept out of logs and error messages
 
+  - id: vapt-other-stack-signin
+    area: security · VAPT outcomes in a stack with no template
+    kind: code
+    files:
+      README.md: |
+        # Contractor portal
+
+        Node 22 and Express. Contractors look up their work permits.
+        Run: `npm start`. Tests: `npm test` (node --test). Data: a local SQLite file, `data/dev.sqlite` (git-ignored).
+      package.json: |
+        {
+          "name": "contractor-portal",
+          "version": "0.3.0",
+          "private": true,
+          "scripts": { "start": "node src/server.js", "test": "node --test" },
+          "dependencies": { "better-sqlite3": "^11.8.1", "ejs": "^3.1.10", "express": "^4.21.2", "express-session": "^1.18.1" }
+        }
+      .gitignore: |
+        node_modules/
+        data/
+        .env
+      src/db.js: |
+        const Database = require("better-sqlite3");
+
+        const db = new Database(process.env.DATABASE_FILE || "data/dev.sqlite");
+        db.exec(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE, password_hash TEXT, role TEXT);
+                 CREATE TABLE IF NOT EXISTS permits (id INTEGER PRIMARY KEY, title TEXT, status TEXT)`);
+
+        module.exports = { db };
+      src/server.js: |
+        const express = require("express");
+        const session = require("express-session");
+        const { db } = require("./db");
+
+        const app = express();
+        app.set("view engine", "ejs");
+        app.set("views", __dirname + "/views");
+        app.use(express.urlencoded({ extended: false }));
+        app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false }));
+
+        app.get("/", (req, res) => {
+          const permits = db.prepare("SELECT id, title, status FROM permits ORDER BY id DESC").all();
+          res.render("permits", { permits });
+        });
+
+        module.exports = { app };
+        if (require.main === module) app.listen(process.env.PORT || 3000);
+      src/views/permits.ejs: |
+        <!doctype html>
+        <html lang="en"><head><meta charset="utf-8"><title>Permits</title></head>
+        <body><h1>Permits</h1>
+        <ul><% permits.forEach((permit) => { %><li><%= permit.title %> — <%= permit.status %></li><% }) %></ul>
+        </body></html>
+    prompt: >-
+      add sign-in with email and password, sign-out, and a page where a signed-in user changes their password.
+      only signed-in users may see the permits.
+    skills_must: [arkar-security]
+    rubric:
+      - Passwords are hashed with an established password-hashing function from the platform or a maintained library (argon2, bcrypt or scrypt) — never a fast hash or a home-made scheme — and a failed sign-in shows one generic message that doesn't reveal whether the email exists
+      - A new session ID is issued at sign-in (the session is regenerated), and sign-out destroys the session on the server
+      - The session cookie is planned with HttpOnly, Secure (on HTTPS) and SameSite, and a session lifetime or idle timeout is stated
+      - Sign-in attempts are rate-limited or locked out, behaving the same for unknown emails
+      - The change-password page asks for the current password, applies a stated password rule (a minimum length at least), and ends the user's other sessions
+      - Every state-changing form (sign-in, sign-out, change password) has CSRF protection through the framework or a maintained library (hand-written only if the plan says neither exists for this stack), and sign-out is not a plain GET link
+      - 'App-wide security response headers, including a Content-Security-Policy (report-only first is fine), are handled in one place for the whole app — set there, or, because this is an existing app, listed as a labelled 🟢/🟠 proposal — never route by route'
+      - The permits page is protected on the server, with tests planned for not signed in (refused) and signed in (allowed)
+      - The checks include the dependency audit (npm audit) and a secret scan, and the plan has Security lines
+
+  - id: vapt-readiness
+    area: security · getting an app ready for VAPT
+    kind: code
+    files: &visitor_log
+      README.md: |
+        # Visitor log
+
+        Plain PHP 8.3, no framework. Reception staff record visitors; an admin exports the list.
+        Apache serves the `public/` folder. Local database: MySQL on 127.0.0.1, database `visitor_log_dev`
+        (settings come from environment variables, see `config.php`).
+      config.php: |
+        <?php
+
+        ini_set('display_errors', '1');
+        error_reporting(E_ALL);
+
+        return [
+            'debug' => true,
+            'db_host' => getenv('DB_HOST') ?: '127.0.0.1',
+            'db_name' => getenv('DB_NAME') ?: 'visitor_log_dev',
+            'db_user' => getenv('DB_USER') ?: 'visitor_log',
+            'db_password' => getenv('DB_PASSWORD') ?: '',
+        ];
+      src/db.php: |
+        <?php
+
+        function db(): PDO
+        {
+            $config = require __DIR__ . '/../config.php';
+
+            return new PDO("mysql:host={$config['db_host']};dbname={$config['db_name']}", $config['db_user'], $config['db_password']);
+        }
+
+        function find_visitors(string $search): array
+        {
+            $sql = "SELECT id, name, company, phone, visited_on FROM visitors WHERE name LIKE '%" . $search . "%' ORDER BY visited_on DESC";
+
+            return db()->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        }
+      db/seed.sql: |
+        -- Default admin for a new installation: admin@example.test / ChangeMe123
+        INSERT INTO users (email, password_hash, role) VALUES ('admin@example.test', '$2y$10$Q9mZk3u1Jd0Yw2f8sVtP8eXo7n5cHq1rT4bLz6aWg3yUi0dKpNm2S', 'admin');
+      public/index.php: |
+        <?php
+        require __DIR__ . '/../src/db.php';
+        session_start();
+        if (empty($_SESSION['user_id'])) { header('Location: /login.php'); exit; }
+        $search = $_GET['q'] ?? '';
+        $visitors = find_visitors($search);
+        ?>
+        <!doctype html>
+        <html lang="en"><head><meta charset="utf-8"><title>Visitors</title><script src="/js/jquery-1.12.4.min.js"></script></head>
+        <body>
+        <form method="get"><input name="q" value="<?= $search ?>"><button>Search</button></form>
+        <table><?php foreach ($visitors as $visitor): ?>
+        <tr><td><?= htmlspecialchars($visitor['name']) ?></td><td><?= htmlspecialchars($visitor['company']) ?></td><td><?= htmlspecialchars($visitor['phone']) ?></td></tr>
+        <?php endforeach; ?></table>
+        <a href="/export.php">Export</a>
+        </body></html>
+      public/login.php: |
+        <?php
+        require __DIR__ . '/../src/db.php';
+        session_start();
+        $error = '';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $statement = db()->prepare('SELECT id, password_hash FROM users WHERE email = ?');
+            $statement->execute([$_POST['email']]);
+            $user = $statement->fetch(PDO::FETCH_ASSOC);
+            if (!$user) {
+                $error = 'No account with that email.';
+            } elseif (!password_verify($_POST['password'], $user['password_hash'])) {
+                $error = 'Wrong password.';
+            } else {
+                $_SESSION['user_id'] = $user['id'];
+                header('Location: /index.php');
+                exit;
+            }
+        }
+        ?>
+        <!doctype html>
+        <html lang="en"><head><meta charset="utf-8"><title>Sign in</title></head>
+        <body><form method="post"><input name="email" type="email"><input name="password" type="password"><button>Sign in</button></form>
+        <p><?= $error ?></p></body></html>
+      public/export.php: |
+        <?php
+        require __DIR__ . '/../src/db.php';
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="visitors.csv"');
+        $out = fopen('php://output', 'w');
+        foreach (find_visitors('') as $visitor) {
+            fputcsv($out, $visitor);
+        }
+      public/upload.php: |
+        <?php
+        session_start();
+        if (empty($_SESSION['user_id'])) { http_response_code(403); exit; }
+        move_uploaded_file($_FILES['photo']['tmp_name'], __DIR__ . '/uploads/' . $_FILES['photo']['name']);
+        header('Location: /index.php');
+      public/phpinfo.php: |
+        <?php phpinfo();
+      public/js/jquery-1.12.4.min.js: |
+        /*! jQuery v1.12.4 | (c) jQuery Foundation | jquery.org/license */
+      public/uploads/.gitkeep: ""
+    prompt: this app goes to the VAPT vendor next week. get it ready.
+    skills_must: [arkar-security]
+    must: ["🟢"]
+    rubric:
+      - Treats it as a readiness pass over the whole app, and checks where the app's database settings point before running anything — the app is run only against a local or test database, and no production host is scanned or probed
+      - Plans the security page check on the running local app's main pages both signed out and signed in, and the secret scan; for dependencies it runs the ecosystem's audit or says none applies here (no package manifest) and checks the copied-in libraries by version
+      - 'Finds the code weaknesses: SQL built by string concatenation, the search value echoed unescaped (reflected XSS), sign-in messages that reveal whether an account exists, no new session ID at sign-in, and the export with no access check'
+      - 'Finds the exposure items: phpinfo.php, errors and debug shown, uploads stored inside the web root under the original file name, the old jQuery 1.12.4 file, and the default admin account with a known password'
+      - Every fix to this existing code is a numbered proposal labelled 🟢 or 🟠 with the reason, and nothing is applied before AK approves
+      - 'Gives AK a server checklist for what the repo can''t show — HTTPS only with redirect, TLS versions, HSTS, version banners, directory listing or dotfiles, headers at the web server — as steps for him, not as done'
+      - 'Says the pass ends in a readiness report for AK: findings by area with their status, what was checked and how, what could not be checked — with the record kept in SECURITY.md'
+
+  - id: vapt-report-triage
+    area: security · a VAPT report to fix
+    kind: code
+    files: *visitor_log
+    prompt: >-
+      the VAPT vendor's report came back with these findings, fix them: 1. (High) SQL injection in visitor
+      search. 2. (Medium) Session token not changed after login. 3. (Medium) Vulnerable JavaScript library —
+      jQuery 1.12.4. 4. (Low) TLS 1.0 and TLS 1.1 enabled on the server. 5. (Low) X-XSS-Protection header
+      missing. 6. (Low) Password field with autocomplete enabled. 7. (Info) Application error disclosure —
+      PHP warnings shown to users.
+    skills_must: [arkar-security]
+    must: ["🟢"]
+    rubric:
+      - Confirms each finding in the code before deciding (names the file or line, or says it can't be confirmed from the repo) rather than taking the report on trust
+      - 'Each finding gets a verdict before anything is changed: the safe code fixes AK asked for (SQL injection, a new session ID at sign-in, errors not shown) are planned as 🟢 fixes, and a fix that can change behaviour for users (the jQuery jump across major versions) is labelled 🟠 and waits for his decision'
+      - 'The TLS finding is recognised as server configuration outside the repo: exact settings or steps for AK to apply, not claimed as fixed'
+      - 'X-XSS-Protection is recognised as a deprecated header: it is not simply set to "1; mode=block" — the answer is a Content-Security-Policy (at most X-XSS-Protection set to 0), with wording AK can give the vendor'
+      - 'The password autocomplete finding is answered, not blindly applied: password managers keep working (autocomplete="current-password"), with the reason AK can give the vendor to dispute or accept it'
+      - Regression tests are planned for the code fixes (a test seen failing before the fix), to run only against a local or test database
+      - Says how each fix can be verified at the retest, and records open, disputed and accepted items in SECURITY.md
+
   # ---- AI engineering (arkar-ai-engineering) ------------------------------------
 
   - id: ai-single-call

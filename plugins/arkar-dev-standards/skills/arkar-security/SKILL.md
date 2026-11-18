@@ -115,8 +115,9 @@ the report.
   whole app (the page check with `--readiness`, dependencies, secrets, the
   code by area, the server checklist for AK) that ends in a readiness report.
 - **AK has the vendor's findings:** `references/vapt-report.md` — confirm
-  each, give it a verdict (fix 🟢, decision 🟠, server, dispute, accept), fix
-  what he asked for, and write the retest evidence.
+  each and give it a verdict (fix 🟢, decision 🟠, server, dispute, accept).
+  His request to fix the report is his OK for its 🟢 fixes only; everything
+  else in it waits for his answer. Then the tests and the retest evidence.
 - What a vendor's scan and manual test report, whatever their tool:
   `references/vapt-checklist.md`.
 

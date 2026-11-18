@@ -47,6 +47,10 @@ series of fixes. Everything found in existing code is a proposal
    `--paths` is the list of this project's own debug, admin, monitoring and
    documentation paths — work them out from its dependencies and routes; the
    script only knows the ones any stack can have. Use test accounts only.
+   **Both runs are part of the pass**: a page behind sign-in has findings the
+   sign-in page can't show (caching, the tokens on its forms, what its
+   scripts store), and requests sent by hand don't look for them. If the
+   signed-in run can't be done, the report says why.
 4. **Dependencies.** The ecosystem's audit (`scanners.md`). Each library the
    page check lists with a version: look it up in the live advisory source.
    The framework, runtime and server versions: look up whether each still

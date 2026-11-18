@@ -124,6 +124,31 @@ def test_dependency_manifest_counts(tmp_path):
     assert "arkar-security" in reason and "arkar-testing" in reason
 
 
+@pytest.mark.parametrize("code_file", [
+    "src/main.rs", "Sources/App/Routes.swift", "lib/accounts/session.ex", "internal/upload.c", "app/Orders.scala",
+    "go.mod", "Cargo.toml", "Gemfile", "pom.xml", "build.gradle.kts", "src/Portal/Portal.csproj",
+])
+def test_code_and_manifests_of_any_language_need_both_skills(tmp_path, code_file):
+    reason = reason_given(tmp_path, [edit_of(tmp_path, code_file)])
+    assert "arkar-security" in reason and "arkar-testing" in reason
+
+
+@pytest.mark.parametrize("config_file", [
+    "docker/nginx.conf", "deploy/nginx/conf.d/portal.conf", "public/.htaccess", "web.config", "Caddyfile", "php.ini",
+    "Dockerfile", "docker-compose.prod.yml", "src/Portal/appsettings.Production.json", "src/main/resources/application.yml",
+])
+def test_server_configuration_alone_needs_the_security_skill_only(tmp_path, config_file):
+    # Headers, TLS, what is served and debug switches live here: much of what a VAPT reports.
+    reason = reason_given(tmp_path, [edit_of(tmp_path, config_file)])
+    assert "arkar-security" in reason and "arkar-testing" not in reason
+    assert run_gate(tmp_path, [SECURITY_LOADED, edit_of(tmp_path, config_file)]) == ""
+
+
+@pytest.mark.parametrize("other_file", ["config/features.yaml", "docs/nginx.md", "node_modules/pkg/Dockerfile", "vendor/pkg/web.config", "data/report.json"])
+def test_other_settings_docs_and_a_dependencys_own_configuration_dont_count(tmp_path, other_file):
+    assert run_gate(tmp_path, [edit_of(tmp_path, other_file)]) == ""
+
+
 def test_insists_at_most_twice_per_session_across_turns(tmp_path):
     session = f"test-{uuid.uuid4()}"
     events = [edit_of(tmp_path, "routes/web.php")]

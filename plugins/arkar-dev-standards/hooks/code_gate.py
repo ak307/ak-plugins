@@ -6,9 +6,13 @@ standard. At the end of a session (Stop) this hook checks which of AK's two
 standards for code the session loaded (the Skill tool, or the skill's
 SKILL.md read as the fallback):
 
-- it changed code with logic — PHP, Python, JS/TS, Dart, dependency
-  manifests — so `arkar-security` and `arkar-testing` are both needed;
-- it changed only tests, so `arkar-testing` is needed.
+- it changed code with logic — source files in any of the languages listed
+  below, or a dependency manifest — so `arkar-security` and `arkar-testing`
+  are both needed;
+- it changed only tests, so `arkar-testing` is needed;
+- it changed only server configuration (web server, container, runtime
+  settings), which decides much of what a VAPT finds, so `arkar-security`
+  is needed.
 
 Both skills scale the work to the change, so loading them costs little on
 trivial edits.
@@ -42,10 +46,18 @@ from gate_common import NOT_SOURCE, SKIP_PATH, blocks_so_far, inside, loaded, re
 SECURITY_SKILL = "arkar-security"
 TESTING_SKILL = "arkar-testing"
 MAX_BLOCKS = 2
-CODE_EXTENSION = r"\.(php|py|js|mjs|cjs|jsx|ts|tsx|vue|svelte|dart|rb|go|java|kt|cs)$"
-CODE_FILE = re.compile(
-    CODE_EXTENSION
-    + r"|(^|/)(composer\.json|package\.json|pyproject\.toml|requirements[\w.-]*\.txt|pubspec\.yaml|\.env\.example)$",
+# AK's projects can be in any language: the list is every common one, not the stacks used most.
+CODE_EXTENSION = (r"\.(php|py|js|mjs|cjs|jsx|ts|tsx|vue|svelte|dart|rb|go|java|kt|cs"
+                  r"|rs|swift|scala|c|h|cc|cpp|hpp|m|mm|ex|exs|erl|clj|pl|lua|groovy|vb|fs)$")
+DEPENDENCY_MANIFEST = (r"(^|/)(composer\.json|package\.json|pyproject\.toml|requirements[\w.-]*\.txt|pubspec\.yaml"
+                       r"|go\.mod|Cargo\.toml|Gemfile|pom\.xml|build\.gradle(\.kts)?|[\w.-]+\.csproj|Package\.swift|mix\.exs"
+                       r"|\.env\.example)$")
+CODE_FILE = re.compile(CODE_EXTENSION + "|" + DEPENDENCY_MANIFEST, re.IGNORECASE)
+# Settings of the web server, the container and the runtime: headers, TLS, what is served, debug switches.
+SERVER_CONFIG_FILE = re.compile(
+    r"(^|/)(nginx[\w.-]*\.conf|httpd[\w.-]*\.conf|apache2?[\w.-]*\.conf|\.htaccess|web\.config|Caddyfile|php\.ini"
+    r"|Dockerfile[\w.-]*|(docker-)?compose[\w.-]*\.ya?ml|appsettings[\w.-]*\.json|application[\w.-]*\.(properties|ya?ml))$"
+    r"|(^|/)(nginx|apache2?|httpd|conf\.d|sites-available|sites-enabled)/[^/]+\.conf$",
     re.IGNORECASE,
 )
 TEST_FILE = re.compile(
@@ -97,12 +109,24 @@ def is_project_test(path: str, cwd: Path) -> bool:
     return bool(TEST_FILE.search(path_in_project))
 
 
+def is_server_config(path: str, cwd: Path) -> bool:
+    plain = without_markup_marker(path)
+    if not inside(plain, cwd):
+        return False
+    path_in_project = relative(plain, cwd)
+    # A dependency's own Dockerfile or web.config is not this project's configuration.
+    if any(folder in NOT_SOURCE for folder in Path(path_in_project).parts[:-1]):
+        return False
+    return bool(SERVER_CONFIG_FILE.search(path_in_project))
+
+
 def missing_skills(skills: set[str], edited: list[str], cwd: Path) -> list[str]:
     """The standards this session's changes need and didn't load, in the order they are named to the session."""
     code_changed = any(is_project_code(path, cwd) for path in edited)
     tests_changed = any(is_project_test(path, cwd) for path in edited)
+    config_changed = any(is_server_config(path, cwd) for path in edited)
     missing: list[str] = []
-    if code_changed and not loaded(skills, SECURITY_SKILL):
+    if (code_changed or config_changed) and not loaded(skills, SECURITY_SKILL):
         missing.append(SECURITY_SKILL)
     if (code_changed or tests_changed) and not loaded(skills, TESTING_SKILL):
         missing.append(TESTING_SKILL)
@@ -126,8 +150,8 @@ def decide(event: dict) -> str | None:
     if session_id:
         blocks_so_far(session_id, add=True, kind="code")
     names = " and ".join(f"`{skill}`" for skill in missing)
-    lines = [f"arkar code gate — code or tests were changed without loading {names}. Load with the Skill tool (or "
-             "read the SKILL.md), then:"]
+    lines = [f"arkar code gate — code, tests or server configuration were changed without loading {names}. Load "
+             "with the Skill tool (or read the SKILL.md), then:"]
     lines += [f"- {WHAT_EACH_SKILL_ASKS[skill]}" for skill in missing]
     # The message after this one is the last thing AK reads: it must not be the additions alone.
     lines.append("Then give your final report again in full, with these lines in it — it replaces the one before.")

@@ -50,9 +50,13 @@ route, the response. The frameworks they name are examples. **How** it is
 done is decided for the project in front of you: identify the stack, use its
 own mechanism (or a maintained library where it has none), check its current
 documentation when unsure, and set each control once, at the outermost layer
-the project owns (`references/vapt-checklist.md` section 1). What does not
-change with the stack: the approval rule above, the checks in step 4, and
-the report.
+the project owns (`references/vapt-checklist.md` section 1). **Never
+hand-write password hashing, session handling, CSRF tokens, encryption or
+HTML sanitising** when the framework or a maintained library provides it. A
+library that was deprecated usually has a maintained successor — look before
+writing your own, and if there really is none, say so in the plan. What does
+not change with the stack: the approval rule above, the checks in step 4,
+and the report.
 
 ## Every stage
 

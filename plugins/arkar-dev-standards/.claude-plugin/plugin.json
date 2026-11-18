@@ -1,6 +1,6 @@
 {
   "name": "arkar-dev-standards",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "The core of AK's development standards: always-on coding rules, the production guard and the code gate (security and testing), with the skills every project needs — the clean/secure change and bug-fix workflow, security, testing, project templates, delivery and AI engineering. Domain plugins (arkar-ui, …) build on it.",
   "author": {
     "name": "AK"

@@ -93,14 +93,22 @@ Tests for the guard and the read-only tool:
   they're recorded under "Known bugs" in `ARCHITECTURE.md`.
 
 - **`arkar-security` skill** — front-end and back-end security at every
-  stage: classify the data, Security lines in the plan, secure defaults,
-  checks (code review, security tests, dependency audit, secret scan, and
-  `scripts/security-check.cjs` on the running local page for the VAPT
-  findings plus personal data in URLs and browser storage), an independent
-  review for sensitive features, `SECURITY.md`. Its most important rule: in
-  existing code, security fixes are proposed first, labelled 🟢 safe or 🟠
-  risky, never just applied. The code gate (Stop hook) sends a session back
-  — at most twice — when code changed without this skill or `arkar-testing`.
+  stage, in any language or framework: classify the data, Security lines in
+  the plan, secure defaults, checks (code review, security tests, dependency
+  audit, secret scan, and `scripts/security-check.cjs` on the running local
+  page for the VAPT findings plus personal data in URLs and browser
+  storage), an independent review for sensitive features, `SECURITY.md`. Its
+  checklists say what must be true, not how one framework does it — Claude
+  works out the how for the stack in front of it. For VAPT it has the
+  findings a vendor's scan and manual test report (by outcome, not by one
+  scanner's names), the pass before a test (`--readiness`, the server
+  checklist for AK, a readiness report) and the steps for a vendor's report
+  in hand (verdicts, findings to answer rather than apply, retest evidence).
+  Its most important rule: in existing code, security fixes are proposed
+  first, labelled 🟢 safe or 🟠 risky, never just applied. The code gate
+  (Stop hook) sends a session back — at most twice — when code changed
+  without this skill or `arkar-testing`, or server configuration changed
+  without this skill.
 
 - **`arkar-testing` skill** — every change verified, existing behaviour
   protected, and testing never a risk to live data: check where tests point

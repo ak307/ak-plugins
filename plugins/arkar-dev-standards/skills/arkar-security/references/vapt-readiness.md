@@ -74,7 +74,7 @@ host.
 | What must be true | How AK can see it |
 |---|---|
 | HTTP redirects to HTTPS | `curl -sI http://<host>/` answers 301 or 308 with an `https://` location |
-| TLS 1.2 or newer only | `openssl s_client -connect <host>:443 -tls1_1 </dev/null` fails; `-tls1_2` connects |
+| TLS 1.2 or newer only | The server's protocol setting. From outside: `openssl s_client -connect <host>:443 -tls1_1 </dev/null` fails while `-tls1_2` connects — only meaningful on a machine whose OpenSSL still offers TLS 1.1 itself |
 | The certificate is valid and not about to expire | `openssl s_client -connect <host>:443 -servername <host> </dev/null \| openssl x509 -noout -dates` |
 | HSTS and the security headers reach the browser (a proxy can strip or double them) | `curl -sI https://<host>/` shows each header once |
 | No product versions | the same output has no version in `Server` and no `X-Powered-By` |

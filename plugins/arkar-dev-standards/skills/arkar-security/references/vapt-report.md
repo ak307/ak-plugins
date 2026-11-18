@@ -37,9 +37,11 @@ vendor.
    (🟢 / 🟠) — the report didn't ask for them, so they are not applied.
 6. **Test.** One regression test per code fix, seen failing before the fix
    (`arkar-testing`) — local or test database only. Then the page check.
-7. **Write the retest evidence** for every finding (section 5).
-8. **Record** every finding with its verdict and status in `SECURITY.md` —
-   the location and kind of weakness only.
+7. **Write the retest evidence** for every finding, whatever its verdict
+   (section 5).
+8. **Record** every finding in `SECURITY.md` with its verdict and its status
+   — fixed, open (waiting for AK or the server), disputed, accepted — the
+   location and kind of weakness only.
 
 ## 3. Verdicts
 
@@ -61,7 +63,7 @@ Check the current guidance before quoting it — it moves.
 | Reported | What to do instead | For the vendor |
 |---|---|---|
 | `X-XSS-Protection` header missing | Don't enable the old filter (`1; mode=block`). The Content-Security-Policy is the control; set `X-XSS-Protection: 0` only if the vendor insists on seeing the header | The header is deprecated and browsers have removed the filter it switched on; script injection is controlled by the Content-Security-Policy |
-| Password field with autocomplete enabled | Keep `autocomplete="current-password"` / `"new-password"`; use `off` only for one-time codes and fields on shared terminals | Current guidance is to let password managers fill passwords, because it leads to stronger, unique passwords |
+| Password field with autocomplete enabled | Set `autocomplete="current-password"` / `"new-password"` on the field, so the choice is deliberate; use `off` only for one-time codes and fields on shared terminals | Current guidance is to let password managers fill passwords, because it leads to stronger, unique passwords |
 | Anti-CSRF token cookie without `HttpOnly` | Leave it: the page's script must read that token to send it back. The session cookie is `HttpOnly` | The cookie holds the CSRF token, not the session; it is readable by design |
 | Missing header on a redirect or an error response from the proxy | Check the header on the real pages; set it at the outermost layer so every response carries it | — |
 | Email address, timestamp or private address "disclosed" | Confirm what it is: a public contact address, a date or a version string is not a leak; a real internal address is removed | It is public information, or a value mistaken for one |
@@ -75,7 +77,9 @@ One table, in the vendor's order, so it can go into the reply:
  # · vendor's finding (severity) · confirmed where · verdict · what was done or proposed · how to verify at the retest
 ```
 
-"How to verify" is concrete: the request and the answer to expect, the page
-check line before and after, or the server command from `vapt-readiness.md`.
-Then the tests added, what ran, and the proposals for the same weakness found
-elsewhere.
+"How to verify" is concrete for every row: for a fix, the request and the
+answer to expect or the page check line before and after; for a server item,
+the command from `vapt-readiness.md`; for a disputed or accepted finding, the
+evidence behind the answer (the header that is sent, the guidance it
+follows) next to the wording for the vendor. Then the tests added, what ran,
+and the proposals for the same weakness found elsewhere.

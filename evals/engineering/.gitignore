@@ -1,0 +1,4 @@
+cases*.json
+hidden/
+out*/
+plugins-*/

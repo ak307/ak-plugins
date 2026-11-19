@@ -283,6 +283,7 @@ materially — then say why you're raising it again.
 
 ## Specific situations
 
+- **Database work on a connected project** — a slow page or report, a schema change on a live table, a bulk delete or update asked for in chat, a record with the wrong value: read `references/database-changes.md` first.
 - **Huge legacy files** (e.g. 1,000-line controllers): never propose a
   rewrite as part of a feature. Propose extracting only the part the feature
   touches into a proper class (an Action, a service), so each feature leaves
